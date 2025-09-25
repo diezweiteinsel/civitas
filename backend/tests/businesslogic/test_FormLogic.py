@@ -1,13 +1,13 @@
 """testing form logic and operations"""
-
-from ast import List
 import pytest
-from backend.models import (Form, User, UserType, Section, BuildingBlock, BBType)
-from backend.businesslogic.services.formService import createForm, _forms, _form_id_counter, _ensure_admin
-from backend.businesslogic.services.adminService import createUser
+from backend.models import (User, UserType, Section, BuildingBlock, BBType)
+from backend.businesslogic.services.formService import createForm, _forms, _form_id_counter
+from datetime import date
+from backend.businesslogic.user import assign_role
 from backend.businesslogic.selfRegistration import register_Applicant
 
-admin=User(id=1, username="admin", user_type=UserType.ADMIN)
+admin=User(id=1, username="admin", date_created=date.today(), hashed_password="hashed")
+assign_role(admin, UserType.ADMIN)
 applicant=register_Applicant("applicant1", "password1")
 
 def test_create_form():

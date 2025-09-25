@@ -1,13 +1,43 @@
 from dataclasses import dataclass
-from datetime import datetime
+from datetime import date
 from backend.models import UserType, User
 from backend.core import db
+from backend.models.domain.user import RoleAssignment
 
 @dataclass
 class SimpleUser:
     id: int | None
     name: str
     email: str
+
+
+"""function that assigns roles to users. Raises an error if the user already has the role. Users can have multiple roles."""
+def assign_role(user: User, role: UserType) -> None:
+    if any(r.role == role for r in user.user_roles):
+        raise ValueError(f"User already has role {role}")
+    user.user_roles.append(RoleAssignment(
+        user_id=user.id,
+        role=role,
+        assignment_date=date.today()
+    ))
+
+"""Ensure the user is an admin; raise PermissionError if not."""
+def ensure_admin(user: User) -> bool:
+	if not user or any(r.role == UserType.ADMIN for r in user.user_roles) < 1: 
+		return False
+	return True
+
+"""Ensure the user is an applicant; raise PermissionError if not."""
+def ensure_applicant(user: User) -> bool:
+	if not user or any(r.role == UserType.APPLICANT for r in user.user_roles) < 1: 
+		return False
+	return True
+
+"""Ensure the user is a reporter; raise PermissionError if not."""
+def ensure_reporter(user: User) -> bool:
+	if not user or any(r.role == UserType.REPORTER for r in user.user_roles) < 1: 
+		return False
+	return True
 
 
 class UserLogic:

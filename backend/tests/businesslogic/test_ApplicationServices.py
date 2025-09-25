@@ -1,16 +1,20 @@
 from backend.businesslogic.services.applicationService import createApplication, editApplication, submitApplication, getApplication, listOwnApplications,listAllApplications,listAllPublicApplications,listPendingApplications, allApplications
-from backend.businesslogic.services.adminService import adminApprove
-from backend.models.domain.user import UserType, User
+from backend.businesslogic.services.adminService import adminApproveApplication
+from backend.businesslogic.user import assign_role, ensure_admin
+from backend.models.domain.user import RoleAssignment, UserType, User
 from backend.models.domain.buildingblock import BuildingBlock, BBType
 from backend.models.domain.application import Application, ApplicationStatus
 from backend.models.domain.form import Form
-from datetime import datetime
+from datetime import date
+
 
 
 #test ApplicationService
 
-applicant=User(id=2, username="applicant", user_type=UserType.APPLICANT, date_created=datetime.now(), email="applicant@example.com")
-admin = User(id=1, username="admin", user_type=UserType.ADMIN, date_created=datetime.now(), email="admin@example.com")
+applicant=User(id=2, username="applicant", hashed_password="hashed", date_created=date.today())
+admin = User(id=1, username="admin", hashed_password="hashed", date_created=date.today())
+assign_role(applicant, UserType.APPLICANT)
+assign_role(admin, UserType.ADMIN)
 
 payload = {
         "type": BBType.STRING,
@@ -43,16 +47,15 @@ def test_editApplication():
     editApplication(applicant, application, newPayload)
     assert application.jsonPayload == newPayload
     assert application.status == ApplicationStatus.PENDING
-    admin=User(id=1, username="admin", user_type=UserType.ADMIN, date_created=datetime.now(), email="admin@example.com") # Example admin user
-    adminApprove(admin, application) # Admin approves the application
+    adminApproveApplication(admin, application) # Admin approves the application
     assert application.status == ApplicationStatus.APPROVED # Application status should be updated to APPROVED
-
 test_editApplication()
 
 def test_submitApplication():
     application = createApplication(applicant, form, payload)
     submitApplication(applicant, application)
     assert application.status == ApplicationStatus.PENDING # Status should remain PENDING as submit logic is not defined yet
+    # testing the db not implemented yet
 
 test_submitApplication()
 
@@ -61,7 +64,9 @@ def test_getApplication():
     retrievedApp = getApplication(applicant, application.applicationID)
     assert retrievedApp == application
 
-#test_getApplication()
+test_getApplication()
+
+
 
 # Mock database of applications for demonstration purposes
 application1 = createApplication(applicant, form, payload)
@@ -92,14 +97,16 @@ def test_listPendingApplications():
     try:
         applicantPendingApps = listPendingApplications(applicant)
     except PermissionError as e:
-        assert str(e) == "Only admins and reporters can view pending applications."
+        assert str(e) == "Only admins and reporters can view all pending applications."
 
 test_listPendingApplications()
 
 
 def test_listAllPublicApplications(user: User):
     publicApps = listAllPublicApplications(user)
-    assert len(publicApps) == 3
-    assert application1 in publicApps
-    assert application2 in publicApps
-    assert application3 in publicApps
+    assert len(publicApps) == 0
+    assert application1 not in publicApps
+    assert application2 not in publicApps
+    assert application3 not in publicApps
+
+test_listAllPublicApplications(applicant)

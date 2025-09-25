@@ -1,6 +1,7 @@
 from datetime import datetime
 
 from requests import session
+from backend.businesslogic.user import assign_role, ensure_admin, ensure_applicant, ensure_reporter
 
 from backend.models import (
 	User,
@@ -14,7 +15,7 @@ from backend.crud import dbActions
 # mockup db as list for testing purposes
 applications_db = []
 def createApplication(user: User, form: Form, payload: dict) -> Application:
-	if user.user_type != UserType.APPLICANT:
+	if not ensure_applicant(user):
 		raise PermissionError("Only applicants can create applications.")
 	""" Creates a new application for a user."""
 	# get the needed id for the application from the application table has to be done
@@ -24,8 +25,8 @@ def createApplication(user: User, form: Form, payload: dict) -> Application:
 		userID=user.id,
 		formID=form.formID,
 		jsonPayload=payload
-	) # Still missing : importing formfields into application, snapshots and filling them with data from payload 
-	# Logic to save the new application is not defined yet
+	) # Still missing : importing formfields into application, snapshots and filling them with data from payload
+	# Logic to save the new application into the db is not defined yet
 	return newApplication
 
 
@@ -52,9 +53,36 @@ def submitApplication(user: User, application: Application):
 def getApplication(user: User, applicationId: int) -> Application:
 	application = dbActions.getRowById(session, Application, applicationId) # Retrieve the application from the database
 	""" Retrieves an application."""
-	if user.user_type == UserType.APPLICANT and application.userID != user.id and application.status != ApplicationStatus.PUBLIC:
+	if ensure_applicant(user) and application.userID != user.id and application.status != ApplicationStatus.PUBLIC:
 		raise PermissionError("Applicants can only view their own applications.")
 	return application
+
+""" 
+Publishing applications makes them publicly visible. Only applications with the status 'APPROVED' can be published. Only admins can publish or unpublish applications.
+"""
+def publishApplication(user: User, application: Application) -> Application:
+	""" Publishes an application. Only admins can publish applications."""
+	if not ensure_admin(user):
+		raise PermissionError("Only admins can publish applications.")
+	if application.status != ApplicationStatus.APPROVED:
+		raise ValueError("Only approved applications can be published.")
+	application.status = ApplicationStatus.PUBLIC
+	return application
+	# Logic to save the updated application status in the db is not defined yet
+
+"""
+Unpublishing applications reverts their status from 'PUBLIC' back to 'APPROVED'. Only admins can unpublish applications.
+"""
+def unpublishApplication(user: User, application: Application) -> Application:
+	""" Unpublishes an application. Only admins can unpublish applications."""
+	if not ensure_admin(user):
+		raise PermissionError("Only admins can unpublish applications.")
+	if application.status != ApplicationStatus.PUBLIC:
+		raise ValueError("Only public applications can be unpublished.")
+	application.status = ApplicationStatus.APPROVED
+	return application
+	# Logic to save the updated application status in the db is not defined yet
+	
 
 # Mock database of applications for demonstration purposes
 allApplications = []  # This would be replaced with actual database queries
@@ -69,7 +97,7 @@ def listOwnApplications(user: User):
 
 def listAllApplications(user: User):
 	""" Lists all applications in the system. Admins and reporters can see all, applicants only public ones."""
-	if user.user_type == UserType.ADMIN or user.user_type == UserType.REPORTER:
+	if ensure_admin(user) or ensure_reporter(user):
 		return allApplications  # Admins and reporters can see all applications
 	else :
 		raise PermissionError("Applicants can only view their own applications or public applications.")
@@ -77,10 +105,10 @@ def listAllApplications(user: User):
 
 def listPendingApplications(user: User):
 	""" Lists all pending applications. Only admins and reporters can see pending applications."""
-	if user.user_type == UserType.ADMIN or user.user_type == UserType.REPORTER:
+	if ensure_admin(user) or ensure_reporter(user):
 		return [app for app in allApplications if app.status == ApplicationStatus.PENDING]
 	else:
-		raise PermissionError("Only admins and reporters can view pending applications.")
+		raise PermissionError("Only admins and reporters can view all pending applications.")
 
 
 def listAllPublicApplications(user: User):

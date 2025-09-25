@@ -1,33 +1,34 @@
-from datetime import datetime
+from datetime import date
 
 from backend.models import User, Form, Application, ApplicationStatus, UserType
+from backend.models.domain.user import RoleAssignment
+from backend.businesslogic.user import ensure_admin, assign_role
+from backend.auth import hash_password
 from backend.crud.dbActions import insertRow
 
+
+
 def createUser(user: User,id:int, username: str, password: str, role: UserType):
-	if user.user_type != UserType.ADMIN:
-		raise PermissionError("Only admins can create new users.")
+	if not ensure_admin(user):
+		return None
 	if role==UserType.APPLICANT: 
 		raise PermissionError("Applicants can only be created via self-registration.")
 	""" Creates a new user in the system."""
-	newUser = User(id=id, username=username, user_type=role, date_created=datetime.now(), email=None)
-	# Hash the password and create an Account instance
-	#newAccount = Account(user=newUser, hashed_password=password, status=AccountStatus.ACTIVE)
-	# Save the User and Account to the database
+	# Hash the password and create an Account instance	
+	hashed_pw = hash_password(password)
+	newUser = User(id=id, username=username, date_created=date.today(), hashed_password=hashed_pw)
+	newUser.user_roles.append(RoleAssignment(
+		user_id=newUser.id,
+		role=role,
+		assignment_date=date.today()
+	))
+	# Save the User to the database
 	#insertRow(newUser)  # add the new user to the database
 	return newUser
 
 
-def createForm(user, form_structure):
-	if user.user_type != UserType.ADMIN:
-		raise PermissionError("Only admins can create new forms.")
-	""" Creates a new form in the system."""
-	newForm = Form(fields=form_structure, date_created=datetime.now())
-	#insertRow(newForm)  # add the new form to the database
-	return newForm
-
-
 def adminApproveApplication(user: User, application: Application):
-	if user.user_type != UserType.ADMIN:
+	if not ensure_admin(user):
 		raise PermissionError("Only admins can approve applications.")
 	""" Approves an application."""
 	application.status = ApplicationStatus.APPROVED
@@ -36,7 +37,7 @@ def adminApproveApplication(user: User, application: Application):
 
 
 def adminRejectApplication(user: User, application: Application):
-	if user.user_type != UserType.ADMIN:
+	if not ensure_admin(user):
 		raise PermissionError("Only admins can reject applications.")
 	""" Rejects an application."""
 	application.status = ApplicationStatus.REJECTED

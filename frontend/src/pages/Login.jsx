@@ -3,36 +3,47 @@ import "./../style/LoginPage.css";
 import Navbar from "../components/Navbar";
 import { NavLink, useNavigate } from "react-router-dom";
 import { loginUser, getAllUsers } from "../utils/api";
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 export default function LoginPage() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
 
   const {
     data: usersData,
     isLoading: usersLoading,
     error: usersError,
+    refetch: refetchUsers,
   } = useQuery({
     queryKey: ["allUsers"],
     queryFn: getAllUsers,
+    enabled: false, // Disable automatic query execution
+    retry: false, // Don't retry failed requests
   });
 
   const loginMutation = useMutation({
     mutationFn: loginUser,
     onSuccess: (data) => {
       setError("");
-      console.log("Login successful:", data.user);
+      console.log("Login successful:", data);
 
-      const userRole = data.user.role;
-      if (userRole === "ADMIN") {
-        navigate("/admin");
-      } else if (userRole === "REPORTER") {
-        navigate("/reporter");
-      } else {
-        navigate("/applicant");
+      if (data.roles && data.roles.length > 0) {
+        const primaryRole = data.roles[0];
+
+        switch (primaryRole) {
+          case "ADMIN":
+            navigate("/admin");
+            break;
+          case "REPORTER":
+            navigate("/reporter");
+            break;
+          case "APPLICANT":
+            navigate("/applicant");
+            break;
+        }
       }
     },
     onError: (error) => {
@@ -47,14 +58,6 @@ export default function LoginPage() {
     if (!username || !password) {
       setError("Both fields are required");
       return;
-    }
-
-    if (password === "ad") {
-      navigate("/admin");
-    } else if (password === "re") {
-      navigate("/reporter");
-    } else if (password === "ap") {
-      navigate("/applicant");
     }
 
     setError("");
@@ -101,31 +104,42 @@ export default function LoginPage() {
             </button>
           </form>
 
-          {/* Display all users for demonstration */}
-          {usersData && (
-            <div
-              style={{
-                marginTop: "20px",
-                padding: "10px",
-                backgroundColor: "#f5f5f5",
-                borderRadius: "5px",
-              }}
+          {/* Display all users for demonstration
+          <div
+            style={{
+              marginTop: "20px",
+              padding: "10px",
+              backgroundColor: "#f5f5f5",
+              borderRadius: "5px",
+            }}
+          >
+            <h4>Available Users (for testing):</h4>
+            <button
+              onClick={() => refetchUsers()}
+              style={{ marginBottom: "10px", padding: "5px 10px" }}
+              disabled={usersLoading}
             >
-              <h4>Available Users (for testing):</h4>
-              {usersLoading && <p>Loading users...</p>}
-              {usersError && <p>Error loading users: {usersError.message}</p>}
-              {usersData.users && (
-                <ul style={{ listStyle: "none", padding: 0 }}>
-                  {usersData.users.map((user) => (
-                    <li key={user.id} style={{ marginBottom: "5px" }}>
-                      <strong>{user.username}</strong> (Role: {user.role}) -
-                      Password: {user.password}
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </div>
-          )}
+              {usersLoading ? "Loading..." : "Fetch Users"}
+            </button>
+            {usersLoading && <p>Loading users...</p>}
+            {usersError && <p>Error loading users: {usersError.message}</p>}
+            {usersData && Array.isArray(usersData) && usersData.length > 0 && (
+              <ul style={{ listStyle: "none", padding: 0 }}>
+                {usersData.map((user) => (
+                  <li key={user.id} style={{ marginBottom: "5px" }}>
+                    <strong>{user.username}</strong>
+                    {user.user_roles && user.user_roles.length > 0 && (
+                      <span> (Role: {user.user_roles[0].role})</span>
+                    )}
+                    <span> - Email: {user.email}</span>
+                  </li>
+                ))}
+              </ul>
+            )}
+            {usersData &&
+              Array.isArray(usersData) &&
+              usersData.length === 0 && <p>No users found.</p>}
+          </div> */}
 
           <p className="signup-text">
             Don’t have an account? <NavLink to="/registration">Sign up</NavLink>

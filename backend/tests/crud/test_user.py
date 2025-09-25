@@ -4,6 +4,7 @@ import os
 
 import pytest
 from testcontainers.postgres import PostgresContainer
+from fastapi.exceptions import HTTPException
 
 from backend import dbActions
 from backend import db
@@ -33,6 +34,7 @@ def setup(request):
     reload(db)
     reload(dbActions)
     from backend.core.ormUtil import user_db_setup
+    
     user_db_setup()  # Ensure tables are created before tests run
 
 
@@ -57,7 +59,11 @@ def test_add_user_func():
         newer_user = userCrud.add_user(session, domainUser)
         ormUserRows = dbActions.getRows(session, OrmUser)
 
-        assert newer_user is None
+        with pytest.raises(HTTPException) as exc_info:
+            userCrud.add_user(session, domainUser)
+        ormUserRows = dbActions.getRows(session, OrmUser)
+        assert exc_info.value.status_code == 409
+        assert str(exc_info.value.detail) == "Username already in use"
         assert len(ormUserRows) == 1
 
         new_user_from_db = dbActions.getRowById(session,OrmUser,1)

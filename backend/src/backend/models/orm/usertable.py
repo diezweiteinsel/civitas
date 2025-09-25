@@ -1,7 +1,7 @@
 from typing import Any, Type
 
 from sqlalchemy import Column, Date, Integer, String, Boolean
-
+from sqlalchemy.orm import Session
 
 
 from backend.models.domain.user import User
@@ -32,11 +32,15 @@ def to_orm_model(user: User) -> OrmUser:
     )
 
 
-def to_domain_model(orm_user: OrmUser) -> User:
+def to_domain_model(session: Session, orm_user: Type) -> User:
+    # Import here to avoid circular dependency, feel free to try and resolve this differently
+    # I can't be bothered rn -ps
+    from backend.crud.role import get_user_roles
+
     return User(
         id=orm_user.id,
         username=orm_user.user_name,
-        user_roles=[],
+        user_roles=get_user_roles(session, orm_user.id),
         date_created=orm_user.creation_date,
         email=orm_user.email,
         hashed_password=orm_user.password,

@@ -56,8 +56,6 @@ def test_add_user_func():
         assert len(ormUserRows) == 1
 
         # Try to insert a user with identical username
-        newer_user = userCrud.add_user(session, domainUser)
-        ormUserRows = dbActions.getRows(session, OrmUser)
 
         with pytest.raises(HTTPException) as exc_info:
             userCrud.add_user(session, domainUser)

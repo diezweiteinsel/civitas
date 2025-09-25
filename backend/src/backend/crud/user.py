@@ -67,6 +67,6 @@ def get_user_by_name(username: str, session:Session) -> User | None:
 def get_user_by_email(email: str, session:Session) -> User | None:
     orm_user = dbActions.getRowsByFilter(session, OrmUser, {"email": email})
     if orm_user:
-        return to_domain_model(orm_user)
+        return to_domain_model(session, orm_user)
     return None
 

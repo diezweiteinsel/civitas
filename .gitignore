@@ -1,0 +1,54 @@
+# Devenv
+.devenv*
+devenv.local.nix
+devenv.nix
+devenv.lock
+.envrc
+.devenv.flake.nix
+# direnv
+.direnv
+
+# pre-commit
+.pre-commit-config.yaml
+
+
+# Ignore environment variable files
+.env
+
+# Ignore Python virtual environment directories
+.venv/
+
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Distribution / packaging
+build/
+dist/
+*.egg-info/
+.eggs/
+
+# Logs and databases
+*.log
+*.sqlite3
+*.db
+
+# Test and coverage reports
+htmlcov/
+.tox/
+.nox/
+.coverage
+.coverage.*
+.cache
+.pytest_cache/
+coverage.xml
+
+# IDE/project settings
+.vscode/
+.idea/
+*.iml
+
+
+# Ignore Visual Paradigm backups
+*.vpp.bak*

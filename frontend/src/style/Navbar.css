@@ -1,0 +1,100 @@
+/* Navbar container */
+.navbar {
+  background: #265ebf;
+  color: white;
+  padding: 0 2rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  height: 60px;
+  box-shadow: 0 5px 12px rgba(0, 0, 0, 0.2);
+}
+
+/* Brand / Logo */
+.navbar-brand {
+  font-size: 2rem;
+  font-weight: bold;
+  cursor: auto;
+}
+
+.navbar-img {
+  /* match parent height */
+  height: 90%;
+  /* preserve aspect ratio */
+  width: auto;
+}
+
+.burger-icon {
+  font-size: 2.5rem;
+  color: #ffffffff;
+}
+
+.dropdown {
+  background: transparent;
+  color: transparent;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative; /* Needed for absolute dropdown-menu */
+}
+
+.dropdown.hidden {
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.dropdown .dropdown-toggle {
+  background: transparent;
+  border: none;
+  box-shadow: none;
+}
+
+.dropdown-menu {
+  background: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+  position: absolute;
+  top: 100%;
+  left: -120px; /* Shift menu more to the left */
+  min-width: 180px;
+  z-index: 1000;
+}
+
+.dropdown-divider {
+  height: 1px;
+  background: #38383865;
+  margin: 8px 0;
+  width: 90%;
+  align-self: center;
+  border: none;
+}
+
+.dropdown-item {
+  padding: 1rem 1rem;
+  margin: 5px 0;
+  text-decoration: none;
+  align-items: center;
+  background: "transparent";
+  color: #000000;
+}
+
+.nav-link {
+  color: inherit;
+  text-decoration: none;
+  background: none;
+  padding: 0;
+  font: inherit;
+  border: none;
+  cursor: pointer;
+  display: inline;
+}
+
+.nav-link:hover {
+  text-decoration: underline;
+  color: #0066ff;
+}

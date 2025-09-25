@@ -1,0 +1,113 @@
+/* Page container styling */
+.page-container {
+  display: flex;
+  justify-content: center;
+  padding: 20px;
+}
+
+/* Card wrapper */
+.containers-card {
+  width: calc(100% - 40px);
+  max-width: none;
+  min-width: 400px;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.card-title {
+  text-align: center;
+  margin-bottom: 20px;
+  font-size: 1.8em;
+  font-weight: bold;
+}
+
+/* Scrollable container list */
+.container-list {
+  max-height: 500px;
+  overflow-y: auto;
+  /* space for scrollbar */
+  padding-right: 10px;
+}
+
+/* Single container item */
+.container-item {
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  margin-bottom: 12px;
+  padding: 12px;
+  transition: background-color 0.2s;
+}
+
+.container-item:hover {
+  background-color: #f9f9f9;
+}
+
+/* Container header */
+.container-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.icon {
+  font-size: 24px;
+  margin-right: 10px;
+}
+
+.info {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.form-type {
+  font-weight: bold;
+}
+
+.status {
+  font-size: 0.9em;
+  padding: 3px 8px;
+  border-radius: 4px;
+  color: #fff;
+  width: fit-content;
+}
+
+.status.pending {
+  background-color: orange;
+}
+
+.status.approved {
+  background-color: green;
+}
+
+.status.rejected {
+  background-color: red;
+}
+.status.published {
+  background-color: rgb(83, 235, 255);
+}
+
+.toggle-btn {
+  background-color: #007bff;
+  border: none;
+  color: white;
+  padding: 6px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.toggle-btn:hover {
+  background-color: #0056b3;
+}
+
+/* Container details */
+.container-details {
+  margin-top: 10px;
+  font-size: 0.9em;
+  color: #555;
+}
+
+.page-space {
+  margin: 10px;
+}

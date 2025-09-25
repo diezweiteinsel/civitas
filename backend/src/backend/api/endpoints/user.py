@@ -147,7 +147,7 @@ async def delete_user(user_id: int):
     """
     Delete a user from the system.
     """
-    return {"message": f"User {user_id} deleted"}
+    return {"message": f"User {user_id} deleted, i promise. pinky promise."}
 
 
 

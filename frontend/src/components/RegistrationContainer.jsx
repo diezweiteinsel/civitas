@@ -7,6 +7,7 @@ import "./../style/RegisterPage.css";
 
 export default function RegistrationContainer({ role = Role.APPLICANT }) {
   const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
   const [error, setError] = useState("");
@@ -56,7 +57,7 @@ export default function RegistrationContainer({ role = Role.APPLICANT }) {
 
     createUserMutation.mutate({
       username,
-      email: "test@mail.com",
+      email,
       password,
       role: role,
     });
@@ -78,6 +79,16 @@ export default function RegistrationContainer({ role = Role.APPLICANT }) {
               value={username}
               onChange={(e) => setUsername(e.target.value)}
               placeholder="Enter username"
+            />
+          </div>
+
+          <div className="form-group">
+            <label>Email</label>
+            <input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="Enter email"
             />
           </div>
 

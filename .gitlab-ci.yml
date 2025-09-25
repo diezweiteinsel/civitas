@@ -77,10 +77,12 @@ test_backend:
     - source .venv/bin/activate
     # Install project dependencies from the specified file
     - pip install -r backend/requirements-linux.txt
+    # Install the backend as an editable package
+    - pip install -e backend/
   script:
     # Run the tests. Assumes you are using pytest.
     # The DATABASE_URL variable is automatically used by many frameworks.
-    - pytest
+    - pytest backend/src/backend/tests/
 
 #test_frontend:
 #  stage: test
@@ -94,3 +96,4 @@ test_backend:
 #  script:
 #    # Run the tests in non-interactive mode.
 #    - npm test -- --watchAll=false
+

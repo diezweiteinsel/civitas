@@ -82,8 +82,7 @@ test_backend:
   script:
     # Run the tests. Assumes you are using pytest.
     # The DATABASE_URL variable is automatically used by many frameworks.
-    - pytest backend/src/backend/tests/
-
+    - pytest 
 #test_frontend:
 #  stage: test
 #  # Use a Node.js image.

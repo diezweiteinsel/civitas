@@ -58,6 +58,49 @@ def main():
     except Exception:
         print("user_db_setup() failed:")
         traceback.print_exc()
+    
+    try:
+        # we insert a demo user for easier testing
+        from backend.core import security
+        from backend.core import db as core_db
+        from backend.crud.user import add_user, get_user_by_name
+        from backend.models.domain.user import RoleAssignment, User, UserType
+        from datetime import date
+        demo_username = os.environ.get("DEMO_USERNAME", "demo")
+        demo_password = os.environ.get("DEMO_PASSWORD", "demo")
+        with core_db.get_session() as s:
+            try:
+                existing = get_user_by_name(demo_username, s)
+                print(f"Demo user '{demo_username}' already exists, skipping demo user creation")
+            except Exception:
+                print(f"Creating demo user '{demo_username}' (password from DEMO_PASSWORD env)")
+                new_user = User(
+                    username=demo_username,
+                    date_created=date.today(),
+                    hashed_password=security.hash_password(demo_password),
+                    user_roles=[
+                        RoleAssignment(
+                            role=UserType.ADMIN,
+                            assignment_date=date.today(),
+                        ),
+                        RoleAssignment(
+                            role=UserType.REPORTER,
+                            assignment_date=date.today(),
+                        ),
+                        RoleAssignment(
+                            role=UserType.APPLICANT,
+                            assignment_date=date.today(),
+                        ),
+                    ],
+                )
+                created = add_user(s, new_user)
+                if created is None:
+                    print("add_user returned None - demo user creation failed or user already exists")
+                else:
+                    print(f"Demo user '{demo_username}' created with id={created.id}")
+    except Exception:
+        print("Demo user creation failed:")
+        traceback.print_exc()
 
     # --- seed an initial admin user if no users exist ---
     # try:

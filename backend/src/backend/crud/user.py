@@ -49,24 +49,27 @@ def add_user(session: Session, user: User):
 
 
 def get_user_by_id(user_id: int, session: Session) -> User | None:
-    orm_user = dbActions.getRowById(session, OrmUser, user_id)
-    if orm_user:
+    results = dbActions.getRowsByFilter(session, OrmUser, {"id": user_id})
+    if results:
+        orm_user = results[0]
         return to_domain_model(session, orm_user)
     raise HTTPException(status_code=404, detail="User not found")
 
 
 
 def get_user_by_name(username: str, session:Session) -> User | None:
-    orm_user = dbActions.getRowsByFilter(session, OrmUser, {"user_name": username})
-    if orm_user:
+    results = dbActions.getRowsByFilter(session, OrmUser, {"user_name": username})
+    if results:
+        orm_user = results[0]
         return to_domain_model(session, orm_user)
     raise HTTPException(status_code=404, detail="User not found")
 
 
 
 def get_user_by_email(email: str, session:Session) -> User | None:
-    orm_user = dbActions.getRowsByFilter(session, OrmUser, {"email": email})
-    if orm_user:
+    results = dbActions.getRowsByFilter(session, OrmUser, {"email": email})
+    if results:
+        orm_user = results[0]
         return to_domain_model(session, orm_user)
     raise HTTPException(status_code=404, detail="User not found")
 

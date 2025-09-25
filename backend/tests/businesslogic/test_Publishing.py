@@ -1,12 +1,14 @@
 # tests for publicationService
-from backend.businesslogic.services.publicationService import publishApplication, unpublishApplication
-from backend.businesslogic.services.applicationService import createApplication
+from backend.businesslogic.services.applicationService import createApplication, publishApplication, unpublishApplication
 from backend.businesslogic.services.adminService import adminApproveApplication
 from backend.businesslogic.selfRegistration import register_Applicant
+from backend.businesslogic.user import assign_role
 from backend.models import User, UserType, Application, ApplicationStatus, Form
+from datetime import date
 
 # Create a mock admin user
-admin_user = User(id=1, username="admin", user_type=UserType.ADMIN)
+admin_user = User(id=1, username="admin", hashed_password="adminpass", date_created=date.today())
+assign_role(admin_user, UserType.ADMIN)
 
 # mock register applicant user
 applicant_user = register_Applicant(username="applicant", password="password")

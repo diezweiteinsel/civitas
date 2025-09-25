@@ -1,7 +1,9 @@
 from backend.models import (
 	User,
 	UserType,
+
 )
+
 
 # --- New authService.py below ---
 
@@ -39,29 +41,13 @@ def authenticate_user(session: Session, username: str, password: str) -> Optiona
     return user
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-# --- Remnants of old authService.py below ---
-
 def authenticate(username: str, password: str):
 	""" Authenticates a user and returns a token."""
 	# Logic to authenticate the user and generate a token is not defined yet
 	pass
 
 
-def createAccount(username: str, password: str):
+def creatAccount(username: str, password: str):
 	""" Creates a new account for a user."""
 	# Logic to create a new account is not defined yet
 	pass
@@ -78,11 +64,3 @@ def deactivateAccount(user: User):
 	# Logic to deactivate the account is not defined yet
 	pass
 
-
-def assignRole(user: User, account: User, new_role: UserType):
-	""" Assigns a new role to a user. Only admins can change roles."""
-	if user.usertype != UserType.ADMIN:
-		raise PermissionError("Only admins can change user roles.")
-	account.usertype = new_role
-	# Save the updated account to the database
-	pass

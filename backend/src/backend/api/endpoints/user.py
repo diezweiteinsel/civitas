@@ -69,13 +69,21 @@ async def create_user(userjson: UserCreatePayload, session: Session = Depends(db
     """
     Create a new user in the system.
     """
+
     # 1 CHECK IF USERNAME OR EMAIL ALREADY EXISTS
-    db_user = userCrud.get_user_by_name(userjson.username, session)
-    if db_user:
+    try:
+        userCrud.get_user_by_name(userjson.username, session) # Should raise 404 if username isn't already registered
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Username already registered")
-    db_usermail = userCrud.get_user_by_email(userjson.email, session)
-    if db_usermail:
+    except HTTPException as e:
+         if e.status_code != 404:  # 404 = User not found, which we want
+            raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Internal server error")
+
+    try:
+        userCrud.get_user_by_email(userjson.email, session) # Should raise 404 if email isn't already registered
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Email already registered")
+    except HTTPException as e:
+         if e.status_code != 404:  # 404 = Email not found, which we want
+            raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Internal server error")
 
     hashed_password = hash_password(userjson.password)
     # 2 PREPARE USER OBJECT
@@ -99,12 +107,12 @@ async def create_user(userjson: UserCreatePayload, session: Session = Depends(db
     # 1) Validate and process the user data
     # 2) Hand over session using dependency injection
     # 3) Call the CRUD function to add the user to the database
-    orm_user = userCrud.add_user(session, new_user)
-    if not orm_user:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="An error occurred while creating the user."
-        )
+    try:
+        orm_user = userCrud.add_user(session, new_user)
+    except Exception as e:
+        print(f"Error creating user: {e}")
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Internal server error")
+
     return UserID(id=orm_user.id)
 
 

@@ -4,6 +4,43 @@ from backend.models import (
 
 )
 
+
+# --- New authService.py below ---
+
+# backend/businesslogic/services/authService.py
+
+from sqlalchemy.orm import Session
+from typing import Optional
+
+from backend.core.security import verify_password
+from backend.crud import user as user_crud
+from backend.models.orm.usertable import User as OrmUser
+
+def authenticate_user(session: Session, username: str, password: str) -> Optional[OrmUser]:
+    """
+    Authenticates a user by checking their username and password.
+
+    Args:
+        session (Session): The database session.
+        username (str): The user's username.
+        password (str): The user's plain-text password.
+
+    Returns:
+        Optional[OrmUser]: The ORM user object if authentication is successful, otherwise None.
+    """
+    # 1. Find the user in the database using the CRUD layer
+    user = user_crud.get_user_by_name(username=username, session=session)
+    if not user:
+        return None # User not found
+
+    # 2. Verify the provided password against the stored hash using the security utility
+    if not verify_password(password, user.hashed_password):
+        return None # Password incorrect
+
+    # 3. If both checks pass, return the user object
+    return user
+
+
 def authenticate(username: str, password: str):
 	""" Authenticates a user and returns a token."""
 	# Logic to authenticate the user and generate a token is not defined yet

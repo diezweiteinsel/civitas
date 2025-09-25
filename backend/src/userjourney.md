@@ -1,4 +1,21 @@
-# User Creation Journey via Register Page
+# A User Journey to develop with a sense of purpose
+
+- [ ] register yourself as a new user (applicant)
+- [ ] login as that user
+- [ ] fill in one application form
+- [ ] submit that application form
+- [ ] view the submitted application form
+
+
+## Relevant API Endpoints for this Journey
+
+POST /users (create user)
+POST /auth (login and receive a token, the token needs to be sent in the Authorization header for all subsequent requests)
+POST /applications (create a new application form)
+GET /applications/{id} (view a specific application form)
+
+
+## User Creation Journey via Register Page
 
 1. The Frontend appends the role "APPLICANT" because we can only register applicants via the register page.
 

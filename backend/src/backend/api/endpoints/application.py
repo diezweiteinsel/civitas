@@ -23,11 +23,13 @@ applicant_permission = RoleChecker(["APPLICANT"])
     # previousSnapshotID: int = -1  # Points to the previous snapshot of the application
     # jsonPayload: dict = {}  # The actual data of the application
 
+
 @router.get("", response_model=list[Application], tags=["Applications"], summary="List all applications")
 async def list_applications():
     """
     Retrieve all applications in the system.
     """
+    
     pass
 
 @router.post("", response_model=Application, tags=["Applications"], summary="Create a new application")

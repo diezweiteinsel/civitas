@@ -1,11 +1,103 @@
 # .gitlab-ci.yml
 
+# Defines the execution order of jobs.
 stages:
   - build
+  - test
 
-hello_docker_job:
+# Default settings for all jobs. `interruptible` allows a new pipeline to cancel older pipelines on the same branch.
+default:
+  interruptible: true
+
+# Global variables, used here for the test database configuration.
+# These are available to all jobs.
+variables:
+  POSTGRES_DB: civitas_db_test # Use a separate test database name.
+  POSTGRES_USER: civitas_user
+  POSTGRES_PASSWORD: securepassword
+  # This variable is used by the test runner to connect to the PostgreSQL service.
+  # The hostname 'db' matches the service alias defined in the test_backend job.
+  DATABASE_URL: "postgresql://$POSTGRES_USER:$POSTGRES_PASSWORD@db:5432/$POSTGRES_DB"
+
+# Global cache definitions to speed up subsequent pipeline runs.
+cache:
+  key: ${CI_COMMIT_REF_SLUG}
+  paths:
+    - backend/.venv/
+    - frontend/node_modules/
+
+### BUILD STAGE ###
+# This stage verifies that the Docker images can be built successfully.
+
+build_backend:
   stage: build
-  image: alpine:latest
+  # Use the official Docker image to run Docker commands.
+  image: docker:24.0
+  # Use the Docker-in-Docker service to provide a Docker daemon.
+  services:
+    - docker:24.0-dind
   script:
-    - echo "Hello from inside a Docker container!"
-    - echo "Pipeline is executing."
+    # Build the backend Docker image. The context is ./backend
+    - docker build -t civitas-backend-test ./backend
+
+build_frontend:
+  stage: build
+  image: docker:24.0
+  services:
+    - docker:24.0-dind
+  script:
+    # Build the frontend Docker image, passing the API URL as a build argument.
+    # The context is the project root, and we specify the Dockerfile location.
+    - docker build --build-arg REACT_APP_API_URL="http://localhost:8000" -f frontend/Dockerfile -t civitas-frontend-test .
+
+### TEST STAGE ###
+# This stage runs the application tests. Jobs in this stage run in parallel.
+
+test_backend:
+  stage: test
+  # Use a Python image that matches your project's version.
+  image: python:3.11-slim
+  # Define a service container to run alongside the job container.
+  # This provides a PostgreSQL database for the tests.
+  services:
+    - name: postgres:15
+      alias: db # The backend tests can connect to the database using the hostname 'db'.
+  before_script:
+    # Install system dependencies needed by psycopg2 (a common postgres driver)
+    - apt-get update && apt-get install -y gcc libpq-dev
+    # Create a virtual environment
+    - python -m venv .venv
+    - source .venv/bin/activate
+    # Install project dependencies
+    - pip install -r requirements.txt
+  script:
+    # Run the tests. Assumes you are using pytest.
+    # The DATABASE_URL variable is automatically used by many frameworks.
+    - pytest backend/src/backend/tests/
+  # This job should only run if the backend code changes.
+  rules:
+    - if: $CI_PIPELINE_SOURCE == 'merge_request_event'
+      changes:
+        - backend/**/*
+        - tests/**/*
+        - requirements.txt
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+
+#test_frontend:
+#  stage: test
+#  # Use a Node.js image.
+#  image: node:18
+#  before_script:
+#    # Navigate to the frontend directory
+#    - cd frontend
+#    # Install dependencies
+#    - npm install
+#  script:
+#    # Run the tests in non-interactive mode.
+#    - npm test -- --watchAll=false
+#  # This job should only run if the frontend code changes.
+#  rules:
+#    - if: $CI_PIPELINE_SOURCE == 'merge_request_event'
+#      changes:
+#        - frontend/**/*
+#    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH

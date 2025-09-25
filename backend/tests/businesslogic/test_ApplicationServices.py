@@ -64,7 +64,7 @@ def test_getApplication():
     retrievedApp = getApplication(applicant, application.applicationID)
     assert retrievedApp == application
 
-test_getApplication()
+#test_getApplication()
 
 
 

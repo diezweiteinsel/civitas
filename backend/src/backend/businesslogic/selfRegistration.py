@@ -2,7 +2,7 @@
 from datetime import date
 from backend import db
 from backend.models import User, UserType
-from backend.auth import hash_password
+from backend.depr_auth import hash_password
 from backend.businesslogic.user import assign_role
 
 all_Users = []

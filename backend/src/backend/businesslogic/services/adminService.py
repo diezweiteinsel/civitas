@@ -3,7 +3,7 @@ from datetime import date
 from backend.models import User, Form, Application, ApplicationStatus, UserType
 from backend.models.domain.user import RoleAssignment
 from backend.businesslogic.user import ensure_admin, assign_role
-from backend.auth import hash_password
+from backend.depr_auth import hash_password
 from backend.crud.dbActions import insertRow
 
 

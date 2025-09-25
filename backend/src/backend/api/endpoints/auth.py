@@ -11,7 +11,7 @@ from backend.core.security import create_access_token
 
 router = APIRouter()
 
-@router.post("/token", response_model=TokenResponse, tags=["Auth"])
+@router.post("/auth/token", response_model=TokenResponse, tags=["Auth"])
 async def login_for_access_token(
     form_data: OAuth2PasswordRequestForm = Depends(),
     session: Session = Depends(db.get_session_dep)

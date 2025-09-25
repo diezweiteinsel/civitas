@@ -1,6 +1,6 @@
 # A User Journey to develop with a sense of purpose
 
-- [ ] register yourself as a new user (applicant)
+- [x] register yourself as a new user (applicant)
 - [ ] login as that user
 - [ ] fill in one application form
 - [ ] submit that application form

@@ -31,4 +31,4 @@ async def login_for_access_token(
     token_data = {"sub": user.username, "roles": roles}
     access_token = create_access_token(data=token_data)
 
-    return {"access_token": access_token, "token_type": "bearer"}
+    return {"access_token": access_token, "token_type": "bearer", "roles": roles}

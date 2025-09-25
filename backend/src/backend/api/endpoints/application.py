@@ -5,11 +5,14 @@ from datetime import datetime
 from fastapi import APIRouter
 
 # project imports
+from backend.api.deps import RoleChecker
 from backend.models.domain.application import Application, ApplicationStatus
 
 # print("i only exist because of merge conflicts")
 
 router = APIRouter(prefix="/applications", tags=["applications"])
+admin_or_reporter_permission = RoleChecker(["ADMIN", "REPORTER"])
+applicant_permission = RoleChecker(["APPLICANT"])
 
     # applicationID: int = -1
     # userID: int = -1

@@ -23,7 +23,7 @@ variables:
 cache:
   key: ${CI_COMMIT_REF_SLUG}
   paths:
-    - backend/.venv/
+    - .venv/ # Corrected path for the virtual environment cache
     - frontend/node_modules/
 
 ### BUILD STAGE ###
@@ -36,6 +36,10 @@ build_backend:
   # Use the Docker-in-Docker service to provide a Docker daemon.
   services:
     - docker:24.0-dind
+  before_script:
+    # Log in to Docker Hub to prevent rate limiting.
+    # Requires DOCKER_HUB_USER and DOCKER_HUB_PASSWORD to be set as CI/CD variables.
+    - echo "$DOCKER_HUB_PASSWORD" | docker login -u "$DOCKER_HUB_USER" --password-stdin
   script:
     # Build the backend Docker image. The context is ./backend
     - docker build -t civitas-backend-test ./backend
@@ -45,6 +49,9 @@ build_frontend:
   image: docker:24.0
   services:
     - docker:24.0-dind
+  before_script:
+    # Log in to Docker Hub to prevent rate limiting.
+    - echo "$DOCKER_HUB_PASSWORD" | docker login -u "$DOCKER_HUB_USER" --password-stdin
   script:
     # Build the frontend Docker image, passing the API URL as a build argument.
     # The context is the project root, and we specify the Dockerfile location.
@@ -65,23 +72,15 @@ test_backend:
   before_script:
     # Install system dependencies needed by psycopg2 (a common postgres driver)
     - apt-get update && apt-get install -y gcc libpq-dev
-    # Create a virtual environment
+    # Create a virtual environment at the project root
     - python -m venv .venv
     - source .venv/bin/activate
-    # Install project dependencies
-    - pip install -r requirements.txt
+    # Install project dependencies from the specified file
+    - pip install -r requirements-linux.txt
   script:
     # Run the tests. Assumes you are using pytest.
     # The DATABASE_URL variable is automatically used by many frameworks.
-    - pytest backend/src/backend/tests/
-  # This job should only run if the backend code changes.
-  rules:
-    - if: $CI_PIPELINE_SOURCE == 'merge_request_event'
-      changes:
-        - backend/**/*
-        - tests/**/*
-        - requirements.txt
-    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+    - pytest
 
 #test_frontend:
 #  stage: test
@@ -95,9 +94,3 @@ test_backend:
 #  script:
 #    # Run the tests in non-interactive mode.
 #    - npm test -- --watchAll=false
-#  # This job should only run if the frontend code changes.
-#  rules:
-#    - if: $CI_PIPELINE_SOURCE == 'merge_request_event'
-#      changes:
-#        - frontend/**/*
-#    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH

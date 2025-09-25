@@ -6,6 +6,7 @@ from fastapi import APIRouter, Depends, status, HTTPException
 from sqlalchemy.orm import Session
 
 # project imports
+from backend.api.deps import RoleChecker
 from backend.core.security import hash_password
 from backend.core import db
 from backend.models import User, UserType
@@ -13,6 +14,7 @@ from backend.crud import userCrud
 from backend.models.domain.user import RoleAssignment, UserCreatePayload, UserID
 
 router = APIRouter(prefix="/users", tags=["users"])
+admin_or_reporter_permission = RoleChecker(["ADMIN", "REPORTER"])
 
 #TODO: implement following endpoints:
 # - GET users/me
@@ -145,7 +147,7 @@ async def delete_user(user_id: int):
     """
     Delete a user from the system.
     """
-    return {"message": f"User {user_id} deleted"}
+    return {"message": f"User {user_id} deleted, i promise. pinky promise."}
 
 
 

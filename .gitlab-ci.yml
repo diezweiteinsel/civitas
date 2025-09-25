@@ -1,0 +1,11 @@
+# .gitlab-ci.yml
+
+stages:
+  - build
+
+hello_docker_job:
+  stage: build
+  image: alpine:latest
+  script:
+    - echo "Hello from inside a Docker container!"
+    - echo "Pipeline is executing."

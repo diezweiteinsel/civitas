@@ -1,6 +1,6 @@
 const API_BASE_URL = process.env.REACT_APP_API_URL || "http://localhost:8000";
 
-//
+// works
 export const createUser = async (userData) => {
   const response = await fetch(`${API_BASE_URL}/api/v1/users`, {
     method: "POST",
@@ -23,15 +23,13 @@ export const createUser = async (userData) => {
   return response.json();
 };
 
-// export const loginUser
-
 export const loginUser = async (userData) => {
   // Create form data for OAuth2PasswordRequestForm
   const formData = new FormData();
   formData.append("username", userData.username);
   formData.append("password", userData.password);
 
-  const response = await fetch(`${API_BASE_URL}/api/v1/token`, {
+  const response = await fetch(`${API_BASE_URL}/api/v1/auth/token`, {
     method: "POST",
     headers: {},
     body: formData,
@@ -52,34 +50,31 @@ export const loginUser = async (userData) => {
 };
 
 export const getAllUsers = async () => {
+  // Get the access token from localStorage
+  const accessToken = localStorage.getItem("access_token");
+
+  const headers = {
+    "Content-Type": "application/json",
+  };
+
+  // Add Authorization header if token exists
+  if (accessToken) {
+    headers.Authorization = `Bearer ${accessToken}`;
+  }
+
   const response = await fetch(`${API_BASE_URL}/api/v1/users`, {
     method: "GET",
-    headers: {
-      "Content-Type": "application/json",
-    },
+    headers: headers,
   });
 
   if (!response.ok) {
     const errorData = await response.json();
-    throw new Error(errorData.error || "Failed to fetch users");
+    throw new Error(
+      errorData.detail || errorData.error || "Failed to fetch users"
+    );
   }
 
-  return response.json();
+  const users = await response.json();
+
+  return users;
 };
-
-// export const loginUser = async (credentials) => {
-//   const usersResponse = await getAllUsers();
-//   const users = usersResponse.users;
-
-//   const user = users.find(
-//     (u) =>
-//       u.username === credentials.username && u.password === credentials.password
-//   );
-
-//   if (!user) {
-//     throw new Error("Invalid username or password");
-//   }
-
-//   const { password, ...userWithoutPassword } = user;
-//   return { user: userWithoutPassword };
-// };

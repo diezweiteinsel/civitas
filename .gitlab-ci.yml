@@ -76,7 +76,7 @@ test_backend:
     - python -m venv .venv
     - source .venv/bin/activate
     # Install project dependencies from the specified file
-    - pip install -r requirements-linux.txt
+    - pip install -r backend/requirements-linux.txt
   script:
     # Run the tests. Assumes you are using pytest.
     # The DATABASE_URL variable is automatically used by many frameworks.

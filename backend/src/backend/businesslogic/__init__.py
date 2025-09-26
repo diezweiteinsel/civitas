@@ -29,11 +29,6 @@ from .section import (
 
 from .services import *
 
-from .trigger import (
-    createTriggerFromDictionary,
-    createDictionaryFromTrigger,
-)
-
 from .user import (
     SimpleUser,
     UserLogic,
@@ -68,8 +63,6 @@ __all__ = [
 	"publicationService",
 
     "trigger",
-    "createTriggerFromDictionary",
-    "createDictionaryFromTrigger",
 
     "user",
     "SimpleUser",

@@ -3,7 +3,6 @@ from sqlalchemy import Table
 
 from sqlalchemy import Column, Integer, String #, Bool
 from backend.models import BuildingBlock
-from backend.businesslogic.trigger import createTriggerFromDictionary, createDictionaryFromTrigger
 
 def createBuildingBlockFromDictionary(dictionary: dict) -> BuildingBlock:
     block = BuildingBlock()
@@ -14,7 +13,7 @@ def createBuildingBlockFromDictionary(dictionary: dict) -> BuildingBlock:
     block.required = dictionary["required"]
     block.order = dictionary["order"]
     block.constraintsJson = dictionary["constraintsJson"]
-    block.triggers = [createTriggerFromDictionary(t) for t in dictionary["triggers"]]
+    #block.triggers = [createTriggerFromDictionary(t) for t in dictionary["triggers"]]
     return block
 
 def createDictionaryFromBuildingBlock(block: BuildingBlock) -> dict:
@@ -26,5 +25,5 @@ def createDictionaryFromBuildingBlock(block: BuildingBlock) -> dict:
     dictionary["required"] = block.required
     dictionary["order"] = block.order
     dictionary["constraintsJson"] = block.constraintsJson
-    dictionary["triggers"] = [createDictionaryFromTrigger(t) for t in block.triggers]
+    #dictionary["triggers"] = [createDictionaryFromTrigger(t) for t in block.triggers]
     return dictionary

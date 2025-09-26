@@ -5,6 +5,6 @@ so that tests and tooling which set PYTHONPATH to the repo root can import
 `src.core.session` and `src.core.db` reliably.
 """
 
-from . import db, config # re-export for compatibility
+from . import db, config, ormUtil, security # re-export for compatibility
 
-__all__ = ["db", "config"]
+__all__ = ["db", "config", "ormUtil", "security"]

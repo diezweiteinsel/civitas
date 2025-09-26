@@ -49,9 +49,9 @@ def add_user(session: Session, user: User):
 
 
 def get_user_by_id(user_id: int, session: Session) -> User | None:
-    results = dbActions.getRowsByFilter(session, OrmUser, {"id": user_id})
-    if results:
-        orm_user = results[0]
+    result = dbActions.getRowById(session, OrmUser, user_id)
+    if result:
+        orm_user = result
         return to_domain_model(session, orm_user)
     raise HTTPException(status_code=404, detail="User not found")
 

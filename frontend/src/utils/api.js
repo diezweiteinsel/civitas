@@ -25,7 +25,6 @@ export const createUser = async (userData) => {
 
 // WORKS
 export const loginUser = async (userData) => {
-  // Create form data for OAuth2PasswordRequestForm
   const formData = new FormData();
   formData.append("username", userData.username);
   formData.append("password", userData.password);
@@ -52,14 +51,12 @@ export const loginUser = async (userData) => {
 
 // WORKS
 export const getAllUsers = async () => {
-  // Get the access token from localStorage
   const accessToken = localStorage.getItem("access_token");
 
   const headers = {
     "Content-Type": "application/json",
   };
 
-  // Add Authorization header if token exists
   if (accessToken) {
     headers.Authorization = `Bearer ${accessToken}`;
   }

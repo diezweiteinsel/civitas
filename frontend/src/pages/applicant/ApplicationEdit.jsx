@@ -4,6 +4,8 @@ import "./../../style/ApplicationEdit.css";
 import Navbar from "./../../components/Navbar";
 import { useNavigate } from "react-router-dom";
 import { Role } from "../../utils/const";
+import { useMutation } from "@tanstack/react-query";
+import { createApplication } from "../../utils/api";
 
 export default function ApplicationEdit() {
   const navigate = useNavigate();
@@ -31,9 +33,62 @@ export default function ApplicationEdit() {
   };
 
   const handleSubmit = (e) => {
+    const applicationData = {
+      applicationID: -1,
+      userID: -1,
+      formID: -1,
+      status: "PENDING",
+      createdAt: "2025-09-26T15:55:35.604097",
+      currentSnapshotID: -1,
+      previousSnapshotID: -1,
+      jsonPayload: {
+        0: {
+          label: "Name",
+          value: form.name,
+        },
+        1: {
+          label: "Location",
+          value: form.location,
+        },
+        2: {
+          label: "Date",
+          value: form.date,
+        },
+        3: {
+          label: "Description",
+          value: form.description,
+        },
+        4: {
+          label: "Amount",
+          value: form.amount,
+        },
+      },
+    };
+    createApplicationMutation.mutate(applicationData);
     e.preventDefault();
-    alert("Submitted: " + JSON.stringify(form, null, 2));
+    alert("Submitted: " + JSON.stringify(applicationData, null, 2));
   };
+
+  const createApplicationMutation = useMutation({
+    mutationFn: createApplication,
+    onSuccess: (data) => {
+      setError("");
+      alert(
+        "Application created successfully! You will be redirected after this message!"
+      );
+      setSuccess("Application created successfully! Redirecting...");
+      console.log("Application created successfully:", data);
+
+      navigate("/");
+    },
+    onError: (error) => {
+      setSuccess("");
+      setError(
+        error.message || "Application creation failed. Please try again."
+      );
+      console.error("Application creation error:", error);
+    },
+  });
 
   return (
     <>

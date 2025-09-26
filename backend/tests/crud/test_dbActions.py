@@ -68,10 +68,10 @@ def test_insertRow():
     assert result[0].name == "Test Name"
 
 def test_updateRow():
-
+    test_table = "test_table"
     Base = db.get_base(reload=True)
-    tableClassFromBase = Base.classes.get("test_table")
-    assert tableClassFromBase is not None, f"Table class {'test_table'} not found in Base.classes"
+    tableClassFromBase = Base.classes.get(test_table)
+    assert tableClassFromBase is not None, f"Table class {test_table} not found in Base.classes"
 
     # Insert a row and update it
     rowData = {"name": "Jane"}
@@ -87,10 +87,10 @@ def test_updateRow():
     assert result[1].name == "Remover"
 
 def test_removeRow():
-
+    test_table = "test_table"
     Base = db.get_base(reload=True)
-    tableClassFromBase = Base.classes.get("test_table")
-    assert tableClassFromBase is not None, f"Table class {"test_table"} not found in Base.classes"
+    tableClassFromBase = Base.classes.get(test_table)
+    assert tableClassFromBase is not None, f"Table class {test_table} not found in Base.classes"
 
     # Delete a row
     id = 2
@@ -105,9 +105,10 @@ def test_removeRow():
         result[1] == None
 
 def test_getRowById():
+    test_table = "test_table"
     Base = db.get_base(reload=True)
-    tableClassFromBase = Base.classes.get("test_table")
-    assert tableClassFromBase is not None, f"Table class {"test_table"} not found in Base.classes"
+    tableClassFromBase = Base.classes.get(test_table)
+    assert tableClassFromBase is not None, f"Table class {test_table} not found in Base.classes"
 
     # Get a row by ID
     id = 1
@@ -118,11 +119,12 @@ def test_getRowById():
     assert obj.name == "Test Name"
 
 def test_getRows():
+    test_table = "test_table"
     Base = db.get_base(reload=True)
     Base.metadata.drop_all(bind=db.engine)  # Clean up before test
     Base.metadata.create_all(bind=db.engine)  # Create tables
-    tableClassFromBase = Base.classes.get("test_table")
-    assert tableClassFromBase is not None, f"Table class {"test_table"} not found in Base.classes"
+    tableClassFromBase = Base.classes.get(test_table)
+    assert tableClassFromBase is not None, f"Table class {test_table} not found in Base.classes"
 
     # Add more rows
     with db.get_session() as session:
@@ -141,9 +143,10 @@ def test_getRows():
     assert objs[1].name == "Patrick"
 
 def test_getRowsByFilter():
+    test_table = "test_table"
     Base = db.get_base(reload=True)
-    tableClassFromBase = Base.classes.get("test_table")
-    assert tableClassFromBase is not None, f"Table class {"test_table"} not found in Base.classes"
+    tableClassFromBase = Base.classes.get(test_table)
+    assert tableClassFromBase is not None, f"Table class {test_table} not found in Base.classes"
 
     # Get rows by filter
     filterDict = {"name": "Gary"}

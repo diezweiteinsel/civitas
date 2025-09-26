@@ -22,7 +22,7 @@ services:
     env_file:
       - backend/.env
     ports:
-      - "8000:8000"
+      - "8082:8000"
     networks:
       - civitas-network
     restart: unless-stopped
@@ -39,17 +39,17 @@ services:
       context: .
       dockerfile: frontend/Dockerfile
       args:
-        REACT_APP_API_URL: "http://localhost:8000"
+        REACT_APP_API_URL: "http://localhost:8082"
     container_name: civitas-frontend
     ports:
-      - "80:80"
+      - "8083:80"
     depends_on:
       - backend
     networks:
       - civitas-network
     restart: unless-stopped
     environment:
-      - REACT_APP_API_URL=http://localhost:8000
+      - REACT_APP_API_URL=http://localhost:8082
 
 networks:
   civitas-network:

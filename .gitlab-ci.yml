@@ -55,34 +55,43 @@ build_frontend:
   script:
     # Build the frontend Docker image, passing the API URL as a build argument.
     # The context is the project root, and we specify the Dockerfile location.
-    - docker build --build-arg REACT_APP_API_URL="http://localhost:8000" -f frontend/Dockerfile -t civitas-frontend-test .
+    - docker build --build-arg REACT_APP_API_URL="http://localhost:8083" -f frontend/Dockerfile -t civitas-frontend-test .
 
 ### TEST STAGE ###
 # This stage runs the application tests. Jobs in this stage run in parallel.
 
 test_backend:
   stage: test
-  # Use a Python image that matches your project's version.
   image: python:3.11-slim
-  # Define a service container to run alongside the job container.
-  # This provides a PostgreSQL database for the tests.
   services:
     - name: postgres:15
-      alias: db # The backend tests can connect to the database using the hostname 'db'.
+      alias: db
+      
+  variables:
+    # These variables MUST match what db.py is looking for.
+    DB_HOST: db
+    DB_PORT: "5432"
+    DB_NAME: $POSTGRES_DB
+    DB_USERNAME: $POSTGRES_USER
+    DB_PASSWORD: $POSTGRES_PASSWORD
+    # Explicitly disable SQLite dev mode for clarity.
+    DEV_SQLITE: "0"
+    SECRET_KEY: "bazooks-itsa-jetlag-season-guys"
+    ALGORITHM: "HS256"
+    DEV_SQLITE: "0"
+    SKIP_CREATE_ALL: "0"
+    ECHO_SQL: "0"
+    ALLOWED_ORIGINS: "http://localhost,http://localhost:3000,http://localhost:8083,http://134.245.1.240:1203/"
+    PYTHONPATH: /app
+
   before_script:
-    # Install system dependencies needed by psycopg2 (a common postgres driver)
     - apt-get update && apt-get install -y gcc libpq-dev
-    # Create a virtual environment at the project root
     - python -m venv .venv
     - source .venv/bin/activate
-    # Install project dependencies from the specified file
     - pip install -r backend/requirements-linux.txt
-    # Install the backend as an editable package
     - pip install -e backend/
   script:
-    # Run the tests. Assumes you are using pytest.
-    # The DATABASE_URL variable is automatically used by many frameworks.
-    - pytest 
+    - pytest
 #test_frontend:
 #  stage: test
 #  # Use a Node.js image.

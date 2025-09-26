@@ -50,7 +50,7 @@ def test_add_user_func():
         roleAssignment = user.RoleAssignment(user_id=1, assignment_date=date.today(), role="ADMIN")
 
         # Insert a user
-        domainUser = user.User(username="name", date_created=date.today(), hashed_password="adsd", user_roles=[roleAssignment])
+        domainUser = user.User(username="name", date_created=date.today(), hashed_password="adsd", user_roles=[roleAssignment], email="mymail@mail.com")
         new_user: user.User = userCrud.add_user(session, domainUser)
         ormUserRows = dbActions.getRows(session, OrmUser)
         assert len(ormUserRows) == 1
@@ -74,7 +74,7 @@ def test_add_user_func():
     # Verify the user was added
     assert new_user.id is not None
     assert new_user.username == "name"
-    assert new_user.email is None
+    assert new_user.email == "mymail@mail.com"
     assert new_user.hashed_password == "adsd"
     assert new_user.user_roles == [roleAssignment]
     assert new_user_from_db.id == new_user.id
@@ -86,3 +86,39 @@ def test_add_user_func():
     assert len(ormRoleAssignmentRows) == 1
     assert ormRoleAssignmentRows[0].user_id == new_user.id
     assert ormRoleAssignmentRows[0].role == "ADMIN"
+
+def test_get_user_by_id_func():
+    with db.get_session() as session:
+        try:
+            user1 = userCrud.get_user_by_id(1, session)  # Should not raise
+        except Exception:
+            pytest.fail("get_user_by_id raised Exception unexpectedly!")
+        assert user1.id == 1
+        assert user1.username == "name"
+        assert user1.email == "mymail@mail.com"
+        assert user1.hashed_password == "adsd"
+        assert user1.user_roles[0].role == "ADMIN"
+
+def test_get_user_by_name_func():
+    with db.get_session() as session:
+        try:
+            user1 = userCrud.get_user_by_name("name", session)  # Should not raise
+        except Exception:
+            pytest.fail("get_user_by_id raised Exception unexpectedly!")
+        assert user1.id == 1
+        assert user1.username == "name"
+        assert user1.email == "mymail@mail.com"
+        assert user1.hashed_password == "adsd"
+        assert user1.user_roles[0].role == "ADMIN"
+
+def test_get_user_by_email_func():
+    with db.get_session() as session:
+        try:
+            user1 = userCrud.get_user_by_email("mymail@mail.com", session)  # Should not raise
+        except Exception:
+            pytest.fail("get_user_by_id raised Exception unexpectedly!")
+        assert user1.id == 1
+        assert user1.username == "name"
+        assert user1.email == "mymail@mail.com"
+        assert user1.hashed_password == "adsd"
+        assert user1.user_roles[0].role == "ADMIN"

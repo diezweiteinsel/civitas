@@ -6,7 +6,7 @@ import RegistrationContainer from "./../../components/RegistrationContainer";
 export default function ReporterRegistration() {
   return (
     <>
-      <Navbar role={Role.REPORTER} />
+      <Navbar role={Role.ADMIN} />
       <RegistrationContainer role={Role.REPORTER} />
     </>
   );

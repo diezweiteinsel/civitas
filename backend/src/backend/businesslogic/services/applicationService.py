@@ -8,7 +8,6 @@ from backend.models import (
 	Form,
 	Application,
 	ApplicationStatus,
-	UserType,
 
 )
 from backend.crud import dbActions
@@ -39,16 +38,6 @@ def editApplication(user: User, application: Application, newApplicationData: di
 	application.jsonPayload = newApplicationData
 	# Logic to save the updated application is not defined yet
 	return application
-
-
-def submitApplication(user: User, application: Application):
-	""" Submits an application for processing."""
-	if user.id != application.userID:  # Ensure the user is the owner of the application
-		raise PermissionError("Users can only submit their own applications.")
-	# Logic to submit the application is not defined yet
-	# dbActions.insertRow(session, Application, application.__dict__)
-	return application
-
 
 def getApplication(user: User, applicationId: int) -> Application:
 	application = dbActions.getRowById(session, Application, applicationId) # Retrieve the application from the database
@@ -82,6 +71,14 @@ def unpublishApplication(user: User, application: Application) -> Application:
 	application.status = ApplicationStatus.APPROVED
 	return application
 	# Logic to save the updated application status in the db is not defined yet
+
+def submitApplication(user: User, application: Application):
+	""" Submits an application for processing."""
+	if user.id != application.userID:  # Ensure the user is the owner of the application
+		raise PermissionError("Users can only submit their own applications.")
+	# Logic to submit the application is not defined yet
+	# dbActions.insertRow(session, Application, application.__dict__)
+	return application
 	
 
 # Mock database of applications for demonstration purposes

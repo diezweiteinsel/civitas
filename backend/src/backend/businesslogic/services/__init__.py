@@ -4,7 +4,6 @@ from . import (
 	applicationService,
 	authService,
 	formService,
-	publicationService,
 )
 
 __all__ = [
@@ -12,5 +11,4 @@ __all__ = [
 	"applicationService",
 	"authService",
 	"formService",
-	"publicationService",
 ]

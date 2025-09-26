@@ -73,6 +73,8 @@ def get_user_by_email(email: str, session:Session) -> User | None:
         return to_domain_model(session, orm_user)
     raise HTTPException(status_code=404, detail="User not found")
 
+# --- Get users by role ---
+
 def get_all_admins(session: Session) -> list[User]:
     """
     Retrieve all users with the 'ADMIN' role.

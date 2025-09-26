@@ -3,6 +3,7 @@ from importlib import reload # for reloading modules
 
 
 from testcontainers.postgres import PostgresContainer
+from fastapi.testclient import TestClient
 from backend.api.endpoints.user import router
 from fastapi import FastAPI
 import pytest

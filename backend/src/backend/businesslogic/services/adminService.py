@@ -17,13 +17,8 @@ def createUser(user: User,id:int, username: str, password: str, role: UserType):
 	# Hash the password and create an Account instance	
 	hashed_pw = hash_password(password)
 	newUser = User(id=id, username=username, date_created=date.today(), hashed_password=hashed_pw)
-	newUser.user_roles.append(RoleAssignment(
-		user_id=newUser.id,
-		role=role,
-		assignment_date=date.today()
-	))
-	# Save the User to the database
-	#insertRow(newUser)  # add the new user to the database
+	assign_role(newUser, role)  
+	# Logic to save the user to the database is not defined yet
 	return newUser
 
 

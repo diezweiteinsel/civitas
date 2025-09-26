@@ -22,6 +22,7 @@ def createForm(admin: User, sections: list[Section]) -> Form:
     form = Form(formID=_form_id_counter, sections=sections)
     _form_id_counter += 1 #temporary id generation for tests
     _forms.append(form)
+	# Logic to save the form to the database is not defined yet
     return form
 
 def getForm(formID: int):

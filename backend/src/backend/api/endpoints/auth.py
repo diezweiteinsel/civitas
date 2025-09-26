@@ -28,7 +28,7 @@ async def login_for_access_token(
         )
     roles = [role.role.value for role in user.user_roles]
     # If authentication is successful, create the JWT
-    token_data = {"sub": user.username, "roles": roles}
+    token_data = {"sub": user.id, "username": user.username, "roles": roles}
     access_token = create_access_token(data=token_data)
 
     return {"access_token": access_token, "token_type": "bearer", "roles": roles}

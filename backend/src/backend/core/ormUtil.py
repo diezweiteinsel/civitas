@@ -53,7 +53,7 @@ def user_db_setup():
     }
     form_table_columns = {
         "id": Column(Integer, primary_key=True),
-        "table_name": Column(String, nullable=False),
+        "form_name": Column(String, nullable=False),
         "created_at": Column(Date, nullable=False),
         "is_active": Column(Boolean, default=True),
         "xoev": Column(String, nullable=False),

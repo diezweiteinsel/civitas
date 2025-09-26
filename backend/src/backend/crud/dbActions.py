@@ -1,5 +1,6 @@
 from typing import Type
 
+from fastapi import HTTPException
 from sqlalchemy import delete
 from sqlalchemy.orm import Session
 
@@ -43,11 +44,15 @@ def insertRow(session: Session, tableClass: type, rowData: dict | type) -> type:
     else:
         obj = rowData
     
-
-    session.add(obj)
-    session.flush()       # push to DB so defaults (like IDs) are available
-    session.refresh(obj)  # refresh to get DB-generated values
-    return obj
+    try:
+        session.add(obj)
+        session.flush()       # push to DB so defaults (like IDs) are available
+        session.refresh(obj)  # refresh to get DB-generated values
+        return obj
+    except Exception as e:
+        session.rollback()
+        print(f"Error inserting row: {e}")
+        raise HTTPException(status_code=500, detail="Error inserting row")
 
 
 

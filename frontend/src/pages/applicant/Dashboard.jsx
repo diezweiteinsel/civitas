@@ -4,6 +4,7 @@ import Navbar from "./../../components/Navbar";
 import ApplicationContainer from "./../../components/ApplicationContainer";
 import { Role } from "../../utils/const";
 import { getAllApplications, addApplication } from "../../utils/data";
+import applicationDB from "../../utils/data";
 
 export default function ApplicantPage() {
   const [applications, setApplications] = useState([]);

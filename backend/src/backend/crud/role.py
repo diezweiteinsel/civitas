@@ -37,3 +37,39 @@ def get_user_roles(session: Session, user_id: int) -> list[user.RoleAssignment]:
     for orm_role_assignment in orm_role_assignments:
         domain_role_assignments.append(to_domain_model(orm_role_assignment))
     return domain_role_assignments
+
+def get_all_admin_roles(session: Session) -> list[user.RoleAssignment]:
+    """
+    Returns a list of all RoleAssignment domain models with role 'ADMIN'.
+    """
+    orm_role_assignments = dbActions.getRowsByFilter(
+        session, OrmRoleAssignment, {"role": "ADMIN"}
+    )
+    domain_role_assignments = []
+    for orm_role_assignment in orm_role_assignments:
+        domain_role_assignments.append(to_domain_model(orm_role_assignment))
+    return domain_role_assignments
+
+def get_all_applicant_roles(session: Session) -> list[user.RoleAssignment]:
+    """
+    Returns a list of all RoleAssignment domain models with role 'APPLICANT'.
+    """
+    orm_role_assignments = dbActions.getRowsByFilter(
+        session, OrmRoleAssignment, {"role": "APPLICANT"}
+    )
+    domain_role_assignments = []
+    for orm_role_assignment in orm_role_assignments:
+        domain_role_assignments.append(to_domain_model(orm_role_assignment))
+    return domain_role_assignments
+
+def get_all_reporter_roles(session: Session) -> list[user.RoleAssignment]:
+    """
+    Returns a list of all RoleAssignment domain models with role 'REPORTER'.
+    """
+    orm_role_assignments = dbActions.getRowsByFilter(
+        session, OrmRoleAssignment, {"role": "REPORTER"}
+    )
+    domain_role_assignments = []
+    for orm_role_assignment in orm_role_assignments:
+        domain_role_assignments.append(to_domain_model(orm_role_assignment))
+    return domain_role_assignments

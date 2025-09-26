@@ -102,11 +102,12 @@ def test_listPendingApplications():
 test_listPendingApplications()
 
 
-def test_listAllPublicApplications(user: User):
+def test_listAllPublicApplications():
+    user = applicant
     publicApps = listAllPublicApplications(user)
     assert len(publicApps) == 0
     assert application1 not in publicApps
     assert application2 not in publicApps
     assert application3 not in publicApps
 
-test_listAllPublicApplications(applicant)
+test_listAllPublicApplications()

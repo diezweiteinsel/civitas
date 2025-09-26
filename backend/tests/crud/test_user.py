@@ -122,3 +122,43 @@ def test_get_user_by_email_func():
         assert user1.email == "mymail@mail.com"
         assert user1.hashed_password == "adsd"
         assert user1.user_roles[0].role == "ADMIN"
+
+def test_get_all_role_funcs():
+
+
+    adminAssignment = user.RoleAssignment(user_id=2, assignment_date=date.today(), role="ADMIN")
+    applicantAssignment = user.RoleAssignment(user_id=3, assignment_date=date.today(), role="APPLICANT")
+    reporterAssignment = user.RoleAssignment(user_id=4, assignment_date=date.today(), role="REPORTER")
+
+
+
+
+    adminUser = user.User(username="admin", date_created=date.today(), hashed_password="adsd", user_roles=[adminAssignment], email="admin@mail.com")
+    applicantUser = user.User(username="applicant", date_created=date.today(), hashed_password="adsd", user_roles=[applicantAssignment], email="applicant@mail.com")
+    reporterUser = user.User(username="reporter", date_created=date.today(), hashed_password="adsd", user_roles=[reporterAssignment], email="reporter@mail.com")
+
+    with db.get_session() as session:
+
+        allApplicants = userCrud.get_all_applicants(session)
+        allReporters = userCrud.get_all_reporters(session)
+
+        assert allApplicants == []
+        assert allReporters == []
+
+
+
+        adminUser = userCrud.add_user(session, adminUser)
+        applicantUser = userCrud.add_user(session, applicantUser)
+        reporterUser = userCrud.add_user(session, reporterUser)
+
+        allAdmins = userCrud.get_all_admins(session)
+        allApplicants = userCrud.get_all_applicants(session)
+        allReporters = userCrud.get_all_reporters(session)
+
+    assert len(allAdmins) == 2
+    assert len(allApplicants) == 1
+    assert len(allReporters) == 1
+
+    assert allAdmins[1] == adminUser
+    assert allApplicants[0] == applicantUser
+    assert allReporters[0] == reporterUser

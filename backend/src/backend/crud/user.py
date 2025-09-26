@@ -6,7 +6,7 @@ from backend.models import User
 from backend.models.orm.usertable import OrmUser, to_domain_model, to_orm_model
 from backend.models.orm.roletable import to_domain_model as role_to_domain_model
 import backend.crud.dbActions as dbActions
-from .role import add_role_assignment
+from . import role as roleCrud
 
 def get_all_users(session: Session) -> list[User]:
     """
@@ -39,7 +39,7 @@ def add_user(session: Session, user: User):
     if len(user.user_roles) > 0:
         created_orm_role_assignments = []
         for role_assignment in user.user_roles:
-            created_orm_role_assignments.append(add_role_assignment(session, role_assignment))
+            created_orm_role_assignments.append(roleCrud.add_role_assignment(session, role_assignment))
         created_role_assignments = []
         for orm_role_assignment in created_orm_role_assignments:
             created_role_assignments.append(role_to_domain_model(orm_role_assignment))
@@ -73,3 +73,37 @@ def get_user_by_email(email: str, session:Session) -> User | None:
         return to_domain_model(session, orm_user)
     raise HTTPException(status_code=404, detail="User not found")
 
+# --- Get users by role ---
+
+def get_all_admins(session: Session) -> list[User]:
+    """
+    Retrieve all users with the 'ADMIN' role.
+    """
+    admin_user_roles = roleCrud.get_all_admin_roles(session)
+    admin_user_ids = [role.user_id for role in admin_user_roles]
+    users = []
+    for admin_user_id in admin_user_ids:
+        users.append(get_user_by_id(admin_user_id, session))
+    return users
+
+def get_all_applicants(session: Session) -> list[User]:
+    """
+    Retrieve all users with the 'APPLICANT' role.
+    """
+    applicant_user_roles = roleCrud.get_all_applicant_roles(session)
+    applicant_user_ids = [role.user_id for role in applicant_user_roles]
+    users = []
+    for applicant_user_id in applicant_user_ids:
+        users.append(get_user_by_id(applicant_user_id, session))
+    return users
+
+def get_all_reporters(session: Session) -> list[User]:
+    """
+    Retrieve all users with the 'REPORTER' role.
+    """
+    reporter_user_roles = roleCrud.get_all_reporter_roles(session)
+    reporter_user_ids = [role.user_id for role in reporter_user_roles]
+    users = []
+    for reporter_user_id in reporter_user_ids:
+        users.append(get_user_by_id(reporter_user_id, session))
+    return users

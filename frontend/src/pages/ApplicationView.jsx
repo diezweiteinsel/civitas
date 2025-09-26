@@ -2,7 +2,7 @@
 // This side shows the details of a specific application. Must have the option to look at revision when admin is looking at it or we have a "ApplicationView.jsx" inside of admin and applicant which are fundamentally the same but with different buttons.
 // Can be routed to from anywhere where you can press on a application to view it in detail. Also needs ability to have multiple button for the different cases in admin for example "Approve/reject" afterwards maybe "publish".
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import "./../style/AdminApplicantReporterPage.css";
 import "./../style/ApplicationView.css";
@@ -14,7 +14,6 @@ import {
   FaArrowLeft,
   FaHistory,
 } from "react-icons/fa";
-import { getApplicationById, updateApplication } from "../utils/data";
 import { Role } from "../utils/const";
 
 export default function ApplicationView() {
@@ -36,42 +35,8 @@ export default function ApplicationView() {
     return Role.EMPTY;
   };
 
-  const getSourceContext = () => {
-    const currentPath = location.pathname;
-    const state = location.state;
-
-    if (state?.fromPage) {
-      return state.fromPage;
-    }
-
-    if (currentPath.includes("/admin")) {
-      return "admin-dashboard";
-    } else if (currentPath.includes("/applicant")) {
-      return "applicant-dashboard";
-    } else if (currentPath.includes("/public")) {
-      return "public-applications";
-    }
-
-    return "unknown";
-  };
-
   const currentRole = getUserRole();
   const sourceContext = getSourceContext();
-
-  useEffect(() => {
-    const loadApplication = () => {
-      try {
-        const app = getApplicationById(parseInt(id));
-        setApplication(app);
-      } catch (error) {
-        console.error("Error loading application:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    loadApplication();
-  }, [id]);
 
   const getIconByFormId = (formId) => {
     const iconMap = {
@@ -93,9 +58,6 @@ export default function ApplicationView() {
 
   const handleStatusUpdate = (newStatus) => {
     if (application) {
-      updateApplication(application.id, { status: newStatus });
-      setApplication({ ...application, status: newStatus });
-
       alert(`Application ${newStatus} successfully!`);
     }
   };

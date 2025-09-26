@@ -3,14 +3,14 @@ import "./../style/LoginPage.css";
 import Navbar from "../components/Navbar";
 import { NavLink, useNavigate } from "react-router-dom";
 import { loginUser, getAllUsers } from "../utils/api";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import { saveToken } from "../utils/data";
 
 export default function LoginPage() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const navigate = useNavigate();
-  const queryClient = useQueryClient();
 
   const {
     data: usersData,
@@ -20,8 +20,8 @@ export default function LoginPage() {
   } = useQuery({
     queryKey: ["allUsers"],
     queryFn: getAllUsers,
-    enabled: false, // Disable automatic query execution
-    retry: false, // Don't retry failed requests
+    enabled: false,
+    retry: false,
   });
 
   const loginMutation = useMutation({
@@ -29,6 +29,9 @@ export default function LoginPage() {
     onSuccess: (data) => {
       setError("");
       console.log("Login successful:", data);
+
+      // Save token data using the utility function
+      saveToken(data);
 
       if (data.roles && data.roles.length > 0) {
         const primaryRole = data.roles[0];
@@ -61,7 +64,6 @@ export default function LoginPage() {
     }
 
     setError("");
-
     loginMutation.mutate({ username, password });
   };
 
@@ -142,7 +144,7 @@ export default function LoginPage() {
           </div>
 
           <p className="signup-text">
-            Don’t have an account? <NavLink to="/registration">Sign up</NavLink>
+            Don't have an account? <NavLink to="/registration">Sign up</NavLink>
           </p>
         </div>
       </div>

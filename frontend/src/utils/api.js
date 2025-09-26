@@ -1,6 +1,6 @@
 const API_BASE_URL = process.env.REACT_APP_API_URL || "http://localhost:8000";
 
-// works
+// WORKS
 export const createUser = async (userData) => {
   const response = await fetch(`${API_BASE_URL}/api/v1/users`, {
     method: "POST",
@@ -23,6 +23,7 @@ export const createUser = async (userData) => {
   return response.json();
 };
 
+// WORKS
 export const loginUser = async (userData) => {
   // Create form data for OAuth2PasswordRequestForm
   const formData = new FormData();
@@ -49,6 +50,7 @@ export const loginUser = async (userData) => {
   return tokenData;
 };
 
+// WORKS
 export const getAllUsers = async () => {
   // Get the access token from localStorage
   const accessToken = localStorage.getItem("access_token");
@@ -77,4 +79,84 @@ export const getAllUsers = async () => {
   const users = await response.json();
 
   return users;
+};
+
+export const getAllApplications = async () => {
+  const accessToken = localStorage.getItem("access_token");
+  const headers = {
+    "Content-Type": "application/json",
+  };
+  if (accessToken) {
+    headers.Authorization = `Bearer ${accessToken}`;
+  }
+
+  const response = await fetch(`${API_BASE_URL}/api/v1/applications`, {
+    method: "GET",
+    headers: headers,
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(
+      errorData.detail || errorData.error || "Failed to fetch applications"
+    );
+  }
+
+  const applications = await response.json();
+
+  return applications;
+};
+
+export const getApplicationById = async (id) => {
+  const accessToken = localStorage.getItem("access_token");
+  const headers = {
+    "Content-Type": "application/json",
+  };
+  if (accessToken) {
+    headers.Authorization = `Bearer ${accessToken}`;
+  }
+
+  const response = await fetch(`${API_BASE_URL}/api/v1/applications/${id}`, {
+    method: "GET",
+    headers: headers,
+    body: JSON.stringify(id),
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(
+      errorData.detail || errorData.error || "Failed to fetch application by ID"
+    );
+  }
+
+  const application = await response.json();
+
+  return application;
+};
+
+export const createApplication = async (applicationData) => {
+  const accessToken = localStorage.getItem("access_token");
+  const headers = {
+    "Content-Type": "application/json",
+  };
+  if (accessToken) {
+    headers.Authorization = `Bearer ${accessToken}`;
+  }
+
+  const response = await fetch(`${API_BASE_URL}/api/v1/applications`, {
+    method: "POST",
+    headers: headers,
+    body: JSON.stringify(applicationData),
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(
+      errorData.detail || errorData.error || "Failed to create applications"
+    );
+  }
+
+  const applications = await response.json();
+
+  return applications;
 };

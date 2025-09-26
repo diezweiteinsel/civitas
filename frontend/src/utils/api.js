@@ -1,3 +1,5 @@
+import { getToken } from "./data";
+
 const API_BASE_URL = process.env.REACT_APP_API_URL || "http://localhost:8000";
 
 // WORKS
@@ -41,17 +43,12 @@ export const loginUser = async (userData) => {
   }
 
   const tokenData = await response.json();
-
-  if (tokenData.access_token) {
-    localStorage.setItem("access_token", tokenData.access_token);
-  }
-
   return tokenData;
 };
 
 // WORKS
 export const getAllUsers = async () => {
-  const accessToken = localStorage.getItem("access_token");
+  const accessToken = getToken();
 
   const headers = {
     "Content-Type": "application/json",
@@ -74,12 +71,11 @@ export const getAllUsers = async () => {
   }
 
   const users = await response.json();
-
   return users;
 };
 
 export const getAllApplications = async () => {
-  const accessToken = localStorage.getItem("access_token");
+  const accessToken = getToken();
   const headers = {
     "Content-Type": "application/json",
   };
@@ -100,12 +96,11 @@ export const getAllApplications = async () => {
   }
 
   const applications = await response.json();
-
   return applications;
 };
 
 export const getApplicationById = async (id) => {
-  const accessToken = localStorage.getItem("access_token");
+  const accessToken = getToken();
   const headers = {
     "Content-Type": "application/json",
   };
@@ -116,7 +111,6 @@ export const getApplicationById = async (id) => {
   const response = await fetch(`${API_BASE_URL}/api/v1/applications/${id}`, {
     method: "GET",
     headers: headers,
-    body: JSON.stringify(id),
   });
 
   if (!response.ok) {
@@ -127,12 +121,11 @@ export const getApplicationById = async (id) => {
   }
 
   const application = await response.json();
-
   return application;
 };
 
 export const createApplication = async (applicationData) => {
-  const accessToken = localStorage.getItem("access_token");
+  const accessToken = getToken();
   const headers = {
     "Content-Type": "application/json",
   };
@@ -154,6 +147,5 @@ export const createApplication = async (applicationData) => {
   }
 
   const applications = await response.json();
-
   return applications;
 };

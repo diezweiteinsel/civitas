@@ -3,6 +3,7 @@ from fastapi import FastAPI, Request, Response
 from fastapi import APIRouter
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
+from pydantic_settings import BaseSettings, SettingsConfigDict # to read from .env file
 # from core.db import Base, engine
 from backend.api import api_router
 import backend.core.security as security
@@ -10,6 +11,17 @@ import backend.api.endpoints.auth as auth
 
 # Base.metadata.create_all(bind=engine)
 
+# 1. Define a Settings class to hold your configuration variables
+class Settings(BaseSettings):
+    # This variable will be loaded from the .env file.
+    # A default value is provided as a fallback.
+    ALLOWED_ORIGINS: str = "http://localhost"
+
+    # Specify the .env file to load
+    model_config = SettingsConfigDict(env_file=".env")
+
+# 2. Create instance of the Settings class
+settings = Settings()
 
 app = FastAPI(
     title="Civitas API",
@@ -21,11 +33,8 @@ app = FastAPI(
 )
 
 # List of origins that are allowed to make requests
-origins = [
-    "http://localhost",
-    "http://localhost:3000", # Assuming your React app runs on port 3000
-    # Add the production frontend URL here as well
-]
+origins = settings.ALLOWED_ORIGINS.split(",")
+
 
 app.add_middleware(
     CORSMiddleware,

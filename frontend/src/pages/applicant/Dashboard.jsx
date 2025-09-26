@@ -2,10 +2,8 @@ import { useState, useEffect } from "react";
 import "./../../style/AdminApplicantReporterPage.css";
 import Navbar from "./../../components/Navbar";
 import ApplicationContainer from "./../../components/ApplicationContainer";
-import { FaDog, FaFire, FaInfoCircle } from "react-icons/fa";
 import { Role } from "../../utils/const";
 import { getAllApplications, addApplication } from "../../utils/data";
-import applicationDB from "../../utils/data";
 
 export default function ApplicantPage() {
   const [applications, setApplications] = useState([]);

@@ -68,8 +68,6 @@ __all__ = [
 	"publicationService",
 
     "trigger",
-    "createTriggerFromDictionary",
-    "createDictionaryFromTrigger",
 
     "user",
     "SimpleUser",

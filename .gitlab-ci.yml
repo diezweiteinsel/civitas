@@ -76,6 +76,13 @@ test_backend:
     DB_PASSWORD: $POSTGRES_PASSWORD
     # Explicitly disable SQLite dev mode for clarity.
     DEV_SQLITE: "0"
+    SECRET_KEY: "bazooks-itsa-jetlag-season-guys"
+    ALGORITHM: "HS256"
+    DEV_SQLITE: "0"
+    SKIP_CREATE_ALL: "0"
+    ECHO_SQL: "0"
+    ALLOWED_ORIGINS: "http://localhost,http://localhost:3000,http://localhost:8083,http://134.245.1.240:1203/"
+    PYTHONPATH: /app
 
   before_script:
     - apt-get update && apt-get install -y gcc libpq-dev

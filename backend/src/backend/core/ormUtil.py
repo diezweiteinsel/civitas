@@ -31,10 +31,10 @@ def user_db_setup():
     Base = db.get_base(reload=True)
     Base.metadata.create_all(bind=db.engine)  # Creates tables from Base in db, does nothing to existing tables
 
-    if "user_table" in Base.classes.keys() or "role_assignment" in Base.classes.keys():
+    if "user_table" in Base.classes.keys() or "role_assignment" in Base.classes.keys() or "form_table" in Base.classes.keys():
         print("abort")
         return  # Tables already exist in db
-    if "user_table" in Base.metadata.tables.keys() or "role_assignment" in Base.metadata.tables.keys():
+    if "user_table" in Base.metadata.tables.keys() or "role_assignment" in Base.metadata.tables.keys() or "form_table" in Base.metadata.tables.keys():
         print("abort")
         return  # Tables already exist in metadata
     orm_user_columns = {
@@ -51,6 +51,13 @@ def user_db_setup():
         "assignment_date": Column(Date, nullable=False),
         "role": Column(Enum(UserType), nullable=False),
     }
+    form_table_columns = {
+        "id": Column(Integer, primary_key=True),
+        "table_name": Column(String, nullable=False),
+        "created_at": Column(Date, nullable=False),
+        "is_active": Column(Boolean, default=True),
+        "xoev": Column(String, nullable=False),
+    }
 
     # was gespeichert wurde: "UserType.ADMIN"
     # neu: "ADMIN" -> Enum(UserType)
@@ -59,6 +66,8 @@ def user_db_setup():
         "user_table", orm_user_columns)
     OrmRoleAssignment = dbActions.createTableClass(
         "role_assignment", role_assignment_columns)
+    OrmFormTable = dbActions.createTableClass(
+        "form_table", form_table_columns)
 
     Base = db.get_base(reload=True)
 

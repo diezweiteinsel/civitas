@@ -41,7 +41,7 @@ def test_add_role_assignment_func():
     with db.get_session() as session:
 
 
-        domainRoleAssignment = user.RoleAssignment(user_id=1, assignment_date=date.today(), role=user.UserType.ADMIN) # Create a domain model instance
+        domainRoleAssignment = user.RoleAssignment(user_id=1, assignment_date=date.today(), role=user.UserType.ADMIN) # Create a domain model instance of role ADMIN
 
         #  Add the role assignment to the database, should succeed and return the created ORM instance
         new_role_assignment = roleCrud.add_role_assignment(session, domainRoleAssignment)
@@ -54,7 +54,7 @@ def test_add_role_assignment_func():
         assert new_role_assignment == new_role_assignment_from_db
 
         # Repeat the process for a different role assignment, same user_id but different role
-        domainRoleAssignmentTwo = user.RoleAssignment(user_id=1, assignment_date=date.today(), role=user.UserType.REPORTER)
+        domainRoleAssignmentTwo = user.RoleAssignment(user_id=1, assignment_date=date.today(), role=user.UserType.REPORTER) # Create a domain model instance of role REPORTER
         new_role_assignmentTwo = roleCrud.add_role_assignment(session, domainRoleAssignmentTwo)
         new_role_assignmentTwo_secondInsert = roleCrud.add_role_assignment(session, domainRoleAssignmentTwo)
         assert new_role_assignmentTwo_secondInsert is None
@@ -88,3 +88,29 @@ def test_get_user_roles_func():
         assert user_roles[1].user_id == 1
         assert user_roles[0].role == "ADMIN"
         assert user_roles[1].role == "REPORTER"
+
+def test_get_admin_roles_func():
+
+    with db.get_session() as session:
+
+        admin_roles = roleCrud.get_all_admin_roles(session)
+        assert len(admin_roles) == 1
+        assert admin_roles[0].role == "ADMIN"
+        assert admin_roles[0].user_id == 1
+
+def test_get_applicant_roles_func():
+
+    with db.get_session() as session:
+
+        applicant_roles = roleCrud.get_all_applicant_roles(session)
+        assert len(applicant_roles) == 0
+        assert applicant_roles == []
+
+def test_get_reporter_roles_func():
+
+    with db.get_session() as session:
+
+        reporter_roles = roleCrud.get_all_reporter_roles(session)
+        assert len(reporter_roles) == 1
+        assert reporter_roles[0].role == "REPORTER"
+        assert reporter_roles[0].user_id == 1

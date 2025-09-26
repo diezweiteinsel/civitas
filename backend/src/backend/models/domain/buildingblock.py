@@ -1,6 +1,6 @@
 from pydantic import BaseModel
 from enum import IntEnum, auto
-from backend.models.domain.trigger import Trigger
+# backend.models.domain.trigger import Trigger
 
 class BBType(IntEnum):
     NULL = 0
@@ -21,6 +21,6 @@ class BuildingBlock(BaseModel):
     required: bool = False
     order: int = 0
     constraintsJson: dict = {}
-    triggers: list[Trigger] = []
+    #triggers: list[Trigger] = []
 
 

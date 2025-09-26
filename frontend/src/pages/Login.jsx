@@ -104,7 +104,7 @@ export default function LoginPage() {
             </button>
           </form>
 
-          {/* Display all users for demonstration
+          {/* Display all users for demonstration */}
           <div
             style={{
               marginTop: "20px",
@@ -139,7 +139,7 @@ export default function LoginPage() {
             {usersData &&
               Array.isArray(usersData) &&
               usersData.length === 0 && <p>No users found.</p>}
-          </div> */}
+          </div>
 
           <p className="signup-text">
             Don’t have an account? <NavLink to="/registration">Sign up</NavLink>

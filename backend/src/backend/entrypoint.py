@@ -80,18 +80,11 @@ def main():
                     hashed_password=security.hash_password(demo_password),
                     user_roles=[
                         RoleAssignment(
-                            role=UserType.ADMIN,
-                            assignment_date=date.today(),
-                        ),
-                        RoleAssignment(
-                            role=UserType.REPORTER,
-                            assignment_date=date.today(),
-                        ),
-                        RoleAssignment(
                             role=UserType.APPLICANT,
                             assignment_date=date.today(),
                         ),
                     ],
+                    email="demo@example.com"
                 )
                 created = add_user(s, new_user)
                 if created is None:
@@ -100,6 +93,41 @@ def main():
                     print(f"Demo user '{demo_username}' created with id={created.id}")
     except Exception:
         print("Demo user creation failed:")
+        traceback.print_exc()
+
+    try:
+        # we insert a demo admin user for easier testing
+        from backend.core import security
+        from backend.core import db as core_db
+        from backend.crud.user import add_user, get_user_by_name
+        from backend.models.domain.user import RoleAssignment, User, UserType
+        from datetime import date
+        with core_db.get_session() as s:
+            try:
+                existing = get_user_by_name("admin", s)
+                print(f"Demo user 'admin' already exists, skipping demo admin creation")
+            except Exception:
+                print(f"Creating demo admin 'admin' (password from DEMO_PASSWORD env)")
+                new_admin = User(
+                    username="admin",
+                    date_created=date.today(),
+                    hashed_password=security.hash_password("admin"),
+                    user_roles=[
+                        RoleAssignment(
+                            role=UserType.ADMIN,
+                            assignment_date=date.today(),
+                        )
+                    ],
+                    email="admin@example.com"
+                )
+                created = add_user(s, new_admin)
+                if created is None:
+                    print("add_user returned None - demo admin creation failed or user already exists")
+                else:
+                    print(f"Demo admin 'admin' created with id={created.id}")
+        traceback.print_exc()
+    except Exception:
+        print("Demo admin creation failed:")
         traceback.print_exc()
 
     # --- seed an initial admin user if no users exist ---

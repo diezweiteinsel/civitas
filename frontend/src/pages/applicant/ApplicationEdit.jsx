@@ -42,11 +42,26 @@ export default function ApplicationEdit() {
       currentSnapshotID: -1,
       previousSnapshotID: -1,
       jsonPayload: {
-        name: form.name,
-        location: form.location,
-        date: form.date,
-        description: form.description,
-        amount: form.amount,
+        0: {
+          label: "Name",
+          value: form.name,
+        },
+        1: {
+          label: "Location",
+          value: form.location,
+        },
+        2: {
+          label: "Date",
+          value: form.date,
+        },
+        3: {
+          label: "Description",
+          value: form.description,
+        },
+        4: {
+          label: "Amount",
+          value: form.amount,
+        },
       },
     };
     createApplicationMutation.mutate(applicationData);

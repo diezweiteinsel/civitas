@@ -46,7 +46,7 @@ def test_add_and_getById_func():
         # Create table if not exists
         # OrmUser.__table__.create(bind=session.get_bind(), checkfirst=True)
 
-        Form1 = OrmForm(table_name="Form 1", created_at=date.today(), is_active=True, xoev="X123")
+        Form1 = OrmForm(form_name="Form 1", created_at=date.today(), is_active=True, xoev="X123")
 
         # Insert a form
         form = formCrud.add_form(session, Form1)
@@ -57,7 +57,7 @@ def test_add_and_getById_func():
         fetchedForm = formCrud.get_form_by_id(session, form.id)
         assert fetchedForm is not None
         assert fetchedForm.id == form.id
-        assert fetchedForm.table_name == form.table_name
+        assert fetchedForm.form_name == form.form_name
         assert fetchedForm.created_at == form.created_at
         assert fetchedForm.is_active == form.is_active
         assert fetchedForm.xoev == form.xoev
@@ -74,9 +74,9 @@ def test_get_all_forms_func():
 
     with db.get_session() as session:
         # Insert multiple forms
-        Form1 = OrmForm(table_name="Form 1", created_at=date.today(), is_active=True, xoev="X123")
-        Form2 = OrmForm(table_name="Form 2", created_at=date.today(), is_active=False, xoev="X124")
-        Form3 = OrmForm(table_name="Form 3", created_at=date.today(), is_active=True, xoev="X125")
+        Form1 = OrmForm(form_name="Form 1", created_at=date.today(), is_active=True, xoev="X123")
+        Form2 = OrmForm(form_name="Form 2", created_at=date.today(), is_active=False, xoev="X124")
+        Form3 = OrmForm(form_name="Form 3", created_at=date.today(), is_active=True, xoev="X125")
 
         formCrud.add_form(session, Form1)
         formCrud.add_form(session, Form2)
@@ -85,6 +85,6 @@ def test_get_all_forms_func():
         # Fetch all forms
         allForms = formCrud.get_all_forms(session)
         assert len(allForms) == 3
-        table_names = [form.table_name for form in allForms]
+        table_names = [form.form_name for form in allForms]
         assert table_names == ["Form 1", "Form 2", "Form 3"]
 

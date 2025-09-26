@@ -71,7 +71,7 @@ def test_updateRow():
 
     Base = db.get_base(reload=True)
     tableClassFromBase = Base.classes.get("test_table")
-    assert tableClassFromBase is not None, f"Table class {"test_table"} not found in Base.classes"
+    assert tableClassFromBase is not None, f"Table class {'test_table'} not found in Base.classes"
 
     # Insert a row and update it
     rowData = {"name": "Jane"}

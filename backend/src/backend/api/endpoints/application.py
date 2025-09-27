@@ -1,8 +1,9 @@
 # standard library imports
 from datetime import datetime
+from typing import Optional
 
 # third party imports
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, Depends, HTTPException
 
 # project imports
 from backend.api.deps import   RoleChecker
@@ -18,8 +19,15 @@ from backend.businesslogic.services.applicationService import applications_db
 # print("i only exist because of merge conflicts")
 
 router = APIRouter(prefix="/applications", tags=["applications"])
-# admin_or_reporter_permission = RoleChecker(["ADMIN", "REPORTER"])
-# applicant_permission = RoleChecker(["APPLICANT"])
+
+# CAN READ ALL
+admin_or_reporter_permission = RoleChecker(["ADMIN", "REPORTER"])
+
+# CAN EDIT FORMS AND REGISTER USERS
+admin_permission = RoleChecker(["ADMIN"])
+
+# CAN CREATE APPLICATIONS
+applicant_permission = RoleChecker(["APPLICANT"])
 
     # applicationID: int = -1
     # userID: int = -1
@@ -30,14 +38,39 @@ router = APIRouter(prefix="/applications", tags=["applications"])
     # previousSnapshotID: int = -1  # Points to the previous snapshot of the application
     # jsonPayload: dict = {}  # The actual data of the application
 
-@router.get("", response_model=list[Application], tags=["Applications"], summary="List all applications")
-async def list_applications():
+
+async def non_public_applications(public: Optional[bool] = False):
+    """
+    Dependency to filter applications based on their public status.
+    """
+    print("Checking public status:", public)
+    if not public:
+        await Depends(admin_or_reporter_permission)
+
+@router.get("", 
+            response_model=list[Application],
+            dependencies=[Depends(non_public_applications)],
+            tags=["Applications"],
+            summary="List all applications")
+async def list_applications(
+    public: Optional[bool] = False):
     """
     Retrieve all applications in the system.
     """
-    return applications_db
+    #TODO: add session management?
+    if public:
+        # Fetch applications from db that are public
+        pass
+    else:
+        # this should not be reachable because of the dependency above
+        pass
 
-@router.post("", response_model=bool, tags=["Applications"], summary="Create a new application")
+
+
+@router.post("", response_model=bool,
+            dependencies=[Depends(applicant_permission)],
+            tags=["Applications"],
+            summary="Create a new application")
 async def create_application(application_data: dict):
     """
     Create a new application in the system.
@@ -61,7 +94,11 @@ async def create_application(application_data: dict):
 
     return application in applications_db
 
-@router.get("/{application_id}", response_model=Application, tags=["Applications"], summary="Get application by ID")
+
+@router.get("/{application_id}",
+            response_model=Application,
+            tags=["Applications"],
+            summary="Get application by ID")
 async def get_application(application_id: int):
     """
     Retrieve a specific application by its ID.
@@ -77,6 +114,7 @@ async def get_application(application_id: int):
     
     raise HTTPException(status_code=404, detail=f"Application with ID {app_id} not found")
 
+
 @router.put("/{application_id}", response_model=Application, tags=["Applications"], summary="Update an application by ID")
 async def update_application(application_id: int, application: Application):
     """
@@ -85,9 +123,12 @@ async def update_application(application_id: int, application: Application):
     application.applicationID = application_id  # Ensure the ID remains the same
     return application
 
+
 @router.delete("/{application_id}", tags=["Applications"], summary="Delete an application by ID")
 async def delete_application(application_id: int):
     """
     Delete a specific application by its ID.
     """
     pass
+
+

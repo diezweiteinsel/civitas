@@ -1,5 +1,12 @@
 version: '3.8'
 
+networks:
+  civitas-network:
+    driver: bridge
+
+volumes:
+  db_data:
+
 services:
   db:
     image: postgres:15
@@ -14,42 +21,30 @@ services:
       - civitas-network
 
   backend:
-    image: ${CI_REGISTRY_IMAGE}/backend:${CI_COMMIT_SHA}
-    restart: unless-stopped
+    build: ./backend
     depends_on:
       - db
-    environment:
-      # All environment variables are injected by the GitLab Runner
-      DB_HOST: db
-      DB_PORT: "5432"
-      DB_NAME: ${POSTGRES_DB}
-      DB_USERNAME: ${POSTGRES_USER}
-      DB_PASSWORD: ${POSTGRES_PASSWORD}
-      SECRET_KEY: ${SECRET_KEY}
-      ALGORITHM: ${ALGORITHM}
-      # Add any other variables from your .env file here
-    ports:
-      # port to expose api outside the container
-      - "8082:8000"
+    env_file:
+      - backend/.env
+    command: ["python", "-m", "backend.entrypoint"]
+    restart: unless-stopped
     networks:
       - civitas-network
-    # Your custom entrypoint is preserved from the Dockerfile
-    command: ["python", "-m", "backend.entrypoint"]
+    # expose for VPN debugging + Swagger at http://134.245.1.240:8082
+    ports:
+      - "8082:8000"
 
   frontend:
-    image: ${CI_REGISTRY_IMAGE}/frontend:${CI_COMMIT_SHA}
-    restart: unless-stopped
-    ports:
-      # port to expose frontend outside the container
-      - "8083:80"
+    build:
+      context: .
+      dockerfile: frontend/Dockerfile
+      args:
+        REACT_APP_API_URL: "/api"
     depends_on:
       - backend
+    restart: unless-stopped
     networks:
       - civitas-network
-
-networks:
-  civitas-network:
-    driver: bridge
-
-volumes:
-  db_data:
+    # VM:8083 → public :1203
+    ports:
+      - "8083:80"

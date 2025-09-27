@@ -67,36 +67,26 @@ deploy-to-vm:
   script:
     - git config --global --add safe.directory "$CI_PROJECT_DIR"
     - git archive --format=tar HEAD | gzip > app.tar.gz
-    - |
-      cat > backend.env <<EOF
-  DB_HOST=db
-  DB_PORT=5432
-  DB_NAME=$POSTGRES_DB
-  DB_USERNAME=$POSTGRES_USER
-  DB_PASSWORD=$POSTGRES_PASSWORD
-  SECRET_KEY=$SECRET_KEY
-  ALGORITHM=$ALGORITHM
-  DEV_SQLITE=0
-  SKIP_CREATE_ALL=0
-  ECHO_SQL=0
-  ALLOWED_ORIGINS=$ALLOWED_ORIGINS
-  PYTHONPATH=/app
-  EOF
+
+    # build backend.env LOCALLY (CI expands vars here) — no heredoc
+    - printf '%s\n' 'DB_HOST=db' 'DB_PORT=5432' \
+      "DB_NAME=$POSTGRES_DB" "DB_USERNAME=$POSTGRES_USER" "DB_PASSWORD=$POSTGRES_PASSWORD" \
+      "SECRET_KEY=$SECRET_KEY" "ALGORITHM=$ALGORITHM" \
+      'DEV_SQLITE=0' 'SKIP_CREATE_ALL=0' 'ECHO_SQL=0' \
+      "ALLOWED_ORIGINS=$ALLOWED_ORIGINS" 'PYTHONPATH=/app' > backend.env
+
     - ssh "$SSH_USER@$SSH_SERVER_IP" "mkdir -p '$VM_DEPLOY_PATH'"
     - scp app.tar.gz "$SSH_USER@$SSH_SERVER_IP:$VM_DEPLOY_PATH/app.tar.gz"
     - scp backend.env "$SSH_USER@$SSH_SERVER_IP:$VM_DEPLOY_PATH/backend.env"
-    - |
-      ssh "$SSH_USER@$SSH_SERVER_IP" '
-        set -e
-        cd "$VM_DEPLOY_PATH"
-        tar -xzf app.tar.gz && rm -f app.tar.gz
-        mkdir -p backend
-        install -m 600 backend.env backend/.env
-        rm -f backend.env
-        docker compose -f docker-compose.prod.yml build --pull
-        docker compose -f docker-compose.prod.yml up -d --remove-orphans
-        docker compose ps
-      '
+
+    # unpack, move .env, build & run — single SSH command, no multiline
+    - ssh "$SSH_USER@$SSH_SERVER_IP" "set -e; cd '$VM_DEPLOY_PATH'; \
+        tar -xzf app.tar.gz && rm -f app.tar.gz; \
+        mkdir -p backend; install -m 600 backend.env backend/.env; rm -f backend.env; \
+        docker compose -f docker-compose.prod.yml build --pull; \
+        docker compose -f docker-compose.prod.yml up -d --remove-orphans; \
+        docker compose ps"
+
 
   environment:
     name: production

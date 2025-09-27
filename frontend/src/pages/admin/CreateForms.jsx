@@ -3,6 +3,7 @@
 
 import React, { useState } from "react";
 import "./../../style/CreateEditForms.css";
+import "./../../style/AdminApplicantReporterPage.css"
 
 export default function Forms() {
     const [formFields, setFormFields] = useState([
@@ -18,7 +19,7 @@ export default function Forms() {
     const addFields = () => {
         let object = {
             fieldOne: "",
-            fieldTwo: ""
+            //fieldTwo: ""
         }
         setFormFields([...formFields, object]) //ensures that previous object doesn't get overwritten
     }
@@ -29,8 +30,25 @@ export default function Forms() {
         setFormFields(data)
     }
 
+    const handleExport = () => {
+
+    }
+
     return (
         <>
+        <Navbar />
+        <div>
+            <button 
+            className="create-button"
+            onClick={() => addFields()}
+            >Neue Meldeform Erstellen
+            </button>
+            <button 
+            className="import-button"
+            onClick={() => handleExport()}
+            >Meldeform Importieren
+            </button>
+        </div>
         </>
     )
 }

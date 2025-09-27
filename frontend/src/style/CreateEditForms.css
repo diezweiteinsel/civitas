@@ -14,3 +14,17 @@
 .field-card { 
 
 }
+
+
+.import-button {
+    float: right
+}
+
+.create-button {
+    float: left
+}
+
+.remove-button {
+    background-color: red;
+    color: white
+}

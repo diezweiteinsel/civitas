@@ -13,12 +13,9 @@ export default function AdminPage() {
     <>
       <Navbar role={Role.ADMIN} />
       <div className="page-container">
-        <ApplicationContainer applications={[]} title="Pending Applications:" />
+        <ApplicationContainer applications={[]} title="Ausstehende Anträge:" />
         <div className="page-space"> </div>
-        <ApplicationContainer
-          applications={[]}
-          title="Approved Applications:"
-        />
+        <ApplicationContainer applications={[]} title="Genehmigte Anträge:" />
       </div>
     </>
   );

@@ -7,9 +7,9 @@ import { Role } from "../../utils/const";
 
 export default function SubmitApplications() {
   const formTypes = [
-    { type: "Form type: Dog", icon: <FaDog /> },
-    { type: "Form type: Fire", icon: <FaFire /> },
-    { type: "Form type: Info", icon: <FaInfoCircle /> },
+    { type: "Formulartyp: Hund", icon: <FaDog /> },
+    { type: "Formulartyp: Feuer", icon: <FaFire /> },
+    { type: "Formulartyp: Info", icon: <FaInfoCircle /> },
   ];
   const navigate = useNavigate();
 
@@ -19,7 +19,7 @@ export default function SubmitApplications() {
       id: i + 1,
       formType: form.type,
       icon: form.icon,
-      description: `This is more detailed information about the ${form.type}.`,
+      description: `Hier finden Sie detaillierte Informationen zum ${form.type}.`,
     }))
   );
   const [expandedIds, setExpandedIds] = useState([]);
@@ -29,7 +29,7 @@ export default function SubmitApplications() {
       <Navbar role={Role.APPLICANT} />
       <div className="page-container">
         <div className="containers-card">
-          <h2 className="card-title">Submit Applications</h2>
+          <h2 className="card-title">Antrag einreichen</h2>
 
           <div className="container-list">
             {containers.map((container) => (
@@ -43,7 +43,7 @@ export default function SubmitApplications() {
                     className="toggle-btn"
                     onClick={() => navigate("/applicant/application-edit")}
                   >
-                    {expandedIds.includes(container.id) ? "Hide" : "Fill out"}
+                    {expandedIds.includes(container.id) ? "Hide" : "Ausfüllen"}
                   </button>
                 </div>
                 {expandedIds.includes(container.id) && (

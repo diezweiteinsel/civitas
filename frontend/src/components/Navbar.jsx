@@ -55,7 +55,7 @@ export default function Navbar({ role = Role.EMPTY }) {
                     to="/admin"
                     onClick={() => setShowDropdown(false)}
                   >
-                    Homepage
+                    Startseite
                   </NavLink>
                 </div>
                 <div className="dropdown-item">
@@ -64,7 +64,7 @@ export default function Navbar({ role = Role.EMPTY }) {
                     to="/admin/public?from=admin"
                     onClick={() => setShowDropdown(false)}
                   >
-                    Public Applications
+                    Öffentliche Anträge
                   </NavLink>
                 </div>
                 <div className="dropdown-item">
@@ -73,7 +73,7 @@ export default function Navbar({ role = Role.EMPTY }) {
                     to="/admin/edit-form"
                     onClick={() => setShowDropdown(false)}
                   >
-                    Edit Form
+                    Formular bearbeiten
                   </NavLink>
                 </div>
                 <div className="dropdown-item">
@@ -82,7 +82,7 @@ export default function Navbar({ role = Role.EMPTY }) {
                     to="/admin/admin-registration"
                     onClick={() => setShowDropdown(false)}
                   >
-                    Register Admin
+                    Admin registrieren
                   </NavLink>
                 </div>
                 <div className="dropdown-item">
@@ -91,7 +91,7 @@ export default function Navbar({ role = Role.EMPTY }) {
                     to="/admin/reporter-registration"
                     onClick={() => setShowDropdown(false)}
                   >
-                    Register Reporter
+                    Reporter registrieren
                   </NavLink>
                 </div>
               </>
@@ -105,7 +105,7 @@ export default function Navbar({ role = Role.EMPTY }) {
                     to="/applicant"
                     onClick={() => setShowDropdown(false)}
                   >
-                    Homepage
+                    Startseite
                   </NavLink>
                 </div>
                 <div className="dropdown-item">
@@ -114,7 +114,7 @@ export default function Navbar({ role = Role.EMPTY }) {
                     to="/applicant/public?from=applicant"
                     onClick={() => setShowDropdown(false)}
                   >
-                    Public Applications
+                    Öffentliche Anträge
                   </NavLink>
                 </div>
                 <div className="dropdown-item">
@@ -123,7 +123,7 @@ export default function Navbar({ role = Role.EMPTY }) {
                     to="/applicant/submit"
                     onClick={() => setShowDropdown(false)}
                   >
-                    Submit Application
+                    Antrag einreichen
                   </NavLink>
                 </div>
               </>
@@ -137,7 +137,7 @@ export default function Navbar({ role = Role.EMPTY }) {
                     to="/applicant"
                     onClick={() => setShowDropdown(false)}
                   >
-                    Homepage
+                    Startseite
                   </NavLink>
                 </div>
               </>
@@ -150,7 +150,7 @@ export default function Navbar({ role = Role.EMPTY }) {
                 to="/"
                 onClick={() => setShowDropdown(false)}
               >
-                Log out
+                Abmelden
               </NavLink>
             </div>
           </div>

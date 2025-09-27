@@ -97,6 +97,8 @@ deploy-to-vm:
       # derive pubkey + show fingerprint (no secret)
     - ssh-keygen -y -f id_deploy > id_deploy.pub
     - ssh-keygen -lf id_deploy.pub
+    - ssh-keygen -y -f id_deploy > id_deploy.pub
+    - cat id_deploy.pub
     # strict auth so it doesn’t try password
     - ssh -o BatchMode=yes -o PreferredAuthentications=publickey -p "$SSH_PORT" "$SSH_USER@$SSH_SERVER_IP" "echo OK" || true
 

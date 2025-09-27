@@ -5,14 +5,20 @@ from datetime import datetime
 from fastapi import APIRouter
 
 # project imports
-from backend.api.deps import RoleChecker
+from backend.api.deps import   RoleChecker
+from backend.businesslogic.services.applicationService import createApplication, getApplication
 from backend.models.domain.application import Application, ApplicationStatus
+from backend.crud.user import get_user_by_id
+from backend.models.domain.user import User, UserType
+from backend.businesslogic.user import ensure_applicant, ensure_admin, ensure_reporter, assign_role
+from backend.models import Form   
+from datetime import date 
 
 # print("i only exist because of merge conflicts")
 
 router = APIRouter(prefix="/applications", tags=["applications"])
-admin_or_reporter_permission = RoleChecker(["ADMIN", "REPORTER"])
-applicant_permission = RoleChecker(["APPLICANT"])
+# admin_or_reporter_permission = RoleChecker(["ADMIN", "REPORTER"])
+# applicant_permission = RoleChecker(["APPLICANT"])
 
     # applicationID: int = -1
     # userID: int = -1
@@ -31,12 +37,22 @@ async def list_applications():
     pass
 
 @router.post("", response_model=Application, tags=["Applications"], summary="Create a new application")
-async def create_application(application: Application):
+async def create_application(json_payload: dict):
+    user_id = json_payload.get("user_id")
+    form_id = json_payload.get("form_id")
+    # user = await get_user_by_id(user_id)
+    user = User(id=user_id, username="username", date_created=date.today(), hashed_password="pass") # temporary, replace with actual user retrieval logic
+    assign_role(user, UserType.APPLICANT) # temporary, remove when actual user retrieval logic is implemented
+    if not user:
+        raise ValueError("User not found")
+    if not ensure_applicant(user):
+        raise PermissionError("Only applicants can create applications.")
+    form = Form(formID=form_id)  # temporary, replace with actual form retrieval logic. But now we are skipping the form logic
     """
     Create a new application in the system.
     """
-    application.applicationID = 1  # Simulate assigning a new ID
-    application.createdAt = datetime.now()
+    application = createApplication(user, form, json_payload.get("json_payload", {}))
+    # Logic to save the application to the database is not defined yet
     return application
 
 @router.get("/{application_id}", response_model=Application, tags=["Applications"], summary="Get application by ID")

@@ -74,6 +74,8 @@ deploy-to-vm:
     - ssh-add "$SSH_PRIVATE_KEY"
     - mkdir -p ~/.ssh && chmod 700 ~/.ssh
     - printf "Host *\n\tStrictHostKeyChecking no\n" > ~/.ssh/config
+    - cp "$SSH_PRIVATE_KEY" id_deploy && chmod 600 id_deploy
+    - ssh-add ./id_deploy
 
   script:
     - git config --global --add safe.directory "$CI_PROJECT_DIR"

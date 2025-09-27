@@ -66,7 +66,7 @@ export default function ApplicationEdit() {
     };
     createApplicationMutation.mutate(applicationData);
     e.preventDefault();
-    alert("Eingereicht: " + JSON.stringify(applicationData));
+    console.log("Versuch Antrag zu stellen:", applicationData);
   };
 
   const createApplicationMutation = useMutation({
@@ -74,7 +74,7 @@ export default function ApplicationEdit() {
     onSuccess: (data) => {
       setError("");
       alert(
-        "Antrag erfolgreich erstellt! Du wirst nach dieser Nachricht weitergeleitet!"
+        "Antrag erfolgreich erstellt! Sie werden nach dieser Nachricht weitergeleitet!"
       );
       setSuccess("Antrag erfolgreich erstellt! Weiterleitung...");
       console.log("Antrag erfolgreich erstellt:", data);
@@ -85,9 +85,9 @@ export default function ApplicationEdit() {
       setSuccess("");
       setError(
         error.message ||
-          "Antragserstellung fehlgeschlagen. Bitte versuche es erneut."
+          "Antragserstellung fehlgeschlagen. Bitte versuchen Sie es erneut."
       );
-      console.error("Antragserstellung Fehler:", error);
+      console.error("Fehler bei Antragserstellung:", error);
     },
   });
 

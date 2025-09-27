@@ -19,7 +19,7 @@ export default function SubmitApplications() {
       id: i + 1,
       formType: form.type,
       icon: form.icon,
-      description: `Hier findest du detailliertere Informationen zum ${form.type}.`,
+      description: `Hier finden Sie detaillierte Informationen zum ${form.type}.`,
     }))
   );
   const [expandedIds, setExpandedIds] = useState([]);

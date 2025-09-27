@@ -73,7 +73,7 @@ export default function Navbar({ role = Role.EMPTY }) {
                     to="/admin/edit-form"
                     onClick={() => setShowDropdown(false)}
                   >
-                    Formular Bearbeiten
+                    Formular bearbeiten
                   </NavLink>
                 </div>
                 <div className="dropdown-item">
@@ -82,7 +82,7 @@ export default function Navbar({ role = Role.EMPTY }) {
                     to="/admin/admin-registration"
                     onClick={() => setShowDropdown(false)}
                   >
-                    Admin Registrieren
+                    Admin registrieren
                   </NavLink>
                 </div>
                 <div className="dropdown-item">
@@ -91,7 +91,7 @@ export default function Navbar({ role = Role.EMPTY }) {
                     to="/admin/reporter-registration"
                     onClick={() => setShowDropdown(false)}
                   >
-                    Reporter Registrieren
+                    Reporter registrieren
                   </NavLink>
                 </div>
               </>
@@ -123,7 +123,7 @@ export default function Navbar({ role = Role.EMPTY }) {
                     to="/applicant/submit"
                     onClick={() => setShowDropdown(false)}
                   >
-                    Antrag Einreichen
+                    Antrag einreichen
                   </NavLink>
                 </div>
               </>

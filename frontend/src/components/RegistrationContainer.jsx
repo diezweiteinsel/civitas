@@ -18,8 +18,8 @@ export default function RegistrationContainer({ role = Role.APPLICANT }) {
     {
       [Role.ADMIN]: "Admin ",
       [Role.REPORTER]: "Reporter ",
-      [Role.APPLICANT]: "Bürger ",
-    }[role] || "Bürger ";
+      [Role.APPLICANT]: "Bürger/-innen ",
+    }[role] || "Bürger/-innen ";
 
   const createUserMutation = useMutation({
     mutationFn: createUser,
@@ -103,7 +103,7 @@ export default function RegistrationContainer({ role = Role.APPLICANT }) {
           </div>
 
           <div className="form-group">
-            <label>Passwort Bestätigen</label>
+            <label>Passwort bestätigen</label>
             <input
               type="password"
               value={confirm}

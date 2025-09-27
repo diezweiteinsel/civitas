@@ -49,8 +49,8 @@ export default function ApplicationView() {
 
   const getFormTypeByFormId = (formId) => {
     const typeMap = {
-      1: "Hunde licenz Antrag",
-      2: "Biike-Feuer Antrag",
+      1: "Hundelizenzantrag",
+      2: "Biike-Feuerantrag",
       3: "Informationsanfrage",
     };
     return typeMap[formId] || "Unbekannter Antrag";
@@ -169,7 +169,7 @@ export default function ApplicationView() {
               );
             }}
           >
-            Status Informationen
+            Status-Informationen
           </button>
         </div>
       </div>

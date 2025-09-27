@@ -148,7 +148,7 @@ export default function LoginPage() {
           </div>
 
           <p className="signup-text">
-            Sie haben noch keinen Account?{" "}
+            Sie besitzen noch keinen Account?{" "}
             <NavLink to="/registration">Registrieren</NavLink>
           </p>
         </div>

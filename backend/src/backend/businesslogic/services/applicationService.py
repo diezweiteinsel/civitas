@@ -12,7 +12,38 @@ from backend.models import (
 )
 from backend.crud import dbActions
 # mockup db as list for testing purposes
-applications_db = []
+applications_db = [
+	first_application := Application(
+		applicationID=1,
+		userID=1,
+		formID=1,
+		status=ApplicationStatus.PENDING,
+		createdAt=datetime.now(),
+		currentSnapshotID=1,
+		previousSnapshotID=0,
+		jsonPayload={}
+	),
+	second_application := Application(
+		applicationID=2,
+		userID=2,
+		formID=1,
+		status=ApplicationStatus.APPROVED,
+		createdAt=datetime.now(),
+		currentSnapshotID=2,
+		previousSnapshotID=1,
+		jsonPayload={}
+	),
+	third_application := Application(
+		applicationID=3,	
+		userID=3,
+		formID=2,
+		status=ApplicationStatus.PUBLIC,
+		createdAt=datetime.now(),
+		currentSnapshotID=3,
+		previousSnapshotID=2,
+		jsonPayload={}	
+	)
+]
 def createApplication(user: User, form: Form, payload: dict) -> Application:
 	if not ensure_applicant(user):
 		raise PermissionError("Only applicants can create applications.")

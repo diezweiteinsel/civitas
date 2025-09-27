@@ -21,6 +21,15 @@ export default function RegistrationContainer({ role = Role.APPLICANT }) {
       [Role.APPLICANT]: "Applicant ",
     }[role] || "Applicant ";
 
+  // Function to reset form fields
+  const resetForm = () => {
+    setUsername("");
+    setEmail("");
+    setPassword("");
+    setConfirm("");
+    setError("");
+  };
+
   const createUserMutation = useMutation({
     mutationFn: createUser,
     onSuccess: (data) => {
@@ -28,16 +37,27 @@ export default function RegistrationContainer({ role = Role.APPLICANT }) {
       alert("Registration successful!");
       setSuccess("Registration successful!");
       console.log("User created successfully:", data);
+
+      resetForm();
+
+      setTimeout(() => {
+        setSuccess("");
+      }, 3000);
+
       switch (role) {
         case Role.ADMIN:
           break;
         case Role.REPORTER:
           break;
         case Role.APPLICANT:
-          navigate("/");
+          setTimeout(() => {
+            navigate("/");
+          }, 1500);
           break;
         default:
-          navigate("/");
+          setTimeout(() => {
+            navigate("/");
+          }, 1500);
       }
     },
     onError: (error) => {

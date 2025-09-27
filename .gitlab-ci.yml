@@ -1,107 +1,120 @@
-# .gitlab-ci.yml
-
-# Defines the execution order of jobs.
 stages:
   - build
   - test
+  - deploy
 
-# Default settings for all jobs. `interruptible` allows a new pipeline to cancel older pipelines on the same branch.
 default:
   interruptible: true
 
-# Global variables, used here for the test database configuration.
-# These are available to all jobs.
 variables:
-  POSTGRES_DB: civitas_db_test # Use a separate test database name.
-  POSTGRES_USER: civitas_user
-  POSTGRES_PASSWORD: securepassword
-  # This variable is used by the test runner to connect to the PostgreSQL service.
-  # The hostname 'db' matches the service alias defined in the test_backend job.
-  DATABASE_URL: "postgresql://$POSTGRES_USER:$POSTGRES_PASSWORD@db:5432/$POSTGRES_DB"
-
-# Global cache definitions to speed up subsequent pipeline runs.
-cache:
-  key: ${CI_COMMIT_REF_SLUG}
-  paths:
-    - .venv/ # Corrected path for the virtual environment cache
-    - frontend/node_modules/
+  # Variables for the test stage
+  POSTGRES_DB_TEST: civitas_db_test
+  POSTGRES_USER_TEST: civitas_user
+  POSTGRES_PASSWORD_TEST: securepassword
+  DATABASE_URL_TEST: "postgresql://${POSTGRES_USER_TEST}:${POSTGRES_PASSWORD_TEST}@db:5432/${POSTGRES_DB_TEST}"
 
 ### BUILD STAGE ###
-# This stage verifies that the Docker images can be built successfully.
+# This stage builds the final Docker images and pushes them to the GitLab Registry.
 
-build_backend:
-  stage: build
-  # Use the official Docker image to run Docker commands.
-  image: docker:24.0
-  # Use the Docker-in-Docker service to provide a Docker daemon.
-  services:
-    - docker:24.0-dind
-  before_script:
-    # Log in to Docker Hub to prevent rate limiting.
-    # Requires DOCKER_HUB_USER and DOCKER_HUB_PASSWORD to be set as CI/CD variables.
-    - echo "$DOCKER_HUB_PASSWORD" | docker login -u "$DOCKER_HUB_USER" --password-stdin
-  script:
-    # Build the backend Docker image. The context is ./backend
-    - docker build -t civitas-backend-test ./backend
-
-build_frontend:
+build-backend:
   stage: build
   image: docker:24.0
   services:
     - docker:24.0-dind
   before_script:
-    # Log in to Docker Hub to prevent rate limiting.
-    - echo "$DOCKER_HUB_PASSWORD" | docker login -u "$DOCKER_HUB_USER" --password-stdin
+    - echo "$CI_REGISTRY_PASSWORD" | docker login -u "$CI_REGISTRY_USER" --password-stdin $CI_REGISTRY
   script:
-    # Build the frontend Docker image, passing the API URL as a build argument.
-    # The context is the project root, and we specify the Dockerfile location.
-    - docker build --build-arg REACT_APP_API_URL="http://localhost:8083" -f frontend/Dockerfile -t civitas-frontend-test .
+    # Build and push the backend image
+    - docker build -t $CI_REGISTRY_IMAGE/backend:$CI_COMMIT_SHA ./backend
+    - docker push $CI_REGISTRY_IMAGE/backend:$CI_COMMIT_SHA
+
+build-frontend:
+  stage: build
+  image: docker:24.0
+  services:
+    - docker:24.0-dind
+  before_script:
+    - echo "$CI_REGISTRY_PASSWORD" | docker login -u "$CI_REGISTRY_USER" --password-stdin $CI_REGISTRY
+  script:
+    # Build and push the frontend image, using the public URL for production
+    - docker build --build-arg REACT_APP_API_URL="http://134.245.1.240:1200" -f frontend/Dockerfile -t $CI_REGISTRY_IMAGE/frontend:$CI_COMMIT_SHA .
+    - docker push $CI_REGISTRY_IMAGE/frontend:$CI_COMMIT_SHA
 
 ### TEST STAGE ###
-# This stage runs the application tests. Jobs in this stage run in parallel.
 
-test_backend:
+test-backend:
   stage: test
   image: python:3.11-slim
   services:
     - name: postgres:15
       alias: db
-      
   variables:
-    # These variables MUST match what db.py is looking for.
+    # Override global DB variables for the test-specific service
+    POSTGRES_DB: $POSTGRES_DB_TEST
+    POSTGRES_USER: $POSTGRES_USER_TEST
+    POSTGRES_PASSWORD: $POSTGRES_PASSWORD_TEST
+    DATABASE_URL: $DATABASE_URL_TEST
     DB_HOST: db
-    DB_PORT: "5432"
-    DB_NAME: $POSTGRES_DB
-    DB_USERNAME: $POSTGRES_USER
-    DB_PASSWORD: $POSTGRES_PASSWORD
-    # Explicitly disable SQLite dev mode for clarity.
-    DEV_SQLITE: "0"
-    SECRET_KEY: "bazooks-itsa-jetlag-season-guys"
+    SECRET_KEY: "a-test-secret-key"
     ALGORITHM: "HS256"
-    DEV_SQLITE: "0"
-    SKIP_CREATE_ALL: "0"
-    ECHO_SQL: "0"
-    ALLOWED_ORIGINS: "http://localhost,http://localhost:3000,http://localhost:8083,http://134.245.1.240:1203/"
-    PYTHONPATH: /app
-
   before_script:
     - apt-get update && apt-get install -y gcc libpq-dev
-    - python -m venv .venv
-    - source .venv/bin/activate
     - pip install -r backend/requirements-linux.txt
-    - pip install -e backend/
   script:
-    - pytest
-#test_frontend:
-#  stage: test
-#  # Use a Node.js image.
-#  image: node:18
-#  before_script:
-#    # Navigate to the frontend directory
-#    - cd frontend
-#    # Install dependencies
-#    - npm install
-#  script:
-#    # Run the tests in non-interactive mode.
-#    - npm test -- --watchAll=false
+    - pytest backend/ --junitxml=report.xml
+  artifacts:
+    when: always
+    reports:
+      junit: report.xml
 
+### DEPLOY STAGE ###
+
+deploy-to-vm:
+  stage: deploy
+  image: alpine:latest
+  before_script:
+    - apk add --no-cache openssh-client docker-compose
+    - eval $(ssh-agent -s)
+    - echo "$SSH_PRIVATE_KEY" | tr -d '\r' | ssh-add -
+    - mkdir -p ~/.ssh && chmod 700 ~/.ssh
+    - '[[ -f /.dockerenv ]] && echo -e "Host *\n\tStrictHostKeyChecking no\n\n" > ~/.ssh/config'
+  script:
+    - scp ./docker-compose.prod.yml $SSH_USER@$SSH_SERVER_IP:${VM_DEPLOY_PATH}/docker-compose.prod.yml
+    - |
+      ssh $SSH_USER@$SSH_SERVER_IP "
+        echo '--- Starting Deployment on VM ---'
+        
+        # 1. Ensure directories exist and navigate to deploy path
+        mkdir -p ${VM_DEPLOY_PATH} ~/docker_config
+        cd ${VM_DEPLOY_PATH}
+        
+        # 2. Set DOCKER_CONFIG to use our custom path
+        export DOCKER_CONFIG=~/docker_config
+        
+        # 3. Log in to the GitLab Container Registry using a Deploy Token
+        docker login -u ${CI_DEPLOY_USER} -p ${CI_DEPLOY_PASSWORD} ${CI_REGISTRY}
+
+        # 4. Export variables for docker-compose to use
+        export CI_REGISTRY_IMAGE=${CI_REGISTRY_IMAGE}
+        export CI_COMMIT_SHA=${CI_COMMIT_SHA}
+        export POSTGRES_DB=${POSTGRES_DB}
+        export POSTGRES_USER=${POSTGRES_USER}
+        export POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+        export SECRET_KEY=${SECRET_KEY}
+        export ALGORITHM=${ALGORITHM}
+        
+        # 5. Pull the latest images
+        echo 'Pulling new images...'
+        docker-compose -f docker-compose.prod.yml pull
+        
+        # 6. Stop the old containers and start the new ones
+        echo 'Restarting services...'
+        docker-compose -f docker-compose.prod.yml up -d --remove-orphans
+        
+        echo '--- Deployment Successful ---'
+      "
+  environment:
+    name: production
+    url: http://${SSH_SERVER_IP}:1200
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH

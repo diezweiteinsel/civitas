@@ -1,0 +1,55 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:15
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    networks:
+      - civitas-network
+
+  backend:
+    image: ${CI_REGISTRY_IMAGE}/backend:${CI_COMMIT_SHA}
+    restart: unless-stopped
+    depends_on:
+      - db
+    environment:
+      # All environment variables are injected by the GitLab Runner
+      DB_HOST: db
+      DB_PORT: "5432"
+      DB_NAME: ${POSTGRES_DB}
+      DB_USERNAME: ${POSTGRES_USER}
+      DB_PASSWORD: ${POSTGRES_PASSWORD}
+      SECRET_KEY: ${SECRET_KEY}
+      ALGORITHM: ${ALGORITHM}
+      # Add any other variables from your .env file here
+    ports:
+      # port to expose api outside the container
+      - "8082:8000"
+    networks:
+      - civitas-network
+    # Your custom entrypoint is preserved from the Dockerfile
+    command: ["python", "-m", "backend.entrypoint"]
+
+  frontend:
+    image: ${CI_REGISTRY_IMAGE}/frontend:${CI_COMMIT_SHA}
+    restart: unless-stopped
+    ports:
+      # port to expose frontend outside the container
+      - "8083:80"
+    depends_on:
+      - backend
+    networks:
+      - civitas-network
+
+networks:
+  civitas-network:
+    driver: bridge
+
+volumes:
+  db_data:

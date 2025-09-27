@@ -1,0 +1,50 @@
+version: '3.8'
+
+networks:
+  civitas-network:
+    driver: bridge
+
+volumes:
+  db_data:
+
+services:
+  db:
+    image: postgres:15
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    networks:
+      - civitas-network
+
+  backend:
+    build: ./backend
+    depends_on:
+      - db
+    env_file:
+      - backend/.env
+    command: ["python", "-m", "backend.entrypoint"]
+    restart: unless-stopped
+    networks:
+      - civitas-network
+    # expose for VPN debugging + Swagger at http://134.245.1.240:8082
+    ports:
+      - "8082:8000"
+
+  frontend:
+    build:
+      context: .
+      dockerfile: frontend/Dockerfile
+      args:
+        REACT_APP_API_URL: "/api"
+    depends_on:
+      - backend
+    restart: unless-stopped
+    networks:
+      - civitas-network
+    # VM:8083 → public :1203
+    ports:
+      - "8083:80"

@@ -30,7 +30,7 @@ export default function Forms() {
         setFormFields(data)
     }
 
-    const handleExport = () => {
+    const handleImport = () => {
 
     }
 
@@ -45,7 +45,7 @@ export default function Forms() {
             </button>
             <button 
             className="import-button"
-            onClick={() => handleExport()}
+            onClick={() => handleImport()}
             >Meldeform Importieren
             </button>
         </div>

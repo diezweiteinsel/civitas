@@ -64,8 +64,8 @@ router = APIRouter(
 
 load_dotenv()
 
-SECRET_KEY = "civitas_user" # it is a quite silly one right now, PLEASE CHANGE
-ALGORITHM = "bazooks-itsa-jetlag-season-guys" # also change this one
+SECRET_KEY = "civitas_user" # TODO change this to call .env later
+ALGORITHM = "bazooks-itsa-jetlag-season-guys" # TODO change this to call .env later
 
 if not SECRET_KEY or not ALGORITHM:
     raise RuntimeError("SECRET_KEY and ALGORITHM must be set in the .env file")

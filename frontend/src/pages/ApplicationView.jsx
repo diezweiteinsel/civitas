@@ -1,12 +1,6 @@
-// pflichtenheft-user-interface mockup above "Admins can view approved or published applications via the "Admin Homepage" and "Public Applications" page."
-// This side shows the details of a specific application. Must have the option to look at revision when admin is looking at it or we have a "ApplicationView.jsx" inside of admin and applicant which are fundamentally the same but with different buttons.
-// Can be routed to from anywhere where you can press on a application to view it in detail. Also needs ability to have multiple button for the different cases in admin for example "Approve/reject" afterwards maybe "publish".
-
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
-import "./../style/AdminApplicantReporterPage.css";
-import "./../style/ApplicationView.css";
-import Navbar from "../components/Navbar";
+import { useMutation } from "@tanstack/react-query";
 import {
   FaDog,
   FaFire,
@@ -14,7 +8,12 @@ import {
   FaArrowLeft,
   FaHistory,
 } from "react-icons/fa";
+
+import "./../style/AdminApplicantReporterPage.css";
+import "./../style/ApplicationView.css";
+import Navbar from "../components/Navbar";
 import { Role } from "../utils/const";
+import { getApplicationById } from "../utils/api";
 
 export default function ApplicationView() {
   const { id } = useParams();
@@ -22,39 +21,74 @@ export default function ApplicationView() {
   const location = useLocation();
   const [application, setApplication] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
-  const getUserRole = () => {
-    const currentPath = location.pathname;
+  // Simplified helper functions
+  const currentRole = (() => {
     const referrer = location.state?.from || document.referrer;
-
-    if (referrer) {
-      if (referrer.includes("/admin")) return Role.ADMIN;
-      if (referrer.includes("/applicant")) return Role.APPLICANT;
-    }
-
+    if (referrer?.includes("/admin")) return Role.ADMIN;
+    if (referrer?.includes("/applicant")) return Role.APPLICANT;
     return Role.EMPTY;
+  })();
+
+  const sourceContext = location.state?.fromPage || "unknown";
+
+  const getApplicationMutation = useMutation({
+    mutationFn: getApplicationById,
+    onSuccess: (data) => {
+      setError("");
+      setApplication(data);
+      setLoading(false);
+    },
+    onError: (error) => {
+      setError(error.message || "Failed to fetch application.");
+      setLoading(false);
+    },
+  });
+
+  useEffect(() => {
+    if (id && id !== "undefined") {
+      setLoading(true);
+      setError("");
+      const numericId = parseInt(id, 10);
+      if (isNaN(numericId)) {
+        setError("Invalid application ID");
+        setLoading(false);
+        return;
+      }
+      getApplicationMutation.mutate(numericId);
+    } else {
+      setError("No application ID provided");
+      setLoading(false);
+    }
+  }, [id]);
+
+  // Form configuration
+  const FORM_CONFIG = {
+    1: { icon: <FaDog />, type: "Hundelizenzantrag" },
+    2: { icon: <FaFire />, type: "Biike-Feuerantrag" },
+    3: { icon: <FaInfoCircle />, type: "Informationsanfrage" },
   };
 
-  const currentRole = getUserRole();
-  const sourceContext = getSourceContext();
-
-  const getIconByFormId = (formId) => {
-    const iconMap = {
-      1: <FaDog />,
-      2: <FaFire />,
-      3: <FaInfoCircle />,
+  // Status translation
+  const getGermanStatus = (status) => {
+    const statusMap = {
+      PENDING: "Ausstehend",
+      APPROVED: "Genehmigt",
+      REJECTED: "Abgelehnt",
+      PUBLISHED: "Veröffentlicht",
     };
-    return iconMap[formId] || <FaInfoCircle />;
+    return statusMap[status] || status;
   };
 
-  const getFormTypeByFormId = (formId) => {
-    const typeMap = {
-      1: "Hundelizenzantrag",
-      2: "Biike-Feuerantrag",
-      3: "Informationsanfrage",
-    };
-    return typeMap[formId] || "Unbekannter Antrag";
-  };
+  const getIconByFormId = (formId) =>
+    FORM_CONFIG[formId]?.icon || <FaInfoCircle />;
+  const getFormTypeByFormId = (formId) =>
+    FORM_CONFIG[formId]?.type || "Unbekannter Antrag";
+
+  // Helper to get application properties with fallbacks
+  const getAppProperty = (primary, secondary) =>
+    application?.[primary] || application?.[secondary];
 
   const handleStatusUpdate = (newStatus) => {
     if (application) {
@@ -102,8 +136,7 @@ export default function ApplicationView() {
         {renderPageContext()}
 
         <div className="button-group">
-          {/* Pending Applications - From Admin Dashboard */}
-          {status === "pending" && (
+          {status?.toLowerCase() === "pending" && (
             <>
               <button
                 className="action-btn approve-btn"
@@ -120,16 +153,13 @@ export default function ApplicationView() {
             </>
           )}
 
-          {/* Approved Applications - Can be Published */}
-          {status === "approved" && (
-            <>
-              <button
-                className="action-btn publish-btn"
-                onClick={() => handleStatusUpdate("published")}
-              >
-                Antrag veröffentlichen
-              </button>
-            </>
+          {status?.toLowerCase() === "approved" && (
+            <button
+              className="action-btn publish-btn"
+              onClick={() => handleStatusUpdate("published")}
+            >
+              Antrag veröffentlichen
+            </button>
           )}
         </div>
       </div>
@@ -143,7 +173,7 @@ export default function ApplicationView() {
       <div className="applicant-actions">
         <h3>Antragsoptionen:</h3>
         <div className="button-group">
-          {application.status === "pending" && (
+          {application.status?.toLowerCase() === "pending" && (
             <button
               className="action-btn edit-btn"
               onClick={() => navigate(`/applicant/edit/${application.id}`)}
@@ -181,7 +211,38 @@ export default function ApplicationView() {
       <>
         <Navbar role={currentRole} />
         <div className="application-view">
-          <div className="loading">Loading application...</div>
+          <div className="loading">Antrag wird geladen...</div>
+        </div>
+      </>
+    );
+  }
+
+  if (error) {
+    return (
+      <>
+        <Navbar role={currentRole} />
+        <div className="application-view">
+          <div className="error">
+            <h2>Fehler</h2>
+            <p>{error}</p>
+            <button className="action-btn" onClick={handleGoBack}>
+              Zurück
+            </button>
+            <button
+              className="action-btn"
+              onClick={() => {
+                const numericId = parseInt(id, 10);
+                if (!isNaN(numericId)) {
+                  setLoading(true);
+                  setError("");
+                  getApplicationMutation.mutate(numericId);
+                }
+              }}
+              style={{ marginLeft: "10px" }}
+            >
+              Erneut versuchen
+            </button>
+          </div>
         </div>
       </>
     );
@@ -192,9 +253,9 @@ export default function ApplicationView() {
       <>
         <Navbar role={currentRole} />
         <div className="application-view">
-          <div className="error">Application not found</div>
+          <div className="error">Antrag nicht gefunden</div>
           <button className="action-btn" onClick={handleGoBack}>
-            Go Back
+            Zurück
           </button>
         </div>
       </>
@@ -209,19 +270,22 @@ export default function ApplicationView() {
           {/* Header */}
           <div className="view-header">
             <button className="back-btn" onClick={handleGoBack}>
-              <FaArrowLeft /> Back to Dashboard
+              <FaArrowLeft /> Zurück zum Dashboard
             </button>
             <div className="header-info">
               <div className="icon-large">
-                {getIconByFormId(application.formId)}
+                {getIconByFormId(getAppProperty("formID", "formId"))}
               </div>
               <div className="header-text">
-                <h1>{getFormTypeByFormId(application.formId)}</h1>
+                <h1>
+                  {getFormTypeByFormId(getAppProperty("formID", "formId"))}
+                </h1>
                 <div
-                  className={`status-badge ${application.status.toLowerCase()}`}
+                  className={`status-badge ${(
+                    application.status || "pending"
+                  ).toLowerCase()}`}
                 >
-                  {application.status.charAt(0).toUpperCase() +
-                    application.status.slice(1)}
+                  {getGermanStatus(application.status || "PENDING")}
                 </div>
               </div>
             </div>
@@ -229,24 +293,37 @@ export default function ApplicationView() {
 
           {/* Application Metadata */}
           <div className="metadata-section">
-            <h2>Application Information</h2>
+            <h2>Antragsinformationen</h2>
             <div className="metadata-text">
-              <p>Application ID: {application.id}</p>
-              <p>Form ID: {application.formId}</p>
-              <p>Applicant ID: {application.applicantId}</p>
-              {/* Maybe useful when we want to know which admin approved*/}
-              <p>Admin ID: {application.adminId}</p>{" "}
-              <p>Submitted: {application.createdAt?.toLocaleString()}</p>
-              <p>Current Snapshot ID: {application.currentSnapshotId}</p>
-              {application.previousSnapshotId && (
-                <p>Previous Snapshot ID: {application.previousSnapshotId}</p>
+              <p>Antrags-ID: {getAppProperty("applicationID", "id")}</p>
+              <p>Formular-ID: {getAppProperty("formID", "formId")}</p>
+              <p>Benutzer-ID: {getAppProperty("userID", "applicantId")}</p>
+              {application.adminId && <p>Admin-ID: {application.adminId}</p>}
+              <p>Status: {getGermanStatus(application.status)}</p>
+              <p>
+                Erstellt:{" "}
+                {application.createdAt
+                  ? new Date(application.createdAt).toLocaleString("de-DE")
+                  : "Nicht verfügbar"}
+              </p>
+              {getAppProperty("currentSnapshotID", "currentSnapshotId") && (
+                <p>
+                  Aktuelle Snapshot-ID:{" "}
+                  {getAppProperty("currentSnapshotID", "currentSnapshotId")}
+                </p>
+              )}
+              {getAppProperty("previousSnapshotID", "previousSnapshotId") && (
+                <p>
+                  Vorherige Snapshot-ID:{" "}
+                  {getAppProperty("previousSnapshotID", "previousSnapshotId")}
+                </p>
               )}
             </div>
           </div>
 
           {/* Form Data */}
           <div className="form-data-section">
-            <h2>Application Details</h2>
+            <h2>Antragsdetails</h2>
             <div className="form-data-content">
               {Object.entries(application.jsonPayload || {}).map(
                 ([key, value]) => (
@@ -274,26 +351,19 @@ export default function ApplicationView() {
           {/* Revision History for Admins */}
           {currentRole === Role.ADMIN && (
             <div className="revision-section">
-              <h2>Revision History</h2>
+              <h2>Revisionsgeschichte</h2>
               <div className="revision-info">
                 <p>
-                  <strong>Current Snapshot ID:</strong>{" "}
-                  {application.currentSnapshotId}
+                  <strong>Aktuelle Snapshot-ID:</strong>{" "}
+                  {getAppProperty("currentSnapshotID", "currentSnapshotId") ||
+                    "N/A"}
                 </p>
-                {application.previousSnapshotId && (
+                {getAppProperty("previousSnapshotID", "previousSnapshotId") && (
                   <p>
-                    <strong>Previous Snapshot ID:</strong>{" "}
-                    {application.previousSnapshotId}
+                    <strong>Vorherige Snapshot-ID:</strong>{" "}
+                    {getAppProperty("previousSnapshotID", "previousSnapshotId")}
                   </p>
                 )}
-                <button
-                  className="action-btn info-btn"
-                  onClick={() =>
-                    alert("Revision comparison feature coming soon!")
-                  }
-                >
-                  View Revision History
-                </button>
               </div>
             </div>
           )}

@@ -2,7 +2,7 @@
 from datetime import datetime
 
 # third party imports
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException
 
 # project imports
 from backend.api.deps import   RoleChecker
@@ -35,7 +35,7 @@ async def list_applications():
     """
     Retrieve all applications in the system.
     """
-    pass
+    return applications_db
 
 @router.post("", response_model=bool, tags=["Applications"], summary="Create a new application")
 async def create_application(application_data: dict):
@@ -66,7 +66,16 @@ async def get_application(application_id: int):
     """
     Retrieve a specific application by its ID.
     """
-    pass
+    try:
+        app_id = int(application_id)
+    except ValueError:
+        raise HTTPException(status_code=400, detail="Invalid application ID format")
+    
+    for app in applications_db:
+        if app.applicationID == app_id:
+            return app
+    
+    raise HTTPException(status_code=404, detail=f"Application with ID {app_id} not found")
 
 @router.put("/{application_id}", response_model=Application, tags=["Applications"], summary="Update an application by ID")
 async def update_application(application_id: int, application: Application):

@@ -68,9 +68,7 @@ export default function ApplicationEdit() {
     mutationFn: createApplication,
     onSuccess: (data) => {
       setError("");
-      alert(
-        "Antrag erfolgreich erstellt! Sie werden nach dieser Nachricht weitergeleitet!"
-      );
+      alert("Antrag erfolgreich erstellt!");
       setSuccess("Antrag erfolgreich erstellt! Weiterleitung...");
       console.log("Antrag erfolgreich erstellt:", data);
 

@@ -6,14 +6,14 @@ from fastapi import APIRouter, HTTPException
 
 # project imports
 from backend.api.deps import   RoleChecker
-from backend.businesslogic.services.applicationService import createApplication, getApplication
+from backend.businesslogic.services.applicationService import createApplication, getApplication, editApplication
 from backend.models.domain.application import Application, ApplicationStatus
 from backend.crud.user import get_user_by_id
 from backend.models.domain.user import User, UserType
 from backend.businesslogic.user import ensure_applicant, ensure_admin, ensure_reporter, assign_role
 from backend.models import Form   
 from datetime import date 
-from backend.businesslogic.services.applicationService import applications_db
+from backend.businesslogic.services.mockups import _global_applications_db as applications_db
 
 # print("i only exist because of merge conflicts")
 
@@ -35,7 +35,7 @@ async def list_applications():
     """
     Retrieve all applications in the system.
     """
-    return applications_db
+    pass
 
 @router.post("", response_model=bool, tags=["Applications"], summary="Create a new application")
 async def create_application(application_data: dict):
@@ -78,12 +78,26 @@ async def get_application(application_id: int):
     raise HTTPException(status_code=404, detail=f"Application with ID {app_id} not found")
 
 @router.put("/{application_id}", response_model=Application, tags=["Applications"], summary="Update an application by ID")
-async def update_application(application_id: int, application: Application):
+async def update_application(application_id: int, new_application_data: dict):
     """
     Update a specific application by its ID.
     """
-    application.applicationID = application_id  # Ensure the ID remains the same
-    return application
+    from fastapi import HTTPException
+    
+    for app in applications_db:
+        if app.applicationID == application_id:
+            # Create User object for editApplication
+            user = User(id=app.userID, username="username", date_created=date.today(), hashed_password="pass") # TODO: should be replaced with actual user retrieval logic e.g. get_user_by_id()
+            assign_role(user, UserType.APPLICANT) 
+            
+            # Update the application with new data
+            app.jsonPayload = new_application_data.get("json_payload", app.jsonPayload)
+            
+            editApplication(user, app, new_application_data.get("json_payload", {}))
+            return app
+    
+    # If no application found, raise 404 error instead of returning None
+    raise HTTPException(status_code=404, detail="Application not found")
 
 @router.delete("/{application_id}", tags=["Applications"], summary="Delete an application by ID")
 async def delete_application(application_id: int):

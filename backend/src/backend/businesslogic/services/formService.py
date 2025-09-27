@@ -6,8 +6,10 @@ from backend.models import (Form, User, UserType, Section, BuildingBlock)
 from backend.businesslogic.buildingblock import createBuildingBlockFromDictionary, createDictionaryFromBuildingBlock
 from backend.businesslogic.user import ensure_admin
 
+from .mockups import _global_forms_db
+
 # simple in-memory store for tests
-_forms: list[Form] = []
+
 _form_id_counter = 1
 
 
@@ -17,17 +19,17 @@ def createForm(admin: User, sections: list[Section]) -> Form:
     if not ensure_admin(admin): # only admin can create forms
         raise PermissionError("Only admins can create forms.")
 	
-    if not isinstance(sections, list) or not all(isinstance(s, Section) for s in sections): # type check
-        raise ValueError("Forms must be a list of Section")
-    form = Form(formID=_form_id_counter, sections=sections)
+    # if not isinstance(sections, list) or not all(isinstance(s, Section) for s in sections): # type check
+    #     raise ValueError("Forms must be a list of Section")
+    form = Form(formID=_form_id_counter)
     _form_id_counter += 1 #temporary id generation for tests
-    _forms.append(form)
+    _global_forms_db.append(form)
 	# Logic to save the form to the database is not defined yet
     return form
 
 def getForm(formID: int):
 	""" Retrieves a form by its ID."""
-	for form in _forms:
+	for form in _global_forms_db:
 		if form.formID == formID:
 			return form
 	# Logic to retrieve the form from the database is not defined yet
@@ -35,7 +37,7 @@ def getForm(formID: int):
 
 def listForms():
 	""" Lists all forms in the system."""
-	return _forms
+	return _global_forms_db
 	# Logic to list all forms from the database is not defined yet
 	
 
@@ -48,7 +50,7 @@ def importForm(admin: User, form_data: dict):
 	global _form_id_counter
 	form.formID = _form_id_counter
 	_form_id_counter += 1
-	_forms.append(form)
+	_global_forms_db.append(form)
 
 	for section_data in form_data.get("sections", []):
 		section = Section(	

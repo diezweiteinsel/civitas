@@ -7,7 +7,7 @@ from contextlib import contextmanager
 # Third-party imports
 import psycopg
 from sqlalchemy import MetaData, create_engine, text
-from sqlalchemy.engine import Engine
+from sqlalchemy.engine import Engine, make_url
 from sqlalchemy.orm import sessionmaker, Session, registry
 from sqlalchemy.ext.automap import automap_base
 
@@ -24,10 +24,23 @@ def dev_mode_activated() -> bool:
     v = os.getenv("DEV_SQLITE", "").strip().lower()
     return v in {"1", "true", "yes", "y"}
 
+def _clean_port(raw: str | None, default: str = "5432") -> int:
+    """
+    Accepts '5432', 'tcp:5432', 'tcp://5432', 'tcp:5432?x'.
+    Returns int. Raises ValueError if unusable.
+    """
+    if not raw:
+        raw = default
+    r = raw.strip()
+    if r.startswith("tcp"):
+        digits = "".join(ch for ch in r if ch.isdigit())
+        r = digits or default
+    return int(r)
+
 
 def get_connection():
     host = os.getenv("DB_HOST", "localhost")
-    port = os.getenv("DB_PORT", "5432")
+    port = _clean_port(os.getenv("DB_PORT", "5432"))
     username = os.getenv("DB_USERNAME", "postgres")
     password = os.getenv("DB_PASSWORD", "postgres")
     database = os.getenv("DB_NAME", "postgres")
@@ -79,12 +92,20 @@ def get_engine() -> Engine:
             connect_args={"check_same_thread": False},
         )
     else:
-        host = os.getenv("DB_HOST", "localhost")
-        port = os.getenv("DB_PORT", "5432")
-        user = os.getenv("DB_USERNAME", "postgres")
-        pw = os.getenv("DB_PASSWORD", "postgres")
-        db = os.getenv("DB_NAME", "postgres")
-        url = f"postgresql+psycopg://{user}:{pw}@{host}:{port}/{db}"
+        url_env = os.getenv("DATABASE_URL")
+        if url_env:
+            u = make_url(url_env)
+            # normalize to psycopg driver for SQLAlchemy
+            if u.drivername == "postgresql":
+                u = u.set(drivername="postgresql+psycopg")
+            url = u.render_as_string(hide_password=False)
+        else:
+            host = os.getenv("DB_HOST", "localhost")
+            port = _clean_port(os.getenv("DB_PORT", "5432"))
+            user = os.getenv("DB_USERNAME", "postgres")
+            pw = os.getenv("DB_PASSWORD", "postgres")
+            db = os.getenv("DB_NAME", "postgres")
+            url = f"postgresql+psycopg://{user}:{pw}@{host}:{port}/{db}"
         return create_engine(
             url,
             echo=echo,
@@ -92,7 +113,7 @@ def get_engine() -> Engine:
             pool_pre_ping=True,       # drops dead conns
             pool_recycle=1800,        # refresh every 30 min
         )
-    
+
 engine = get_engine()
 
 # -------- Session factory (no globals leaked) --------
@@ -103,8 +124,12 @@ def make_session_factory(engine: Engine) -> sessionmaker[Session]:
 
 # Optional raw psycopg for health/COPY
 def get_psycopg_connection():
+    url_env = os.getenv("DATABASE_URL")
+    if url_env:
+        # psycopg accepts postgresql:// URIs without the +psycopg suffix
+        return psycopg.connect(url_env.replace("+psycopg", ""))
     host = os.getenv("DB_HOST", "localhost")
-    port = os.getenv("DB_PORT", "5432")
+    port = _clean_port(os.getenv("DB_PORT", "5432"))
     user = os.getenv("DB_USERNAME", "postgres")
     pw = os.getenv("DB_PASSWORD", "postgres")
     db = os.getenv("DB_NAME", "postgres")

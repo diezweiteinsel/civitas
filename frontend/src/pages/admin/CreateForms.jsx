@@ -6,7 +6,7 @@ import "./../../style/CreateEditForms.css";
 
 export default function Forms() {
     const [formFields, setFormFields] = useState([
-        { id: '1', name: "Field One", type: "text", value: "" }, // needs to be implemnted as a dict instead? i dont know 
+        { id: '1', name: "Feld eins", type: "Text", value: "" }, // needs to be implemnted as a dict instead? i dont know 
     ])
 
     const handleFormChange = (event, index) => {

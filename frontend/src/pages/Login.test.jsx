@@ -2,18 +2,24 @@
 
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import "@testing-library/jest-dom";
+import React from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { MemoryRouter } from "react-router-dom";
-import LoginPage from "./LoginPage";
+
+// Provide a light manual mock for `react-router-dom` so Jest does not try to
+// resolve the real (ESM) package. We expose a minimal `MemoryRouter`, a
+// `useNavigate` hook (we'll set the function in tests), and a simple
+// `NavLink` implementation.
+// Use the manual mock in src/__mocks__/react-router-dom.js and set the
+// navigate implementation before importing the component under test.
+const rrdomMock = require("react-router-dom");
+let mockNavigate = jest.fn();
+rrdomMock.__setMockNavigate(mockNavigate);
+
+const { MemoryRouter } = rrdomMock;
+import LoginPage from "./Login";
 
 // --- Mocking Dependencies ---
 // We mock the modules that contain external dependencies.
-const mockNavigate = jest.fn();
-jest.mock("react-router-dom", () => ({
-  ...jest.requireActual("react-router-dom"), // keep other exports like NavLink
-  useNavigate: () => mockNavigate,
-}));
-
 const mockLoginUser = jest.fn();
 jest.mock("../utils/api", () => ({
   loginUser: (args) => mockLoginUser(args),
@@ -50,6 +56,9 @@ describe("LoginPage", () => {
   // Clear all mocks before each test to ensure a clean slate.
   beforeEach(() => {
     jest.clearAllMocks();
+    mockNavigate = jest.fn();
+    // Reset the manual mock's navigate function for each test
+    rrdomMock.__setMockNavigate(mockNavigate);
   });
 
   // Test 1: Does the component render correctly?

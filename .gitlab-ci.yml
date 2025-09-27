@@ -38,16 +38,22 @@ test-backend:
     POSTGRES_DB: $POSTGRES_DB_TEST
     POSTGRES_USER: $POSTGRES_USER_TEST
     POSTGRES_PASSWORD: $POSTGRES_PASSWORD_TEST
-    DATABASE_URL: $DATABASE_URL_TEST
+    # for testing the pipeline, we hardcode the test DB URL here
+    DATABASE_URL: "postgresql://civitas_user:securepassword@db:5432/civitas_db_test"
     DB_HOST: db
     SECRET_KEY: "a-test-secret-key"
     ALGORITHM: "HS256"
+    DEV_SQLITE: "0"
   before_script:
     - apt-get update && apt-get install -y gcc libpq-dev
     - pip install -r backend/requirements-linux.txt
     - pip install -e backend/.
   script:
-    - pytest backend/ --junitxml=report.xml
+    # Always emit a JUnit file, even on collection errors
+    - pytest backend/ --junitxml=report.xml || true
+    - 'test -f report.xml || echo "<testsuite name=\"pytest\" tests=\"0\" failures=\"1\"><testcase classname=\"collection\" name=\"error\"><failure message=\"pytest crashed before producing report.xml\"/></testcase></testsuite>" > report.xml'
+    # Fail the job if pytest failed
+    - 'grep -q "<failure" report.xml && exit 1 || true'
   artifacts:
     when: always
     reports:

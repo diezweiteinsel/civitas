@@ -49,11 +49,9 @@ test-backend:
     - pip install -r backend/requirements-linux.txt
     - pip install -e backend/.
   script:
-    # Always emit a JUnit file, even on collection errors
-    - pytest backend/ --junitxml=report.xml || true
-    - 'test -f report.xml || echo "<testsuite name=\"pytest\" tests=\"0\" failures=\"1\"><testcase classname=\"collection\" name=\"error\"><failure message=\"pytest crashed before producing report.xml\"/></testcase></testsuite>" > report.xml'
-    # Fail the job if pytest failed
-    - 'grep -q "<failure" report.xml && exit 1 || true'
+  - pytest backend/ --junitxml=report.xml
+  - 'test -f report.xml || echo "<testsuite name=\"pytest\" tests=\"0\" failures=\"1\"><testcase classname=\"collection\" name=\"error\"><failure message=\"pytest crashed before producing report.xml\"/></testcase></testsuite>" > report.xml'
+
   artifacts:
     when: always
     reports:
@@ -94,7 +92,7 @@ deploy-to-vm:
       "POSTGRES_DB=$POSTGRES_DB" "POSTGRES_USER=$POSTGRES_USER" "POSTGRES_PASSWORD=$POSTGRES_PASSWORD" \
       "SECRET_KEY=$SECRET_KEY" "ALGORITHM=$ALGORITHM" \
       'DEV_SQLITE=0' 'SKIP_CREATE_ALL=0' 'ECHO_SQL=0' \
-      "ALLOWED_ORIGINS=$ALLOWED_ORIGINS" 'PYTHONPATH=/app' > backend.env
+      "ALLOWED_ORIGINS=$ALLOWED_ORIGINS" 'PYTHONPATH=/app' > backend.env 
 
       # derive pubkey + show fingerprint (no secret)
     - ssh-keygen -y -f id_deploy > id_deploy.pub

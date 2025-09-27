@@ -49,7 +49,7 @@ def test_add_and_getById_func():
         Form1 = OrmForm(form_name="Form 1", created_at=date.today(), is_active=True, xoev="X123")
 
         # Insert a form
-        form = formCrud.add_form(session, Form1)
+        form = formCrud.add_orm_form(session, Form1)
         ormFormRows = dbActions.getRows(session, OrmForm)
         assert len(ormFormRows) == 1
 
@@ -78,9 +78,9 @@ def test_get_all_forms_func():
         Form2 = OrmForm(form_name="Form 2", created_at=date.today(), is_active=False, xoev="X124")
         Form3 = OrmForm(form_name="Form 3", created_at=date.today(), is_active=True, xoev="X125")
 
-        formCrud.add_form(session, Form1)
-        formCrud.add_form(session, Form2)
-        formCrud.add_form(session, Form3)
+        formCrud.add_orm_form(session, Form1)
+        formCrud.add_orm_form(session, Form2)
+        formCrud.add_orm_form(session, Form3)
 
         # Fetch all forms
         allForms = formCrud.get_all_forms(session)

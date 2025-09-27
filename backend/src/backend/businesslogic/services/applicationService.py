@@ -26,6 +26,7 @@ def createApplication(user: User, form: Form, payload: dict) -> Application:
 		jsonPayload=payload
 	) # Still missing : importing formfields into application, snapshots and filling them with data from payload
 	# Logic to save the new application into the db is not defined yet
+	applications_db.append(newApplication) # for testing purposes only
 	return newApplication
 
 

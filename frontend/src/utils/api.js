@@ -43,6 +43,11 @@ export const loginUser = async (userData) => {
   }
 
   const tokenData = await response.json();
+
+  if (tokenData.access_token) {
+    localStorage.setItem("access_token", tokenData.access_token);
+  }
+
   return tokenData;
 };
 
@@ -96,6 +101,7 @@ export const getAllApplications = async () => {
   }
 
   const applications = await response.json();
+
   return applications;
 };
 
@@ -111,6 +117,7 @@ export const getApplicationById = async (id) => {
   const response = await fetch(`${API_BASE_URL}/api/v1/applications/${id}`, {
     method: "GET",
     headers: headers,
+    body: JSON.stringify(id),
   });
 
   if (!response.ok) {
@@ -133,19 +140,26 @@ export const createApplication = async (applicationData) => {
     headers.Authorization = `Bearer ${accessToken}`;
   }
 
+  // Structure the data to match backend expectations
+  const requestBody = {
+    user_id: applicationData.user_id || 1, // Default to user 1 if not provided
+    form_id: applicationData.form_id || 1, // Default to form 1 if not provided
+    payload: applicationData.payload || applicationData, // Use payload if provided, otherwise use the entire data
+  };
+
   const response = await fetch(`${API_BASE_URL}/api/v1/applications`, {
     method: "POST",
     headers: headers,
-    body: JSON.stringify(applicationData),
+    body: JSON.stringify(requestBody),
   });
 
   if (!response.ok) {
     const errorData = await response.json();
     throw new Error(
-      errorData.detail || errorData.error || "Failed to create applications"
+      errorData.detail || errorData.error || "Failed to create application"
     );
   }
 
-  const applications = await response.json();
-  return applications;
+  const application = await response.json();
+  return application;
 };

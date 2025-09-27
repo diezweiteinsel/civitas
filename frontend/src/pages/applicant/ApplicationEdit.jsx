@@ -34,13 +34,8 @@ export default function ApplicationEdit() {
 
   const handleSubmit = (e) => {
     const applicationData = {
-      applicationID: -1,
-      userID: -1,
-      formID: -1,
-      status: "PENDING",
-      createdAt: "2025-09-26T15:55:35.604097",
-      currentSnapshotID: -1,
-      previousSnapshotID: -1,
+      user_id: 1,
+      form_id: 1,
       jsonPayload: {
         0: {
           label: "Name",

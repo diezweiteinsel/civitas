@@ -3,7 +3,7 @@
 from datetime import datetime # stdlib
 from enum import Enum
 
-from pydantic import BaseModel #3rdparty
+from pydantic import BaseModel, Field #3rdparty
 
 from .form import Form #our stuff
 
@@ -22,7 +22,7 @@ class Application(BaseModel):
     userID: int = -1
     formID: int = -1
     status: ApplicationStatus = ApplicationStatus.PENDING
-    createdAt: datetime = datetime.now()
+    createdAt: datetime = Field(default_factory=datetime.now)
     currentSnapshotID: int = -1  # Points to the latest snapshot of the application
     previousSnapshotID: int = -1  # Points to the previous snapshot of the application
     jsonPayload: dict = {}  # The actual data of the application

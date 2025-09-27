@@ -32,8 +32,31 @@ export default function Navbar({ role = Role.EMPTY }) {
 
   return (
     <nav className="navbar">
-      <Logo />
-      <div className="navbar-brand">CIVITAS</div>
+      <NavLink
+        to={
+          role === Role.ADMIN
+            ? "/admin"
+            : role === Role.REPORTER
+            ? "/reporter"
+            : "/applicant"
+        }
+        className="navbar-logo"
+      >
+        <Logo />
+      </NavLink>
+
+      <NavLink
+        to={
+          role === Role.ADMIN
+            ? "/admin"
+            : role === Role.REPORTER
+            ? "/reporter"
+            : "/applicant"
+        }
+        className="navbar-home"
+      >
+        <div className="navbar-brand">CIVITAS</div>
+      </NavLink>
       <div
         ref={dropdownRef}
         className={`dropdown ${role === Role.EMPTY ? "hidden" : ""}`}
@@ -134,7 +157,7 @@ export default function Navbar({ role = Role.EMPTY }) {
                 <div className="dropdown-item">
                   <NavLink
                     className="nav-link"
-                    to="/applicant"
+                    to="/reporter"
                     onClick={() => setShowDropdown(false)}
                   >
                     Startseite

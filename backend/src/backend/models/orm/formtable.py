@@ -1,4 +1,5 @@
 
+from datetime import date
 from sqlalchemy import Column, Integer, String, Date, Boolean
 
 from backend.core.ormUtil import SchemaBase
@@ -18,6 +19,6 @@ class OrmForm(SchemaBase):
     __tablename__ = "form_table"
     id = Column(Integer, primary_key=True)
     form_name = Column(String, nullable=False)
-    created_at = Column(Date, nullable=False)
+    created_at = Column(Date, default=date.today(), nullable=False)
     is_active = Column(Boolean, default=True)
     xoev = Column(String, nullable=False)

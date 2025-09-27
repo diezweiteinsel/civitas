@@ -1,3 +1,4 @@
+from datetime import date
 from typing import Any, Type
 
 from sqlalchemy import Column, Date, Integer, String, Boolean, Enum
@@ -54,7 +55,7 @@ def user_db_setup():
     form_table_columns = {
         "id": Column(Integer, primary_key=True),
         "form_name": Column(String, nullable=False),
-        "created_at": Column(Date, nullable=False),
+        "created_at": Column(Date, default=date.today()),
         "is_active": Column(Boolean, default=True),
         "xoev": Column(String, nullable=False),
     }

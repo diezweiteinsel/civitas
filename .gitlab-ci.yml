@@ -68,14 +68,20 @@ deploy-to-vm:
   before_script:
     - apk add --no-cache openssh-client tar gzip docker-cli-compose
     - eval $(ssh-agent -s)
-    # If SSH_PRIVATE_KEY is a File var, GitLab sets it to a path. Lock it down.
-    - test -f "$SSH_PRIVATE_KEY" || { echo "SSH_PRIVATE_KEY is not a file var"; exit 1; }
-    - chmod 600 "$SSH_PRIVATE_KEY"
-    - ssh-add "$SSH_PRIVATE_KEY"
+
+    # --- validate and normalize the File variable to a real key file ---
+    - test -f "$SSH_PRIVATE_KEY" || { echo "SSH_PRIVATE_KEY must be a File variable"; exit 1; }
+    # strip CRLF safely into a new file
+    - tr -d '\r' < "$SSH_PRIVATE_KEY" > id_deploy
+    - chmod 600 id_deploy
+    # sanity: must look like an OpenSSH private key and be usable (no passphrase)
+    - grep -q "^-----BEGIN OPENSSH PRIVATE KEY-----" id_deploy || { echo "Not an OpenSSH private key"; exit 1; }
+    - ssh-keygen -y -f id_deploy >/dev/null || { echo "Invalid or passphrase-protected key"; exit 1; }
+
+    - ssh-add id_deploy
+
     - mkdir -p ~/.ssh && chmod 700 ~/.ssh
     - printf "Host *\n\tStrictHostKeyChecking no\n" > ~/.ssh/config
-    - cp "$SSH_PRIVATE_KEY" id_deploy && chmod 600 id_deploy
-    - ssh-add ./id_deploy
 
   script:
     - git config --global --add safe.directory "$CI_PROJECT_DIR"

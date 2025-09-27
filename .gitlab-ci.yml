@@ -81,7 +81,7 @@ deploy-to-vm:
     - ssh-add id_deploy
 
     - mkdir -p ~/.ssh && chmod 700 ~/.ssh
-    - printf "Host *\n\tStrictHostKeyChecking no\n" > ~/.ssh/config
+    - printf "Host *\n\tStrictHostKeyChecking no\n\tPort %s\n" "$SSH_PORT" > ~/.ssh/config
 
   script:
     - git config --global --add safe.directory "$CI_PROJECT_DIR"
@@ -94,12 +94,13 @@ deploy-to-vm:
       'DEV_SQLITE=0' 'SKIP_CREATE_ALL=0' 'ECHO_SQL=0' \
       "ALLOWED_ORIGINS=$ALLOWED_ORIGINS" 'PYTHONPATH=/app' > backend.env
 
-    - ssh "$SSH_USER@$SSH_SERVER_IP" "mkdir -p '$VM_DEPLOY_PATH'"
-    - scp app.tar.gz "$SSH_USER@$SSH_SERVER_IP:$VM_DEPLOY_PATH/app.tar.gz"
-    - scp backend.env "$SSH_USER@$SSH_SERVER_IP:$VM_DEPLOY_PATH/backend.env"
+    - ssh -p "$SSH_PORT" "$SSH_USER@$SSH_SERVER_IP" "mkdir -p '$VM_DEPLOY_PATH'"
+    - ssh -o BatchMode=yes -p "$SSH_PORT" "$SSH_USER@$SSH_SERVER_IP" "echo OK-SSH && whoami && hostname"
+    - scp -p "$SSH_PORT" app.tar.gz "$SSH_USER@$SSH_SERVER_IP:$VM_DEPLOY_PATH/app.tar.gz"
+    - scp -p "$SSH_PORT" backend.env "$SSH_USER@$SSH_SERVER_IP:$VM_DEPLOY_PATH/backend.env"
 
     # unpack, move .env, build & run — single SSH command, no multiline
-    - ssh "$SSH_USER@$SSH_SERVER_IP" "set -e; cd '$VM_DEPLOY_PATH'; \
+    - ssh -p "$SSH_PORT" "$SSH_USER@$SSH_SERVER_IP" "set -e; cd '$VM_DEPLOY_PATH'; \
         tar -xzf app.tar.gz && rm -f app.tar.gz; \
         mkdir -p backend; install -m 600 backend.env backend/.env; rm -f backend.env; \
         docker compose -f docker-compose.prod.yml build --pull; \

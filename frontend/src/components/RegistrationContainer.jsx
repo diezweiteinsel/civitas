@@ -25,13 +25,20 @@ export default function RegistrationContainer({ role = Role.APPLICANT }) {
     mutationFn: createUser,
     onSuccess: (data) => {
       setError("");
-      alert(
-        "Registration successful! You will be redirected after this message!"
-      );
-      setSuccess("Registration successful! Redirecting to login...");
+      alert("Registration successful!");
+      setSuccess("Registration successful!");
       console.log("User created successfully:", data);
-
-      navigate("/");
+      switch (role) {
+        case Role.ADMIN:
+          break;
+        case Role.REPORTER:
+          break;
+        case Role.APPLICANT:
+          navigate("/");
+          break;
+        default:
+          navigate("/");
+      }
     },
     onError: (error) => {
       setSuccess("");

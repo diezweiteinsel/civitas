@@ -30,6 +30,13 @@ async def get_current_user_payload(token: str = Depends(oauth2_scheme)) -> dict:
 class RoleChecker:
     """
     A dependency class that checks if the current user has the required roles.
+    Usage:
+    
+        @app.get("/some-endpoint")
+        async def some_endpoint(role_check: None = Depends(RoleChecker(["admin", "user"]))):
+            return {"message": "You have access to this endpoint."}
+    
+    :param allowed_roles: List of roles that are allowed to access the endpoint.
     """
     def __init__(self, allowed_roles: List[str]):
         self.allowed_roles = allowed_roles

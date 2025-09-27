@@ -79,6 +79,7 @@ export const getAllUsers = async () => {
   return users;
 };
 
+// WORKS
 export const getAllApplications = async () => {
   const accessToken = getToken();
   const headers = {
@@ -105,7 +106,7 @@ export const getAllApplications = async () => {
   return applications;
 };
 
-export const getApplicationById = async (id) => {
+export const getApplicationById = async (application_id) => {
   const accessToken = getToken();
   const headers = {
     "Content-Type": "application/json",
@@ -114,11 +115,13 @@ export const getApplicationById = async (id) => {
     headers.Authorization = `Bearer ${accessToken}`;
   }
 
-  const response = await fetch(`${API_BASE_URL}/api/v1/applications/${id}`, {
-    method: "GET",
-    headers: headers,
-    body: JSON.stringify(id),
-  });
+  const response = await fetch(
+    `${API_BASE_URL}/api/v1/applications/${application_id}`,
+    {
+      method: "GET",
+      headers: headers,
+    }
+  );
 
   if (!response.ok) {
     const errorData = await response.json();

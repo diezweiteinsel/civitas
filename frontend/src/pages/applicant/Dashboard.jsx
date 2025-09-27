@@ -10,7 +10,7 @@ export default function ApplicantPage() {
   return (
     <>
       <Navbar role={Role.APPLICANT} />
-      <ApplicationContainer applications={[]} title="Your Applications:" />
+      <ApplicationContainer applications={[]} title="Eigene Anträge:" />
     </>
   );
 }

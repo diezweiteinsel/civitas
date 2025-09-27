@@ -67,7 +67,7 @@ export default function ApplicationContainer({
         <div className="container-list">
           {applications.length === 0 ? (
             <div className="no-applications">
-              <p>No applications found.</p>
+              <p>Keine Applikation gefunden.</p>
             </div>
           ) : (
             applications.map((application) => (
@@ -91,17 +91,17 @@ export default function ApplicationContainer({
                     className="toggle-btn"
                     onClick={() => handleViewApplication(application.id)}
                   >
-                    View Details
+                    Zeig Details
                   </button>
                 </div>
                 {expandedIds.includes(application.id) && (
                   <div className="container-details">
                     <div>
-                      <strong>Quick Preview:</strong>
+                      <strong>Vorschau:</strong>
                     </div>
-                    <div>Application ID: {application.id}</div>
+                    <div>Applikation ID: {application.id}</div>
                     <div>
-                      Created: {application.createdAt?.toLocaleDateString()}
+                      Erstellt: {application.createdAt?.toLocaleDateString()}
                     </div>
                     <div>Status: {application.status}</div>
                     <button
@@ -109,7 +109,7 @@ export default function ApplicationContainer({
                       style={{ marginTop: "10px" }}
                       onClick={() => handleViewApplication(application.id)}
                     >
-                      View Full Details
+                      Zeig Vollständige Details
                     </button>
                   </div>
                 )}

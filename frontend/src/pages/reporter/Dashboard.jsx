@@ -30,7 +30,7 @@ export default function ReporterPage() {
             cursor: "pointer",
           }}
         >
-          Export
+          Exportieren
         </button>
       </div>
     </>

@@ -18,8 +18,8 @@ export default function RegistrationContainer({ role = Role.APPLICANT }) {
     {
       [Role.ADMIN]: "Admin ",
       [Role.REPORTER]: "Reporter ",
-      [Role.APPLICANT]: "Applicant ",
-    }[role] || "Applicant ";
+      [Role.APPLICANT]: "Bürger ",
+    }[role] || "Bürger ";
 
   const createUserMutation = useMutation({
     mutationFn: createUser,
@@ -66,19 +66,19 @@ export default function RegistrationContainer({ role = Role.APPLICANT }) {
   return (
     <div className="register-container">
       <div className="register-card">
-        <h2 className="register-title">{title}Registration</h2>
+        <h2 className="register-title">{title}Registrieren</h2>
 
         {error && <p className="error-message">{error}</p>}
         {success && <p className="success-message">{success}</p>}
 
         <form onSubmit={handleSubmit} className="register-form">
           <div className="form-group">
-            <label>Username</label>
+            <label>Benutzername</label>
             <input
               type="text"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
-              placeholder="Enter username"
+              placeholder="Benutzername eingeben"
             />
           </div>
 
@@ -88,27 +88,27 @@ export default function RegistrationContainer({ role = Role.APPLICANT }) {
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="Enter email"
+              placeholder="Email eingeben"
             />
           </div>
 
           <div className="form-group">
-            <label>Password</label>
+            <label>Passwort</label>
             <input
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              placeholder="Enter password"
+              placeholder="Passwort eingeben"
             />
           </div>
 
           <div className="form-group">
-            <label>Confirm Password</label>
+            <label>Passwort Bestätigen</label>
             <input
               type="password"
               value={confirm}
               onChange={(e) => setConfirm(e.target.value)}
-              placeholder="Confirm password"
+              placeholder="Passwort bestätigen"
             />
           </div>
 
@@ -117,11 +117,14 @@ export default function RegistrationContainer({ role = Role.APPLICANT }) {
             className="register-button"
             disabled={createUserMutation.isPending}
           >
-            {createUserMutation.isPending ? "Creating Account..." : "Register"}
+            {createUserMutation.isPending
+              ? "Account erstellen..."
+              : "Registrieren"}
           </button>
           {role === Role.APPLICANT && (
             <p className="signup-text">
-              Already have an account? <NavLink to="/">Login</NavLink>
+              Sie haben bereits einen Account?{" "}
+              <NavLink to="/">Anmelden</NavLink>
             </p>
           )}
         </form>

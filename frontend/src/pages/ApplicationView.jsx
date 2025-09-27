@@ -49,16 +49,16 @@ export default function ApplicationView() {
 
   const getFormTypeByFormId = (formId) => {
     const typeMap = {
-      1: "Dog License Application",
-      2: "Fire Permit Application",
-      3: "Information Request",
+      1: "Hunde licenz Antrag",
+      2: "Biike-Feuer Antrag",
+      3: "Informationsanfrage",
     };
-    return typeMap[formId] || "Unknown Application";
+    return typeMap[formId] || "Unbekannter Antrag";
   };
 
   const handleStatusUpdate = (newStatus) => {
     if (application) {
-      alert(`Application ${newStatus} successfully!`);
+      alert(`Antrag ${newStatus} erfolgreich!`);
     }
   };
 
@@ -76,16 +76,16 @@ export default function ApplicationView() {
     if (currentRole !== Role.ADMIN) return null;
 
     const contextMap = {
-      "admin-dashboard": "Viewing from Admin Dashboard",
-      "public-applications": "Viewing from Public Applications",
-      "applicant-dashboard": "Viewing from Applicant Dashboard",
-      unknown: "Direct Access",
+      "admin-dashboard": "Anzeigen über die Admin-Startseite",
+      "public-applications": "Anzeigen über die öffentlichen Anwendungen",
+      "applicant-dashboard": "Anzeigen über das Bewerber-Dashboard",
+      unknown: "Direkter Zugriff",
     };
 
     return (
       <div className="context-info">
         <small>
-          <FaHistory /> {contextMap[sourceContext] || "Unknown Source"}
+          <FaHistory /> {contextMap[sourceContext] || "Unbekannter Kontext"}
         </small>
       </div>
     );
@@ -98,7 +98,7 @@ export default function ApplicationView() {
 
     return (
       <div className="action-buttons">
-        <h3>Admin Actions:</h3>
+        <h3>Admin-Aktionen:</h3>
         {renderPageContext()}
 
         <div className="button-group">
@@ -109,13 +109,13 @@ export default function ApplicationView() {
                 className="action-btn approve-btn"
                 onClick={() => handleStatusUpdate("approved")}
               >
-                Approve Application
+                Antrag genehmigen
               </button>
               <button
                 className="action-btn reject-btn"
                 onClick={() => handleStatusUpdate("rejected")}
               >
-                Reject Application
+                Antrag ablehnen
               </button>
             </>
           )}
@@ -127,7 +127,7 @@ export default function ApplicationView() {
                 className="action-btn publish-btn"
                 onClick={() => handleStatusUpdate("published")}
               >
-                Publish to Public
+                Antrag veröffentlichen
               </button>
             </>
           )}
@@ -141,14 +141,14 @@ export default function ApplicationView() {
 
     return (
       <div className="applicant-actions">
-        <h3>Application Options:</h3>
+        <h3>Antragsoptionen:</h3>
         <div className="button-group">
           {application.status === "pending" && (
             <button
               className="action-btn edit-btn"
               onClick={() => navigate(`/applicant/edit/${application.id}`)}
             >
-              Edit Application
+              Antrag bearbeiten
             </button>
           )}
 
@@ -157,21 +157,19 @@ export default function ApplicationView() {
             onClick={() => {
               const statusMessages = {
                 pending:
-                  "Your application is currently under review by our administration team.",
-                approved:
-                  "Congratulations! Your application has been approved.",
+                  "Ihr Antrag wird derzeit von unserem Verwaltungsteam geprüft.",
+                approved: "Herzlichen Glückwunsch! Ihr Antrag wurde genehmigt.",
                 rejected:
-                  "Unfortunately, your application was not approved. Please contact administration for more details.",
+                  "Leider wurde Ihr Antrag nicht genehmigt. Bitte kontaktieren Sie die Verwaltung für weitere Informationen.",
                 published:
-                  "Your application has been approved and is now publicly visible.",
+                  "Ihr Antrag wurde genehmigt und ist jetzt öffentlich sichtbar.",
               };
               alert(
-                statusMessages[application.status] ||
-                  "Application status unknown."
+                statusMessages[application.status] || "Antragsstatus unbekannt."
               );
             }}
           >
-            Status Information
+            Status Informationen
           </button>
         </div>
       </div>

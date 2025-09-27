@@ -28,9 +28,8 @@ export default function LoginPage() {
     mutationFn: loginUser,
     onSuccess: (data) => {
       setError("");
-      console.log("Login successful:", data);
+      console.log("Anmeldung erfolgreich:", data);
 
-      // Save token data using the utility function
       saveToken(data);
 
       if (data.roles && data.roles.length > 0) {
@@ -50,7 +49,10 @@ export default function LoginPage() {
       }
     },
     onError: (error) => {
-      setError(error.message || "Login failed. Please try again.");
+      setError(
+        error.message ||
+          "Anmeldung fehlgeschlagen. Bitte versuchen Sie es erneut."
+      );
       console.error("Login error:", error);
     },
   });
@@ -59,7 +61,7 @@ export default function LoginPage() {
     e.preventDefault();
 
     if (!username || !password) {
-      setError("Both fields are required");
+      setError("Beide Felder sind erforderlich");
       return;
     }
 
@@ -72,28 +74,28 @@ export default function LoginPage() {
       <Navbar />
       <div className="login-container">
         <div className="login-card">
-          <h2 className="login-title">Login</h2>
+          <h2 className="login-title">Anmeldung</h2>
 
           {error && <p className="error-message">{error}</p>}
 
           <form onSubmit={handleSubmit} className="login-form">
             <div className="form-group">
-              <label>Username</label>
+              <label>Benutzername</label>
               <input
                 type="text"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
-                placeholder="Enter username"
+                placeholder="Benutzername eingeben"
               />
             </div>
 
             <div className="form-group">
-              <label>Password</label>
+              <label>Passwort</label>
               <input
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                placeholder="Enter password"
+                placeholder="Passwort eingeben"
               />
             </div>
 
@@ -102,7 +104,7 @@ export default function LoginPage() {
               className="login-button"
               disabled={loginMutation.isPending}
             >
-              {loginMutation.isPending ? "Logging in..." : "Login"}
+              {loginMutation.isPending ? "Anmeldung läuft..." : "Anmelden"}
             </button>
           </form>
 
@@ -115,23 +117,25 @@ export default function LoginPage() {
               borderRadius: "5px",
             }}
           >
-            <h4>Available Users (for testing):</h4>
+            <h4>Verfügbare Benutzer (zum Testen):</h4>
             <button
               onClick={() => refetchUsers()}
               style={{ marginBottom: "10px", padding: "5px 10px" }}
               disabled={usersLoading}
             >
-              {usersLoading ? "Loading..." : "Fetch Users"}
+              {usersLoading ? "Laden..." : "Benutzer abrufen"}
             </button>
-            {usersLoading && <p>Loading users...</p>}
-            {usersError && <p>Error loading users: {usersError.message}</p>}
+            {usersLoading && <p>Benutzer werden geladen...</p>}
+            {usersError && (
+              <p>Fehler beim Laden der Benutzer: {usersError.message}</p>
+            )}
             {usersData && Array.isArray(usersData) && usersData.length > 0 && (
               <ul style={{ listStyle: "none", padding: 0 }}>
                 {usersData.map((user) => (
                   <li key={user.id} style={{ marginBottom: "5px" }}>
                     <strong>{user.username}</strong>
                     {user.user_roles && user.user_roles.length > 0 && (
-                      <span> (Role: {user.user_roles[0].role})</span>
+                      <span> (Rolle: {user.user_roles[0].role})</span>
                     )}
                     <span> - Email: {user.email}</span>
                   </li>
@@ -140,11 +144,12 @@ export default function LoginPage() {
             )}
             {usersData &&
               Array.isArray(usersData) &&
-              usersData.length === 0 && <p>No users found.</p>}
+              usersData.length === 0 && <p>Keine Benutzer gefunden.</p>}
           </div>
 
           <p className="signup-text">
-            Don't have an account? <NavLink to="/registration">Sign up</NavLink>
+            Sie haben noch keinen Account?{" "}
+            <NavLink to="/registration">Registrieren</NavLink>
           </p>
         </div>
       </div>

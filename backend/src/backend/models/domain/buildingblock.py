@@ -1,26 +1,26 @@
 from pydantic import BaseModel
-from enum import IntEnum, auto
+from enum import IntEnum, auto, StrEnum
 # backend.models.domain.trigger import Trigger
 
-class BBType(IntEnum):
-    NULL = 0
-    STRING = auto()
-    INTEGER = auto()
-    DATE = auto()
-    FLOAT = auto()
-    LONG = auto()
+class BBType(StrEnum):
+    NULL = "NULL"
+    STRING = "STRING"
+    INTEGER = "INTEGER"
+    DATE = "DATE"
+    FLOAT = "FLOAT"
+    LONG = "LONG"
 
 class BuildingBlock(BaseModel):
     '''A building block represents a single field in a form, with a name and a data type.'''
-    id: int = -1
+    #id: int = -1
     # sorting purpose
-    key: str = ""
+    #key: str = ""
+
     # label shown in frontend
     label: str = ""
-    dataType: BBType = BBType.NULL
+    data_type: BBType = BBType.NULL
     required: bool = False
-    order: int = 0
+    #order: int = 0
     constraintsJson: dict = {}
-    #triggers: list[Trigger] = []
-
+    
 

@@ -53,7 +53,7 @@ def createApplication(user: User, form: Form, payload: dict) -> Application:
 	newApplication = Application(
 	#	applicationID=1,  # Placeholder, should be set by the database
 		userID=user.id,
-		formID=form.formID,
+		formID=form.id,
 		jsonPayload=payload
 	) # Still missing : importing formfields into application, snapshots and filling them with data from payload
 	# Logic to save the new application into the db is not defined yet

@@ -113,6 +113,8 @@ deploy-to-vm:
       ssh -p "$SSH_PORT" "$SSH_USER@$SSH_SERVER_IP" "
         set -e
         cd '$VM_DEPLOY_PATH'
+        export DOCKER_CONFIG=$VM_DEPLOY_PATH/.docker
+        mkdir -p \$DOCKER_CONFIG
         tar -xzf app.tar.gz && rm -f app.tar.gz
         mkdir -p backend && install -m 600 backend.env backend/.env && rm -f backend.env
         docker compose -f docker-compose.prod.yml build --pull

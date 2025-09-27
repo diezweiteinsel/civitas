@@ -13,6 +13,7 @@ from backend.models.domain.user import User, UserType
 from backend.businesslogic.user import ensure_applicant, ensure_admin, ensure_reporter, assign_role
 from backend.models import Form   
 from datetime import date 
+from backend.businesslogic.services.applicationService import applications_db
 
 # print("i only exist because of merge conflicts")
 
@@ -36,10 +37,15 @@ async def list_applications():
     """
     pass
 
-@router.post("", response_model=Application, tags=["Applications"], summary="Create a new application")
-async def create_application(json_payload: dict):
-    user_id = json_payload.get("user_id")
-    form_id = json_payload.get("form_id")
+@router.post("", response_model=bool, tags=["Applications"], summary="Create a new application")
+async def create_application(application_data: dict):
+    """
+    Create a new application in the system.
+    """
+    user_id = application_data.get("user_id", 1)  # Default to user 1 for testing
+    form_id = application_data.get("form_id", 1)  # Default to form 1 for testing
+    payload = application_data.get("payload", {})
+    
     # user = await get_user_by_id(user_id)
     user = User(id=user_id, username="username", date_created=date.today(), hashed_password="pass") # temporary, replace with actual user retrieval logic
     assign_role(user, UserType.APPLICANT) # temporary, remove when actual user retrieval logic is implemented
@@ -48,12 +54,12 @@ async def create_application(json_payload: dict):
     if not ensure_applicant(user):
         raise PermissionError("Only applicants can create applications.")
     form = Form(formID=form_id)  # temporary, replace with actual form retrieval logic. But now we are skipping the form logic
-    """
-    Create a new application in the system.
-    """
-    application = createApplication(user, form, json_payload.get("json_payload", {}))
-    # Logic to save the application to the database is not defined yet
-    return application
+    
+    application = createApplication(user, form, payload)
+
+    # Save application to db
+
+    return application in applications_db
 
 @router.get("/{application_id}", response_model=Application, tags=["Applications"], summary="Get application by ID")
 async def get_application(application_id: int):

@@ -2,11 +2,11 @@
 // Diese Seite soll "ViewForms.jsx" aufgerufen werden und soll die Möglichkeit bieten, ein neues Formular zu erstellen.
 
 import React, { useState } from "react";
-import "./../../style/AdminApplicantReporterPage.css";
+import "./../../style/CreateEditForms.css";
 
 export default function Forms() {
     const [formFields, setFormFields] = useState([
-        {fieldOne: "", fieldTwo: ""}, // needs to be implemnted as a dict instead
+        { id: '1', name: "Field One", type: "text", value: "" }, // needs to be implemnted as a dict instead? i dont know 
     ])
 
     const handleFormChange = (event, index) => {

@@ -35,7 +35,7 @@ async def list_applications():
     """
     Retrieve all applications in the system.
     """
-    pass
+    return applications_db
 
 @router.post("", response_model=bool, tags=["Applications"], summary="Create a new application")
 async def create_application(application_data: dict):

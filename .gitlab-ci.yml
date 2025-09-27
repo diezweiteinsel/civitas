@@ -45,6 +45,7 @@ test-backend:
   before_script:
     - apt-get update && apt-get install -y gcc libpq-dev
     - pip install -r backend/requirements-linux.txt
+    - pip install -e backend/.
   script:
     - pytest backend/ --junitxml=report.xml
   artifacts:

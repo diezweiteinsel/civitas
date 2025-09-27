@@ -61,15 +61,21 @@ def evaluateTriggerLogicExpression(dictionary: dict, application: Application) -
 					return False
 				return True
 		case LogicTriggerType.OR:
-			pass
+			for b in dictionary["body"]:
+				if evaluateTriggerLogic(b, application):
+					return True
+			return False
 		case LogicTriggerType.NOR:
-			pass
+			for b in dictionary["body"]:
+				if not evaluateTriggerLogic(b, application):
+					return True
+			return False
 		case LogicTriggerType.NOT:
-			pass
+			return not evaluateTriggerLogic(dictionary["body"], application)
 		case LogicTriggerType.XOR:
-			pass
+			return not (evaluateTriggerLogic(dictionary["body"][0], application) == evaluateTriggerLogic(dictionary["body"][1], application))
 		case LogicTriggerType.EQUALS:
-			pass
+			return evaluateTriggerLogic(dictionary["body"][0], application) == evaluateTriggerLogic(dictionary["body"][1], application)
 	return False
 
 def evaluateTriggerLogicString(dictionary: dict, application: Application) -> bool:

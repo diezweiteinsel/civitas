@@ -17,10 +17,10 @@ export default function PublicApplication() {
       : Role.EMPTY;
 
   const getTitle = () => {
-    if (sourceRole === "admin") return "Admin View - Public Applications:";
+    if (sourceRole === "admin") return "Admin-Ansicht – Öffentliche Anträge:";
     if (sourceRole === "applicant")
-      return "Applicant View - Public Applications:";
-    return "Public Applications:";
+      return "Bürger-Ansicht – Öffentliche Anträge:";
+    return "Öffentliche Anträge:";
   };
 
   return (

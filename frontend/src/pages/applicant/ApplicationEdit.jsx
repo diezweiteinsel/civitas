@@ -47,26 +47,26 @@ export default function ApplicationEdit() {
           value: form.name,
         },
         1: {
-          label: "Location",
+          label: "Standort",
           value: form.location,
         },
         2: {
-          label: "Date",
+          label: "Datum",
           value: form.date,
         },
         3: {
-          label: "Description",
+          label: "Beschreibung",
           value: form.description,
         },
         4: {
-          label: "Amount",
+          label: "Betrag",
           value: form.amount,
         },
       },
     };
     createApplicationMutation.mutate(applicationData);
     e.preventDefault();
-    alert("Submitted: " + JSON.stringify(applicationData));
+    console.log("Versuch Antrag zu stellen:", applicationData);
   };
 
   const createApplicationMutation = useMutation({
@@ -74,19 +74,20 @@ export default function ApplicationEdit() {
     onSuccess: (data) => {
       setError("");
       alert(
-        "Application created successfully! You will be redirected after this message!"
+        "Antrag erfolgreich erstellt! Sie werden nach dieser Nachricht weitergeleitet!"
       );
-      setSuccess("Application created successfully! Redirecting...");
-      console.log("Application created successfully:", data);
+      setSuccess("Antrag erfolgreich erstellt! Weiterleitung...");
+      console.log("Antrag erfolgreich erstellt:", data);
 
       navigate("/");
     },
     onError: (error) => {
       setSuccess("");
       setError(
-        error.message || "Application creation failed. Please try again."
+        error.message ||
+          "Antragserstellung fehlgeschlagen. Bitte versuchen Sie es erneut."
       );
-      console.error("Application creation error:", error);
+      console.error("Fehler bei Antragserstellung:", error);
     },
   });
 
@@ -95,7 +96,7 @@ export default function ApplicationEdit() {
       <Navbar role={Role.APPLICANT} />
       <div className="application-edit-container">
         <div className="application-edit-card">
-          <h2 className="application-edit-title">Edit Application</h2>
+          <h2 className="application-edit-title">Antrag bearbeiten</h2>
           <form className="application-edit-form" onSubmit={handleSubmit}>
             {/* Later: Use one div as a template and let them be injected when routing to this page to get the right structure of the form. */}
             <div className="form-group">
@@ -110,7 +111,7 @@ export default function ApplicationEdit() {
               />
             </div>
             <div className="form-group">
-              <label htmlFor="location">Location:</label>
+              <label htmlFor="location">Standort:</label>
               <input
                 type="text"
                 id="location"
@@ -121,7 +122,7 @@ export default function ApplicationEdit() {
               />
             </div>
             <div className="form-group">
-              <label htmlFor="date">Date:</label>
+              <label htmlFor="date">Datum:</label>
               <input
                 type="date"
                 id="date"
@@ -132,7 +133,7 @@ export default function ApplicationEdit() {
               />
             </div>
             <div className="form-group">
-              <label htmlFor="description">Description:</label>
+              <label htmlFor="description">Beschreibung:</label>
               <textarea
                 id="description"
                 name="description"
@@ -142,7 +143,7 @@ export default function ApplicationEdit() {
               />
             </div>
             <div className="form-group">
-              <label htmlFor="amount">Amount (Number):</label>
+              <label htmlFor="amount">Betrag (Zahl):</label>
               <input
                 type="number"
                 id="amount"
@@ -153,15 +154,15 @@ export default function ApplicationEdit() {
               />
             </div>
             <div className="application-edit-buttons">
+              <button className="application-edit-button" type="submit">
+                Speichern
+              </button>
               <button
                 className="application-edit-button"
                 onClick={() => navigate("/applicant/submit")}
                 type="button"
               >
-                Cancel
-              </button>
-              <button className="application-edit-button" type="submit">
-                Save
+                Abbrechen
               </button>
             </div>
           </form>

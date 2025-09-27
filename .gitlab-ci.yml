@@ -101,7 +101,7 @@ deploy-to-vm:
     - cat id_deploy.pub
     # strict auth so it doesn’t try password
     - ssh -o BatchMode=yes -o PreferredAuthentications=publickey -p "$SSH_PORT" "$SSH_USER@$SSH_SERVER_IP" "echo OK" || true
-
+    - ssh -p "$SSH_PORT" "$SSH_USER@$SSH_SERVER_IP" "echo PATH=\$PATH; which tar; which mkdir; which docker"
 
     - ssh -p "$SSH_PORT" "$SSH_USER@$SSH_SERVER_IP" "mkdir -p '$VM_DEPLOY_PATH'"
     - ssh -o BatchMode=yes -P "$SSH_PORT" "$SSH_USER@$SSH_SERVER_IP" "echo OK-SSH && whoami && hostname"

@@ -2,12 +2,14 @@
 from datetime import datetime
 
 # third party imports
-from fastapi import APIRouter
+from backend.api.deps import RoleChecker
+from fastapi import APIRouter, Depends
 
 # project imports
 from backend.models.domain.form import Form, FormCreate
 from backend.crud import formCrud
 
+admin_permission = RoleChecker(["ADMIN"])
 
 router = APIRouter(prefix="/forms", tags=["forms"])
 
@@ -26,7 +28,7 @@ async def get_form(form_id: int,
 
 # "/api/v1/forms/{form_id}?returnAsXml=true"
 
-@router.post("", response_model=Form, tags=["Forms"], summary="Create a new form")
+@router.post("", response_model=Form, tags=["Forms"], summary="Create a new form", dependencies=[Depends(admin_permission)])
 async def create_form(formCreate: FormCreate):
   form = formCreate.toForm()
   form_db = formCrud.add_form(form)

@@ -25,7 +25,7 @@ def test_create_application_success():
     assert response.json() is True  # Assuming the endpoint returns True on success
 
 
-test_create_application_success()
+#test_create_application_success()
 
 def test_update_application_success():
     # First create an application to ensure one exists
@@ -48,4 +48,4 @@ def test_update_application_success():
     assert response.json().get("jsonPayload", {}).get("field1") == "Hello"
     assert response.json().get("jsonPayload", {}).get("field2") == "new_value2"
 
-test_update_application_success()
+#test_update_application_success()

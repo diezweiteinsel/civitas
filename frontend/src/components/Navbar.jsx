@@ -93,7 +93,7 @@ export default function Navbar({ role = Role.EMPTY }) {
                 <div className="dropdown-item">
                   <NavLink
                     className="nav-link"
-                    to="/admin/create-form"
+                    to="/admin/create-forms"
                     onClick={() => setShowDropdown(false)}
                   >
                     Formular erstellen

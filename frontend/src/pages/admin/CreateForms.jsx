@@ -68,23 +68,34 @@ export default function CreateForms() {
     }
 
     // Convert frontend fields to backend format
+    // BACKEND FORMAT:
+    // {
+//   "form_name": "",
+//   "blocks": {}
+// }
     const formData = {
-      code: `form_${Date.now()}`,
-      title: formTitle.trim(),
-      isActive: true,
-      sections: [
-        {
-          sectionID: 1,
-          title: "Hauptabschnitt",
-          buildingBlocks: formFields.map((field, index) => ({
-            buildingBlockID: index + 1,
-            label: field.name,
-            type: field.type.toUpperCase(),
-            value: field.value || "",
-            isRequired: true,
-          })),
-        },
-      ],
+      form_name: formTitle.trim(),
+      blocks: formFields.reduce((acc, field, index) => {
+        acc[(index + 1).toString()] = {
+          label: field.name,
+          data_type: field.type.toUpperCase()
+        };
+        return acc;
+      }, {}),
+      // isActive: true,
+      // sections: [
+      //   {
+      //     sectionID: 1,
+      //     title: "Hauptabschnitt",
+      //     buildingBlocks: formFields.map((field, index) => ({
+      //       buildingBlockID: index + 1,
+      //       label: field.name,
+      //       type: field.type.toUpperCase(),
+      //       value: field.value || "",
+      //       isRequired: true,
+      //     })),
+      //   },
+      // ],
     };
 
     // Call the API to create the form

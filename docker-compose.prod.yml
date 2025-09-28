@@ -37,7 +37,7 @@ services:
       context: .
       dockerfile: frontend/Dockerfile
       args:
-        REACT_APP_API_URL: "/api"
+        REACT_APP_API_URL: ""
     depends_on:
       - backend
     restart: unless-stopped

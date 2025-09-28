@@ -83,8 +83,48 @@ def evaluateTriggerLogicString(dictionary: dict, application: Application) -> bo
 		case _:
 			return False
 
+def getIntValue(var, application: Application) -> int:
+	if isinstance(var, int):
+		return var
+	elif var["type"] == TriggerType.FIELD:
+		# TODO get actual data from application via block name / id
+		blockIDorName = var["body"]
+		return -1
+	return -1
+
 def evaluateTriggerLogicInt(dictionary: dict, application: Application) -> bool:
+
+	values: list[int] = [getIntValue(b, application) for b in dictionary["body"]]
+
 	match(dictionary["intType"]):
+		case IntTriggerType.SMALLER_THAN:
+			return values[0] < values[1]
+		case IntTriggerType.SMALLER_OR_EQUALS:
+			return values[0] <= values[1]
+		case IntTriggerType.BIGGER_THAN:
+			return values[0] > values[1]
+		case IntTriggerType.BIGGER_OR_EQUALS:
+			return values[0] >= values[1]
+		case IntTriggerType.EQUALS:
+			return values[0] == values[1]
+		case IntTriggerType.NOT_EQUALS:
+			return values[0] != values[1]
+		case IntTriggerType.IN_RANGE_INCLUSIVE:
+			return values[1] <= values[0] <= values[2]
+		case IntTriggerType.NOT_IN_RANGE_INCLUSIVE:
+			return not (values[1] <= values[0] <= values[2])
+		case IntTriggerType.IN_RANGE_EXCLUSIVE:
+			return values[1] < values[0] < values[2]
+		case IntTriggerType.NOT_IN_RANGE_EXCLUSIVE:
+			return not (values[1] < values[0] < values[2])
+		case IntTriggerType.DIVISIBLE_BY:
+			return (values[0] % values[1]) == 0
+		case IntTriggerType.NOT_DIVISIBLE_BY:
+			return (values[0] % values[1]) != 0
+		case IntTriggerType.POSITIVE:
+			return values[0] > 0
+		case IntTriggerType.NEGATIVE:
+			return values[0] < 0
 		case _:
 			return False
 

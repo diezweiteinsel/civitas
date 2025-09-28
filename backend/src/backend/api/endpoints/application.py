@@ -123,19 +123,19 @@ async def delete_application(application_id: int):
     """
     pass
 
-# tests 
-Admin=User(id=1, username="admin", date_created=date.today(), hashed_password="admin")
-assign_role(Admin, UserType.ADMIN)
-Applicant=User(id=2, username="applicant", date_created=date.today(), hashed_password="applicant")
-assign_role(Applicant, UserType.APPLICANT)
-Reporter=User(id=3, username="reporter", date_created=date.today(), hashed_password="reporter")
-assign_role(Reporter, UserType.REPORTER)
-_global_users_db.extend([Admin, Applicant, Reporter])
 
-form = createForm(Admin, {"title": "Form 1", "fields": [{"name": "field1", "type": "text"}, {"name": "field2", "type": "number"}]})
-
-createApplication(Applicant, form ,{"field1": "value1", "field2": "value2"})
-createApplication(Applicant, form ,{"field1": "value3", "field2": "value4"})
-adminRejectApplication(Admin, _global_applications_db[1])
-createApplication(Applicant, form ,{"field1": "value5", "field2": "value6"})
-adminApproveApplication(Admin, _global_applications_db[2])
+if __name__ == "__main__":
+    # tests
+    Admin = User(id=1, username="admin", date_created=date.today(), hashed_password="admin")
+    assign_role(Admin, UserType.ADMIN)
+    Applicant = User(id=2, username="applicant", date_created=date.today(), hashed_password="applicant")
+    assign_role(Applicant, UserType.APPLICANT)
+    Reporter = User(id=3, username="reporter", date_created=date.today(), hashed_password="reporter")
+    assign_role(Reporter, UserType.REPORTER)
+    _global_users_db.extend([Admin, Applicant, Reporter])
+    form = createForm(Admin, {"title": "Form 1", "fields": [{"name": "field1", "type": "text"}, {"name": "field2", "type": "number"}]})
+    createApplication(Applicant, form ,{"field1": "value1", "field2": "value2"})
+    createApplication(Applicant, form ,{"field1": "value3", "field2": "value4"})
+    adminRejectApplication(Admin, _global_applications_db[1])
+    createApplication(Applicant, form ,{"field1": "value5", "field2": "value6"})
+    adminApproveApplication(Admin, _global_applications_db[2])

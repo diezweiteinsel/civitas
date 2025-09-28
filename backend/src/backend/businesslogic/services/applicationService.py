@@ -16,6 +16,7 @@ from backend.models import (
 from backend.crud import dbActions
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 # mockup db as list for testing purposes
 applications_db = [
 	first_application := Application(
@@ -54,6 +55,10 @@ applications_db = [
 
 
 >>>>>>> 6bd32a3 (edited the update_app())
+=======
+
+
+>>>>>>> 7affef10851a8d831abd563b365d2b0993191a93
 def createApplication(user: User, form: Form, payload: dict) -> Application:
 	if not ensure_applicant(user):
 		raise PermissionError("Only applicants can create applications.")

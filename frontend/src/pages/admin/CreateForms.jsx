@@ -3,7 +3,6 @@
 
 import React, { useState } from "react";
 import "./../../style/CreateEditForms.css";
-import "./../../style/AdminApplicantReporterPage.css";
 import Navbar from "../../components/Navbar";
 import { Role } from "../../utils/const";
 import { useMutation } from "@tanstack/react-query";
@@ -14,7 +13,7 @@ const dataTypes = ["String", "Date", "Float", "Boolean", "Number"];
 
 export default function CreateForms() {
   const [formFields, setFormFields] = useState([
-    { id: "1", name: "Feld eins", type: "Text", value: "" }, // needs to be implemnted as a dict instead? i dont know
+    { id: "1", name: "Neues Feld 1", type: "Text", value: "" }, // needs to be implemnted as a dict instead? i dont know
   ]);
   const [error, setError] = useState("");
   const navigate = useNavigate();
@@ -94,68 +93,65 @@ export default function CreateForms() {
   return (
     <div>
       <Navbar role={Role.ADMIN} />
-      <h2>Neues Meldeform erstellen</h2>
-      <div>
-        <button className="create-button" onClick={addFields}>
-          Neues Feld Hinzufügen
-        </button>
-        <button className="import-button" onClick={handleImport}>
-          Meldeform Importieren
-        </button>
-      </div>
-
-      <div>
-        {formFields.map((field, index) => (
-          <div key={field.id} className="field-row">
-            <input
-              name="name"
-              placeholder="Feldname"
-              value={field.name}
-              onChange={(e) => handleForm(e, index)}
-            />
-
-            <select
-              name="type"
-              value={field.type}
-              onChange={(e) => handleForm(e, index)}
-            >
-              {dataTypes.map((type) => (
-                <option key={type} value={type}>
-                  {type}
-                </option>
-              ))}
-            </select>
-
-            <button
-              className="remove-button"
-              onClick={() => removeFields(field.id)}
-            >
-              Entfernen
-            </button>
-          </div>
-        ))}
-      </div>
-      {error && (
-        <div
-          style={{
-            color: "red",
-            backgroundColor: "#fee",
-            padding: "10px",
-            borderRadius: "5px",
-            margin: "10px 0",
-          }}
-        >
-          {error}
+      <div className="form-creation-container">
+        <div className="form-creation-header">
+          <h2>Neues Meldeform erstellen</h2>
         </div>
-      )}
 
-      <button
-        className="save-button"
-        onClick={handleSave}
-        disabled={createFormMutation.isPending}
-      >
-        {createFormMutation.isPending ? "Speichert..." : "Meldeform Speichern"}
-      </button>
+        <div className="form-actions">
+          <button className="create-button" onClick={addFields}>
+            Neues Feld Hinzufügen
+          </button>
+          <button className="import-button" onClick={handleImport}>
+            Meldeform Importieren
+          </button>
+        </div>
+
+        <div className="fields-container">
+          {formFields.map((field, index) => (
+            <div key={field.id} className="field-row">
+              <input
+                name="name"
+                placeholder="Feldname eingeben..."
+                value={field.name}
+                onChange={(e) => handleForm(e, index)}
+              />
+
+              <select
+                name="type"
+                value={field.type}
+                onChange={(e) => handleForm(e, index)}
+              >
+                {dataTypes.map((type) => (
+                  <option key={type} value={type}>
+                    {type}
+                  </option>
+                ))}
+              </select>
+
+              <button
+                className="remove-button"
+                onClick={() => removeFields(field.id)}
+                title="Feld entfernen"
+              >
+                Entfernen
+              </button>
+            </div>
+          ))}
+        </div>
+
+        {error && <div className="error-message">{error}</div>}
+
+        <button
+          className="save-button"
+          onClick={handleSave}
+          disabled={createFormMutation.isPending}
+        >
+          {createFormMutation.isPending
+            ? "Speichert..."
+            : "Meldeform Speichern"}
+        </button>
+      </div>
     </div>
   );
 }

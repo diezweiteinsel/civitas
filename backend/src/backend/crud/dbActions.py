@@ -154,7 +154,7 @@ def getRowById(session: Session, tableClass: type, id: int):
     obj = session.get(tableClass, id) # get existing object by primary key
     return obj
 
-def getRows(session: Session, tableClass: type) -> list[]:
+def getRows(session: Session, tableClass: type) -> list:
     """
     Get all rows from the table represented by tableClass, returns empty list when tableClass is empty\n
     """

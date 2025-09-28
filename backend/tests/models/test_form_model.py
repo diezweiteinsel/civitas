@@ -4,6 +4,7 @@ from importlib import reload # for reloading modules
 
 
 
+from backend.models.orm.formtable import OrmForm
 import pytest
 from testcontainers.postgres import PostgresContainer
 
@@ -46,7 +47,7 @@ def test_form_json_conversion():
 
     block1 = BuildingBlock(label="label", data_type=BBType.STRING, required=True, constraintsJson={})
 
-    form1 = Form(id=1, form_name="formname", blocks= {"1":block1} )
+    form1 = Form(id=None, form_name="formname", blocks= {"1":block1} )
 
     form1_json = form1.to_json()
 
@@ -74,6 +75,12 @@ def test_form_to_orm():
 
 
 def test_form_to_db():
+
+    Base = db.get_base(True)
+    Base.metadata.drop_all(bind=db.engine)   # alle Tabellen löschen in db
+    Base.metadata.clear()  # löscht alle Tabellen, die bisher registriert wurden, in memory not db
+    user_db_setup()
+
     block1 = BuildingBlock(label="label", data_type=BBType.STRING, required=True, constraintsJson={})
 
     form1 = Form(form_name="formname", blocks= {"1":block1} )
@@ -81,6 +88,11 @@ def test_form_to_db():
     ormForm1 = form1.to_orm_model()
 
     with db.get_session() as session:
+
+        assert len(dbActions.getRows(session, OrmForm)) == 0
+
+        Base = db.get_base(True)
+        assert len(Base.metadata.tables) == 3
 
         form1_from_DB = formCrud.add_form(session, form1)
 

@@ -29,8 +29,12 @@ class StringTriggerType(IntEnum):
 	CONTAINS_NOT = auto()
 	STARTS_WITH = auto()
 	ENDS_WITH = auto()
-	LENGTH_BIGGER_THAN = auto()
-	LENGTH_SMALLER_THAN = auto()
+	LENGTH_BIGGER_THAN_INT = auto()
+	LENGTH_SMALLER_THAN_INT = auto()
+	LENGTH_EQUALS_INT = auto()
+	LENGTH_BIGGER_THAN_STRING = auto()
+	LENGTH_SMALLER_THAN_STRING = auto()
+	LENGTH_EQUALS_STRING = auto()
 
 class IntTriggerType(IntEnum):
 	NONE = 0

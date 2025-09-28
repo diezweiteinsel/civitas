@@ -106,6 +106,7 @@ export const getAllApplications = async () => {
   return applications;
 };
 
+// WORKS
 export const getApplicationById = async (application_id) => {
   const accessToken = getToken();
   const headers = {
@@ -134,6 +135,7 @@ export const getApplicationById = async (application_id) => {
   return application;
 };
 
+// WORKS
 export const createApplication = async (applicationData) => {
   const accessToken = getToken();
   const headers = {
@@ -165,4 +167,23 @@ export const createApplication = async (applicationData) => {
 
   const application = await response.json();
   return application;
+};
+
+export const createForm = async (formData) => {
+  const response = await fetch(`${API_BASE_URL}/api/v1/forms`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(formData),
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(
+      errorData.detail || errorData.error || "Failed to create form"
+    );
+  }
+
+  return response.json();
 };

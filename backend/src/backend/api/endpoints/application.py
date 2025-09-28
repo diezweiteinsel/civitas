@@ -6,16 +6,17 @@ from fastapi import APIRouter, HTTPException
 
 # project imports
 from backend.api.deps import   RoleChecker
-from backend.businesslogic.services.applicationService import createApplication, getApplication
+from backend.businesslogic.services.applicationService import createApplication, getApplication, editApplication
+from backend.businesslogic.services.formService import createForm
+from backend.businesslogic.services.adminService import adminApproveApplication, adminRejectApplication
+from backend.businesslogic.services.formService import createForm
 from backend.models.domain.application import Application, ApplicationStatus
 from backend.crud.user import get_user_by_id
 from backend.models.domain.user import User, UserType
 from backend.businesslogic.user import ensure_applicant, ensure_admin, ensure_reporter, assign_role
 from backend.models import Form   
 from datetime import date 
-from backend.businesslogic.services.applicationService import applications_db
-
-# print("i only exist because of merge conflicts")
+from backend.businesslogic.services.mockups import _global_applications_db, _global_users_db, _global_forms_db
 
 router = APIRouter(prefix="/applications", tags=["applications"])
 # admin_or_reporter_permission = RoleChecker(["ADMIN", "REPORTER"])
@@ -35,7 +36,8 @@ async def list_applications():
     """
     Retrieve all applications in the system.
     """
-    return applications_db
+
+    return _global_applications_db
 
 @router.post("", response_model=bool, tags=["Applications"], summary="Create a new application")
 async def create_application(application_data: dict):
@@ -59,7 +61,7 @@ async def create_application(application_data: dict):
 
     # Save application to db
 
-    return application in applications_db
+    return application in _global_applications_db
 
 @router.get("/{application_id}", response_model=Application, tags=["Applications"], summary="Get application by ID")
 async def get_application(application_id: int):
@@ -71,19 +73,33 @@ async def get_application(application_id: int):
     except ValueError:
         raise HTTPException(status_code=400, detail="Invalid application ID format")
     
-    for app in applications_db:
-        if app.applicationID == app_id:
+    for app in _global_applications_db:
+        if app.id == app_id:
             return app
     
     raise HTTPException(status_code=404, detail=f"Application with ID {app_id} not found")
 
 @router.put("/{application_id}", response_model=Application, tags=["Applications"], summary="Update an application by ID")
-async def update_application(application_id: int, application: Application):
+async def update_application(application_id: int, new_application_data: dict):
     """
     Update a specific application by its ID.
     """
-    application.applicationID = application_id  # Ensure the ID remains the same
-    return application
+    from fastapi import HTTPException
+
+    for app in _global_applications_db:
+        if app.id == application_id:
+            # Create User object for editApplication
+            user = User(id=app.user_id, username="username", date_created=date.today(), hashed_password="pass") # TODO: should be replaced with actual user retrieval logic e.g. get_user_by_id()
+            assign_role(user, UserType.APPLICANT) 
+            
+            # Update the application with new data
+            app.jsonPayload = new_application_data.get("json_payload", app.jsonPayload)
+            
+            editApplication(user, app, new_application_data.get("json_payload", {}))
+            return app
+    
+    # If no application found, raise 404 error instead of returning None
+    raise HTTPException(status_code=404, detail="Application not found")
 
 @router.delete("/{application_id}", tags=["Applications"], summary="Delete an application by ID")
 async def delete_application(application_id: int):
@@ -91,3 +107,22 @@ async def delete_application(application_id: int):
     Delete a specific application by its ID.
     """
     pass
+
+
+
+# tests
+Admin = User(id=1, username="admin", date_created=date.today(), hashed_password="admin")
+assign_role(Admin, UserType.ADMIN)
+Applicant = User(id=2, username="applicant", date_created=date.today(), hashed_password="applicant")
+assign_role(Applicant, UserType.APPLICANT)
+Reporter = User(id=3, username="reporter", date_created=date.today(), hashed_password="reporter")
+assign_role(Reporter, UserType.REPORTER)
+_global_users_db.extend([Admin, Applicant, Reporter])
+form = createForm(Admin, {"title": "Form 1", "fields": [{"name": "field1", "type": "text"}, {"name": "field2", "type": "number"}]})
+createApplication(Applicant, form ,{"field1": "value1", "field2": "value2"})
+createApplication(Applicant, form ,{"field1": "value3", "field2": "value4"})
+adminRejectApplication(Admin, _global_applications_db[1])
+createApplication(Applicant, form ,{"field1": "value5", "field2": "value6"})
+adminApproveApplication(Admin, _global_applications_db[2])
+print(_global_applications_db)
+

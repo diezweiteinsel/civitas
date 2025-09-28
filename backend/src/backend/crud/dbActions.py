@@ -1,7 +1,9 @@
+from datetime import date, datetime
+import json
 from typing import Type
 
 from fastapi import HTTPException
-from sqlalchemy import delete
+from sqlalchemy import Column, Date, Float, Integer, String, delete, DateTime, text
 from sqlalchemy.orm import Session
 
 # from backend.models.orm import Base
@@ -25,12 +27,50 @@ def createTableClass(tablename: str, columns: dict) -> type:
     return tableclass
 
 
+
+def matchType(blockType: str):
+    match blockType:
+        case "NULL":
+            raise Exception # Why does this exist?
+        case "STRING":
+            return Column(String, nullable=True)
+        case "INTEGER":
+            return Column(Integer, nullable=True)
+        case "DATE":
+            return Column(Date, nullable=True)
+        case "DATETIME":
+            return Column(DateTime, nullable=True)
+        case "FLOAT":
+            return Column(Float, nullable=True)
+        case "LONG":
+            raise Exception # Does long even exist in Python?
+    
+
+
 #TODO: implement explicit table class creation for User and Form
 # @paul ? @jonathan ?
 # don't think it's necessary since User and Form tables will be defined as ORM classes -ps
 
-def createTable():
-    pass
+def createFormTable(id: int, xoev: str):
+    tablename = "form_" + str(id)
+    # TODO we need to ensure that created buildingblocks do not have a label conflicting with these existing columns
+    columns = { "id": Column(Integer, primary_key=True),
+                "user_id": Column(Integer, nullable=False),
+                "form_id": Column(Integer, nullable=False),
+                "status": Column(String, server_default=text("'PENDING'"), nullable=False),
+                "created_at": Column(DateTime, server_default=text("CURRENT_TIMESTAMP"), nullable=False),
+                "current_snapshot_id": Column(Integer, server_default=text("-1")),
+                "previous_snapshot_id": Column(Integer, server_default=text("-1"))
+                }
+    if xoev == "":
+        raise Exception("xoev is empty")
+    xoevDict = json.loads(xoev)
+    if "blocks" not in xoevDict or not xoevDict["blocks"]:
+        raise Exception("blocks can't be empty or missing")
+
+    for block in xoevDict["blocks"].values():
+        columns[block["label"]] = matchType(block["data_type"])
+    return createTableClass(tablename=tablename, columns=columns)
 
 
 def insertRow(session: Session, tableClass: type, rowData: dict | type) -> type:
@@ -131,7 +171,15 @@ def getRowsByFilter(session: Session, tableClass: type, filterDict: dict):
     objs = query.all()
     return objs
 
-
+def get_application_table_by_id(id: int):
+    try:
+        Base = db.get_base(True)
+        tableName = "form_" + str(id)
+        return Base.classes[tableName]
+    except KeyError as k:
+        raise k
+    except Exception as e:
+        raise e
 
 if __name__ == "__main__":
     # print(createTableClass("test", {"id2": String}))

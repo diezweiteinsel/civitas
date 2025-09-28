@@ -27,46 +27,34 @@ build-frontend:
   script:
     - docker build --build-arg REACT_APP_API_URL="/api" -f frontend/Dockerfile -t sanity-frontend:ci .
 
-# ---- TEST ----
+
+# ---- TEST ---- # old version, hopefully works again
 test-backend:
   stage: test
-  # Use an image that includes the Docker client
-  image: docker:24.0
-  # Provide Docker-in-Docker as a service for testcontainers
+  image: python:3.11-slim
   services:
-    - name: docker:24.0-dind
-      alias: docker
-  cache:
-    key: ${CI_COMMIT_REF_SLUG}
-    paths:
-      - .cache/pip
+    - name: postgres:15
+      alias: db
   variables:
-    # Tell the Docker client how to connect to the DinD service
-    DOCKER_HOST: tcp://docker:2375
-    # Disable TLS for the DinD connection
-    DOCKER_TLS_CERTDIR: ""
-    PIP_CACHE_DIR: "$CI_PROJECT_DIR/.cache/pip"
-    # Variables for your application/tests
+    POSTGRES_DB: $POSTGRES_DB_TEST
+    POSTGRES_USER: $POSTGRES_USER_TEST
+    POSTGRES_PASSWORD: $POSTGRES_PASSWORD_TEST
+    # for testing the pipeline, we hardcode the test DB URL here
+    DATABASE_URL: "postgresql://civitas_user:securepassword@db:5432/civitas_db_test"
+    DB_HOST: db
     SECRET_KEY: "a-test-secret-key"
     ALGORITHM: "HS256"
     DEV_SQLITE: "0"
   before_script:
-    # The 'docker:24.0' image is based on Alpine, so use 'apk'
-    - apk add --no-cache python3 py3-pip gcc python3-dev musl-dev postgresql-dev
+    - apt-get update && apt-get install -y gcc libpq-dev
     - pip install -r backend/requirements-linux.txt
     - pip install -e backend/.
-    - pip install pytest-cov
   script:
-    - pytest backend/ --junitxml=report.xml --cov=backend --cov-report=xml:coverage.xml --cov-report=html:htmlcov --cov-report=term-missing
-    - 'test -f report.xml || echo "<testsuite name=\"pytest\" tests=\"0\" failures=\"1\"><testcase classname=\"collection\" name=\"error\"><failure message=\"pytest crashed before producing report.xml\"/></testcase></testsuite>" > report.xml'
-  
+  - pytest backend/ --junitxml=report.xml --cov=backend --cov-report=xml:coverage.xml --cov-report=html:htmlcov --cov-report=term-missing
+  - 'test -f report.xml || echo "<testsuite name=\"pytest\" tests=\"0\" failures=\"1\"><testcase classname=\"collection\" name=\"error\"><failure message=\"pytest crashed before producing report.xml\"/></testcase></testsuite>" > report.xml'
+
   artifacts:
     when: always
-    paths:
-      - report.xml
-      - coverage.xml
-      - htmlcov/
-    expire_in: 1 week
     reports:
       junit: report.xml
       coverage_report:

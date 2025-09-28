@@ -170,11 +170,16 @@ export const createApplication = async (applicationData) => {
 };
 
 export const createForm = async (formData) => {
+  const accessToken = getToken();
+  const headers = {
+    "Content-Type": "application/json",
+  };
+  if (accessToken) {
+    headers.Authorization = `Bearer ${accessToken}`;
+  }
   const response = await fetch(`${API_BASE_URL}/forms`, {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
+    headers: headers,
     body: JSON.stringify(formData),
   });
 

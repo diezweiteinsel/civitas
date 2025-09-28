@@ -36,11 +36,6 @@ async def get_current_user_payload(token: str = Depends(oauth2_scheme)) -> dict:
         detail="Debugging Exception Triggered",
         headers={"WWW-Authenticate": "Bearer"},
     )
-    second_debug_exception = HTTPException(
-        status_code=status.HTTP_409_CONFLICT,
-        detail="Second Debugging Exception Triggered",
-        headers={"WWW-Authenticate": "Bearer"},
-    )
     try:
         payload = jwt.decode(token, 
                             SECRET_KEY,
@@ -55,7 +50,7 @@ async def get_current_user_payload(token: str = Depends(oauth2_scheme)) -> dict:
             raise debug_exception
         return payload
     except JWTError:
-        raise second_debug_exception
+        raise credentials_exception
     except Exception as e:
         print(f"Unexpected error during token decoding: {e}")  # Debugging line
         raise credentials_exception

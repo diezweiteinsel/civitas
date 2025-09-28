@@ -85,7 +85,7 @@ async def get_application(application_id: int):
         raise HTTPException(status_code=400, detail="Invalid application ID format")
     
     for app in _global_applications_db:
-        if app.applicationID == app_id:
+        if app.id == app_id:
             return app
     
     raise HTTPException(status_code=404, detail=f"Application with ID {app_id} not found")

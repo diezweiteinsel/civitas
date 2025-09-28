@@ -50,16 +50,25 @@ def test_add_and_getById_func():
         # OrmUser.__table__.create(bind=session.get_bind(), checkfirst=True)
 
         block1 = BuildingBlock(label="label", data_type=BBType.STRING, required=True, constraintsJson={})
-        form1 = Form(id=1, form_name="formname", blocks= {"1":block1} )
+        form1 = Form(form_name="formname", blocks= {"1":block1} )
+        form2 = Form(form_name="formname", blocks= {"1":block1} )
         form1_json = form1.to_json()
 
 
         Form1 = OrmForm(form_name="Form 1", created_at=date.today(), is_active=True, xoev=form1_json)
 
+        Form2 = formCrud.add_form(session, form2)
+
+        assert Form2.form_name == "formname"
+        assert Form2.blocks != {}
+        assert Form2.blocks[1].label == "label"
+        assert Form2.blocks[1].data_type == BBType.STRING
+
+
         # Insert a form
         form = formCrud.add_orm_form(session, Form1)
         ormFormRows = dbActions.getRows(session, OrmForm)
-        assert len(ormFormRows) == 1
+        assert len(ormFormRows) == 2
 
         # Try to get the form by id
         fetchedForm = formCrud.get_form_by_id(session, form.id)

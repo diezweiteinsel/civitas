@@ -1,7 +1,12 @@
 from datetime import datetime
 
+from backend.businesslogic.services.formService import createForm
+from backend.models.domain.user import UserType
 from requests import session
 from backend.businesslogic.user import assign_role, ensure_admin, ensure_applicant, ensure_reporter
+from backend.businesslogic.services.mockups import _global_applications_db 
+from sqlalchemy.orm import Session
+
 
 from backend.models import (
 	User,
@@ -10,61 +15,44 @@ from backend.models import (
 	ApplicationStatus,
 
 )
-from backend.crud import dbActions
-# mockup db as list for testing purposes
-applications_db = [
-	first_application := Application(
-		user_id=1,
-		form_id=1,
-		status=ApplicationStatus.PENDING,
-		createdAt=datetime.now(),
-		currentSnapshotID=1,
-		previousSnapshotID=0,
-		jsonPayload={}
-	),
-	second_application := Application(
-		user_id=2,
-		form_id=1,
-		status=ApplicationStatus.APPROVED,
-		createdAt=datetime.now(),
-		currentSnapshotID=2,
-		previousSnapshotID=1,
-		jsonPayload={}
-	),
-	third_application := Application(	
-		user_id=3,
-		form_id=2,
-		status=ApplicationStatus.PUBLIC,
-		createdAt=datetime.now(),
-		currentSnapshotID=3,
-		previousSnapshotID=2,
-		jsonPayload={}	
-	)
-]
-def createApplication(user: User, form: Form, payload: dict) -> Application:
+from backend.crud import dbActions, application as applicationCrud
+
+
+
+def createApplication(user: User, form: Form, payload: dict, session: Session) -> Application:
 	if not ensure_applicant(user):
 		raise PermissionError("Only applicants can create applications.")
 	""" Creates a new application for a user."""
 	# get the needed id for the application from the application table has to be done
 	#applicationId = dbActions.getNextId(session, Application). Something like this when the db is set up
+	# Generate a unique application ID
+	application_id = len(_global_applications_db) + 1
+	
 	newApplication = Application(
+
 	#	applicationID=1,  # Placeholder, should be set by the database
 		user_id=user.id,
 		form_id=form.id,
 		jsonPayload=payload
 	) # Still missing : importing formfields into application, snapshots and filling them with data from payload
 	# Logic to save the new application into the db is not defined yet
-	applications_db.append(newApplication) # for testing purposes only
+	appFromTable = applicationCrud.insert_application(session, newApplication)
+	newApplication=applicationCrud.rowToApplication(appFromTable)
 	return newApplication
 
 
-def editApplication(user: User, application: Application, newApplicationData: dict) -> Application:
+def editApplication(user: User, application: Application, newApplicationData: dict, session: Session) -> Application:
 	""" Allows an applicant to edit their application before it getting processed."""
 	if user.id != application.user_id:  # Ensure the user is the owner of the application
 		raise PermissionError("Users can only edit their own applications.")
 	elif application.status != ApplicationStatus.PENDING:  # Only pending applications can be edited
 			raise ValueError("Only pending applications can be edited.")
-	application.jsonPayload = newApplicationData
+	# Update the application data with the new data and update the db
+	for app in _global_applications_db:
+		if app.id == application.id:
+			app.jsonPayload = newApplicationData
+			application = app # update the reference to the modified application
+			break
 	# Logic to save the updated application is not defined yet
 	return application
 
@@ -140,3 +128,5 @@ def listPendingApplications(user: User):
 def listAllPublicApplications(user: User):
 	""" Lists all public applications. All user types can see public applications."""
 	return [app for app in allApplications if app.status == ApplicationStatus.PUBLIC]
+
+

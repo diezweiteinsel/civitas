@@ -6,6 +6,7 @@ class TriggerType(IntEnum):
 	NONE = 0
 	RESULT = auto()
 	IF = auto()
+	FIELD = auto()
 	LOGIC = auto()
 	STRING = auto()
 	INT = auto()
@@ -28,14 +29,29 @@ class StringTriggerType(IntEnum):
 	CONTAINS_NOT = auto()
 	STARTS_WITH = auto()
 	ENDS_WITH = auto()
-	LENGTH_BIGGER_THAN = auto()
-	LENGTH_SMALLER_THAN = auto()
+	LENGTH_BIGGER_THAN_INT = auto()
+	LENGTH_SMALLER_THAN_INT = auto()
+	LENGTH_EQUALS_INT = auto()
+	LENGTH_BIGGER_THAN_STRING = auto()
+	LENGTH_SMALLER_THAN_STRING = auto()
+	LENGTH_EQUALS_STRING = auto()
 
 class IntTriggerType(IntEnum):
 	NONE = 0
-	SMALLER_THAN = 1
+	SMALLER_THAN = auto()
+	SMALLER_OR_EQUALS = auto()
 	BIGGER_THAN = auto()
+	BIGGER_OR_EQUALS = auto()
 	EQUALS = auto()
+	NOT_EQUALS = auto()
+	IN_RANGE_INCLUSIVE = auto()
+	NOT_IN_RANGE_INCLUSIVE = auto()
+	IN_RANGE_EXCLUSIVE = auto()
+	NOT_IN_RANGE_EXCLUSIVE = auto()
+	DIVISIBLE_BY = auto()
+	NOT_DIVISIBLE_BY = auto()
+	POSITIVE = auto()
+	NEGATIVE = auto()
 
 class DateTriggerType(IntEnum):
 	NONE = 0

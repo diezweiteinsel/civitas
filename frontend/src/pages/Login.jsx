@@ -80,8 +80,9 @@ export default function LoginPage() {
 
           <form onSubmit={handleSubmit} className="login-form">
             <div className="form-group">
-              <label>Benutzername</label>
+              <label htmlFor="username">Benutzername</label>
               <input
+                id="username"
                 type="text"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
@@ -90,8 +91,9 @@ export default function LoginPage() {
             </div>
 
             <div className="form-group">
-              <label>Passwort</label>
+              <label htmlFor="password">Passwort</label>
               <input
+                id="password"
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}

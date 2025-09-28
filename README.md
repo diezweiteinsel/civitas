@@ -1,103 +1,129 @@
-Civitas Application
+# Civitas
 
-This is my full-stack web application project for managing applications with different user roles. I built it using React for the frontend and Express.js for the backend as part of my web development coursework.
+[![pipeline status](https://cau-git.rz.uni-kiel.de/ifi-ag-se/softwareprojekt/lms8_eg_017/civitas/badges/main/pipeline.svg)](https://cau-git.rz.uni-kiel.de/ifi-ag-se/softwareprojekt/lms8_eg_017/civitas/-/commits/main)
+[![coverage report](https://cau-git.rz.uni-kiel.de/ifi-ag-se/softwareprojekt/lms8_eg_017/civitas/badges/main/coverage.svg)](https://cau-git.rz.uni-kiel.de/ifi-ag-se/softwareprojekt/lms8_eg_017/civitas/-/pipelines)
+
+
+![Civitas Logo|width=300](./frontend/src/img/civitas.png)
+
+The **Civitas** application is a full-stack application designed to create, view, and manage applications for municipal registry services.
+
+For citizens, it provides an easy way to submit applications online, either via the web interface or using the Android app; it also allows them to track the status of their applications or edit pending applications.
+
+For municipal employees, it offers tools to review, approve, or reject applications, as well as set specific applications to "public" so that all citizens can view them.
+
+Finally, it includes a reporting feature, allowing an otherwise unprivileged user to view all objects of the municipality's *Civitas* instance.
+
+
+[[_TOC_]]
+
 
 ## Features
 
-The application includes the following functionality:
+The web application includes the following functionality:
 
-- User registration and login system
-- Three different user roles: Admin, Applicant, and Reporter
-- Each role has access to different pages and features
-- Users can submit and manage applications
-- Responsive design that works on different screen sizes
-- RESTful API with basic CRUD operations
-- Docker containerization for easy deployment
+- **Secure authentication & authorization**  
+  Modern registration and login system with role-based access control (RBAC).
 
-### Deployment Tools
+- **Role-specific workflows**  
+  Three user roles – **Admin**, **Applicant**, and **Reporter** – each with tailored dashboards, permissions, and feature sets.
 
-- Docker - For containerizing the application
-- Nginx - Web server for serving the production build
+- **Application lifecycle management**  
+  Applicants can submit, track, and update requests; Admins can review, process, and manage records. Reporters can view all applications.
 
-## How to Run the Application
+- **RESTful API**  
+  Standards-compliant endpoints providing structured CRUD operations, designed for future integration with third-party systems.
 
-### What You Need Before Starting
+- **Cloud-ready containerization**  
+  Fully Dockerized environment for streamlined local development, CI/CD pipelines, and production deployment.
 
-- Node.js (version 18 or newer)
-- npm
-- Docker Desktop
 
-### Local Run
+## Technology Stack
 
-#### Setting Up the Frontend
+```mermaid
+graph TD
+    subgraph Browser
+        U(User)
+    end
 
-1. First, install Node.js from the official website
+    subgraph Android App
+        U2(User)
+    end
 
-2. In the civitas-frontend folder, install all the required packages:
+    subgraph "Docker Host"
+        N[("Nginx <br> (Reverse Proxy)")]
+        R[("React Frontend <br> (Static Files <br> + minimal Logic)")]
+        F[("FastAPI Backend <br> (API Logic)")]
+        D[("PostgreSQL <br> (Database)")]
+    end
 
-   ```bash
-   npm install
-   ```
+    U2 --> N
+    U --> N
+    N --> R
+    N --> F
+    F <--> D
+```
 
-3. Start the development server:
-   ```bash
-   npm start
-   ```
-   Frontend at`http://localhost:3000`
+## How to access the Demo Instance
 
-#### Setting Up the Backend
+Make sure you are connected to the [university VPN via FortiClient.](https://www.rz.uni-kiel.de/de/tipps/vpn) 
+You can access the demo instance of the Civitas application at:
+[Civitas Web App (running on VM)](http://134.245.1.240:1203/)
 
-1. In the test-backend folder, install the backend dependencies:
 
-   ```bash
-   npm install
-   ```
+For testing purposes, you can use the following test accounts:
 
-2. Start the backend server:
-   ```bash
-   npm start
-   ```
-   API at `http://localhost:3001`
+| Username | Password | Role      |
+| -------- | -------- | --------- |
+| `demo`   | `demo`   | APPLICANT |
+| `admin`  | `admin`  | ADMIN     |
+| `rasenderreporter` | `rasenderreporter` | REPORTER  |
 
-### Running with Docker
+
+![Civitas Login Screen](readme-resources/login.png)
+*Use the test accounts provided above to log in.*
+
+## Deploy CIVITAS using Docker
+
+To deploy the Civitas application using Docker, follow these steps:
+
+1. Clone the repository:
 
 ```bash
-# For development
-docker-compose -f docker-compose.dev.yml up --build
+git clone https://cau-git.rz.uni-kiel.de/ifi-ag-se/softwareprojekt/lms8_eg_017/civitas.git
+cd civitas
+```
 
-# For production testing
+2. Ensure you have Docker and Docker Compose installed on your machine.
+
+```bash
+docker --version
+docker-compose --version
+```
+
+>[!TIP] Installing Docker
+> For Windows, it's vital to install [Docker Desktop](https://www.docker.com/products/docker-desktop/). Follow the installation instructions on the Docker website. <br>
+> Other systems can refer to the [official Docker installation guide](https://docs.docker.com/get-docker/).
+
+
+3. From the root directory of the project, run the following command to build and start the containers:
+
+```bash
 docker-compose up --build
 ```
 
-#### Development Mode with Docker
+This command will build the Docker images.
+**CIVITAS** is a three-container application consisting of:
+- **Frontend**: React application served by Nginx
+- **Backend**: FastAPI application
+- **Database**: PostgreSQL database
 
-- Frontend runs at `http://localhost:3000` with live reloading
-- Backend runs at `http://localhost:3001`
-- Changes to code automatically update the browser
-
-#### Production Mode with Docker
-
-- Frontend runs at `http://localhost` (optimized version)
-- Backend runs at `http://localhost:3001`
-- Uses Nginx for better performance
-
-## Available Commands
-
-### Frontend Scripts
+4. Once the containers are up and running, you can access the Civitas application in your web browser at:
 
 ```bash
-npm start          # Start development server
-npm run build      # Build for production
-npm test           # Run tests
-npm run eject      # Eject from Create React App
+http://localhost:8083
 ```
 
-### Backend Scripts
-
-```bash
-npm start          # Start production server
-npm run dev        # Start development server
-```
 
 ### Docker Scripts
 
@@ -114,17 +140,9 @@ docker-compose down
 docker-compose logs -f
 ```
 
-## Test User Accounts
+## The CIVITAS RestAPI
 
-I've included some test users:
-
-| Username | Password | Role      |
-| -------- | -------- | --------- |
-| Max      | test1    | ADMIN     |
-| Bene     | test2    | APPLICANT |
-| Jay      | test3    | REPORTER  |
-
-## API Endpoints I Created
+The backend API is built using FastAPI and provides a rich Swagger UI for easy exploration and testing of endpoints.
 
 ### Users
 
@@ -172,7 +190,7 @@ docker system prune -a
 docker-compose build --no-cache
 ```
 
-### API Not Working
+### API Not Working  
 
 If the frontend can't connect to the backend:
 

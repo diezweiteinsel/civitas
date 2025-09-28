@@ -4,6 +4,15 @@ from .buildingblock import BuildingBlock
 from .section import Section
 from backend.models.orm.formtable import OrmForm
 
+
+class FormCreate(BaseModel):
+    form_name : str = ""
+    blocks: dict[int, BuildingBlock] = {} # key is the order of the block in the form
+
+    def toForm(self):
+        form = Form(id = None, form_name=self.form_name, blocks=self.blocks)
+        return form
+
 class Form(BaseModel):
     '''A form represents a specific version of a form, with a name and a list of building blocks.'''
 

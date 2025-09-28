@@ -1,10 +1,10 @@
 import { getToken } from "./data";
 
-const API_BASE_URL = process.env.REACT_APP_API_URL || "http://localhost:8000";
+const API_BASE_URL = process.env.REACT_APP_API_URL; // || "http://localhost:8000";
 
 // WORKS
 export const createUser = async (userData) => {
-  const response = await fetch(`${API_BASE_URL}/api/v1/users`, {
+  const response = await fetch(`${API_BASE_URL}/users`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -31,7 +31,7 @@ export const loginUser = async (userData) => {
   formData.append("username", userData.username);
   formData.append("password", userData.password);
 
-  const response = await fetch(`${API_BASE_URL}/api/v1/auth/token`, {
+  const response = await fetch(`${API_BASE_URL}/auth/token`, {
     method: "POST",
     headers: {},
     body: formData,
@@ -63,7 +63,7 @@ export const getAllUsers = async () => {
     headers.Authorization = `Bearer ${accessToken}`;
   }
 
-  const response = await fetch(`${API_BASE_URL}/api/v1/users`, {
+  const response = await fetch(`${API_BASE_URL}/users`, {
     method: "GET",
     headers: headers,
   });
@@ -89,7 +89,7 @@ export const getAllApplications = async () => {
     headers.Authorization = `Bearer ${accessToken}`;
   }
 
-  const response = await fetch(`${API_BASE_URL}/api/v1/applications`, {
+  const response = await fetch(`${API_BASE_URL}/applications`, {
     method: "GET",
     headers: headers,
   });
@@ -106,6 +106,7 @@ export const getAllApplications = async () => {
   return applications;
 };
 
+// WORKS
 export const getApplicationById = async (application_id) => {
   const accessToken = getToken();
   const headers = {
@@ -116,7 +117,7 @@ export const getApplicationById = async (application_id) => {
   }
 
   const response = await fetch(
-    `${API_BASE_URL}/api/v1/applications/${application_id}`,
+    `${API_BASE_URL}/applications/${application_id}`,
     {
       method: "GET",
       headers: headers,
@@ -134,6 +135,7 @@ export const getApplicationById = async (application_id) => {
   return application;
 };
 
+// WORKS
 export const createApplication = async (applicationData) => {
   const accessToken = getToken();
   const headers = {
@@ -150,7 +152,7 @@ export const createApplication = async (applicationData) => {
     payload: applicationData.payload || applicationData, // Use payload if provided, otherwise use the entire data
   };
 
-  const response = await fetch(`${API_BASE_URL}/api/v1/applications`, {
+  const response = await fetch(`${API_BASE_URL}/applications`, {
     method: "POST",
     headers: headers,
     body: JSON.stringify(requestBody),
@@ -165,4 +167,23 @@ export const createApplication = async (applicationData) => {
 
   const application = await response.json();
   return application;
+};
+
+export const createForm = async (formData) => {
+  const response = await fetch(`${API_BASE_URL}/forms`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(formData),
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(
+      errorData.detail || errorData.error || "Failed to create form"
+    );
+  }
+
+  return response.json();
 };

@@ -51,9 +51,9 @@ def rowToApplication(row, applicationTable = None) -> Application:
     Returns:\n
     The "Application" instance which is saved in the given row
     """
-    jsonPayload = getRowJsonPayload(row=row)
     if not applicationTable:
         applicationTable = get_application_table_by_id(row.form_id)
+    jsonPayload = getRowJsonPayload(row=row)
 
 
     application = Application(

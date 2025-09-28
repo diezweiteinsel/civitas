@@ -14,9 +14,7 @@ from backend.models import (
 
 )
 from backend.crud import dbActions
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
+
 # mockup db as list for testing purposes
 applications_db = [
 	first_application := Application(
@@ -47,18 +45,8 @@ applications_db = [
 		jsonPayload={}	
 	)
 ]
-=======
 
 
->>>>>>> 9a41683 (edited the update_app())
-=======
-
-
->>>>>>> 6bd32a3 (edited the update_app())
-=======
-
-
->>>>>>> 7affef10851a8d831abd563b365d2b0993191a93
 def createApplication(user: User, form: Form, payload: dict) -> Application:
 	if not ensure_applicant(user):
 		raise PermissionError("Only applicants can create applications.")
@@ -69,18 +57,11 @@ def createApplication(user: User, form: Form, payload: dict) -> Application:
 	application_id = len(_global_applications_db) + 1
 	
 	newApplication = Application(
-<<<<<<< HEAD
-<<<<<<< HEAD
+
 	#	applicationID=1,  # Placeholder, should be set by the database
 		user_id=user.id,
 		form_id=form.id,
-=======
-=======
->>>>>>> 6bd32a3 (edited the update_app())
 		applicationID=application_id,  # Use generated ID
-		userID=user.id,
-		formID=form.formID,
->>>>>>> 9a41683 (edited the update_app())
 		jsonPayload=payload
 	) # Still missing : importing formfields into application, snapshots and filling them with data from payload
 	# Logic to save the new application into the db is not defined yet

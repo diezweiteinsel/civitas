@@ -39,17 +39,27 @@ applicant_permission = RoleChecker(["APPLICANT"])
     # jsonPayload: dict = {}  # The actual data of the application
 
 
+
+# GET ALL APPLICATIONS
+# Using query `?public=true` to filter public applications
+# If `public` is false or not provided, only admin or reporter can access,
+# and all applications are returned.
+# If `public` is true, anyone can access, but only public applications are returned.
+
+# 1 - Define a dependency to check the public status and user role
 async def non_public_applications(public: Optional[bool] = False):
     """
     Dependency to filter applications based on their public status.
     """
-    print("Checking public status:", public)
+    # print("Checking public status:", public)
     if not public:
-        await Depends(admin_or_reporter_permission)
+        await Depends(admin_or_reporter_permission) # Ensure user is admin or reporter (as per JWT token)
 
+# 2 - If public is True, allow access to everyone (no role check needed)
+# 3 - If public is False, ensure the user has admin or reporter role (handled in the dependency above)
 @router.get("", 
             response_model=list[Application],
-            dependencies=[Depends(non_public_applications)],
+            dependencies=[Depends(non_public_applications)], # Custom dependency to handle public access
             tags=["Applications"],
             summary="List all applications")
 async def list_applications(

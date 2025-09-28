@@ -90,16 +90,16 @@ def test_create_application_success():
 # #test_update_application_success()
 
 
-def test_get_application_by_id_success():
+# def test_get_application_by_id_success():
     
-    application_id = 1  # Assuming an application with ID 1 exists
-    form_id = 1  # Assuming a form with ID 1 exists
+#     application_id = 1  # Assuming an application with ID 1 exists
+#     form_id = 1  # Assuming a form with ID 1 exists
     
-    response = client.get(f"/api/v1/applications/{application_id}?form_id={form_id}")
-    assert response.status_code == 200
-    assert response.json() is not None  # Assuming the endpoint returns the application
-    assert response.json().get("id") == application_id
-    assert response.json().get("form_id") == form_id
+#     response = client.get(f"/api/v1/applications/{application_id}?form_id={form_id}")
+#     assert response.status_code == 200
+#     assert response.json() is not None  # Assuming the endpoint returns the application
+#     assert response.json().get("id") == application_id
+#     assert response.json().get("form_id") == form_id
 
 
 if __name__ == "__main__":

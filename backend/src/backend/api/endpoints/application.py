@@ -7,33 +7,16 @@ from fastapi import APIRouter, HTTPException
 # project imports
 from backend.api.deps import   RoleChecker
 from backend.businesslogic.services.applicationService import createApplication, getApplication, editApplication
-<<<<<<< HEAD
-<<<<<<< HEAD
 from backend.businesslogic.services.formService import createForm
 from backend.businesslogic.services.adminService import adminApproveApplication, adminRejectApplication
-=======
->>>>>>> 6bd32a3 (edited the update_app())
-=======
 from backend.businesslogic.services.formService import createForm
-from backend.businesslogic.services.adminService import adminApproveApplication, adminRejectApplication
->>>>>>> 7affef10851a8d831abd563b365d2b0993191a93
 from backend.models.domain.application import Application, ApplicationStatus
 from backend.crud.user import get_user_by_id
 from backend.models.domain.user import User, UserType
 from backend.businesslogic.user import ensure_applicant, ensure_admin, ensure_reporter, assign_role
 from backend.models import Form   
 from datetime import date 
-<<<<<<< HEAD
-<<<<<<< HEAD
 from backend.businesslogic.services.mockups import _global_applications_db, _global_users_db, _global_forms_db
-=======
-from backend.businesslogic.services.mockups import _global_applications_db as applications_db
->>>>>>> 6bd32a3 (edited the update_app())
-=======
-from backend.businesslogic.services.mockups import _global_applications_db, _global_users_db, _global_forms_db
->>>>>>> 7affef10851a8d831abd563b365d2b0993191a93
-
-# print("i only exist because of merge conflicts")
 
 router = APIRouter(prefix="/applications", tags=["applications"])
 # admin_or_reporter_permission = RoleChecker(["ADMIN", "REPORTER"])
@@ -53,15 +36,8 @@ async def list_applications():
     """
     Retrieve all applications in the system.
     """
-<<<<<<< HEAD
-<<<<<<< HEAD
+
     return _global_applications_db
-=======
-    pass
->>>>>>> 6bd32a3 (edited the update_app())
-=======
-    return _global_applications_db
->>>>>>> 7affef10851a8d831abd563b365d2b0993191a93
 
 @router.post("", response_model=bool, tags=["Applications"], summary="Create a new application")
 async def create_application(application_data: dict):
@@ -98,11 +74,7 @@ async def get_application(application_id: int):
         raise HTTPException(status_code=400, detail="Invalid application ID format")
     
     for app in _global_applications_db:
-<<<<<<< HEAD
         if app.id == app_id:
-=======
-        if app.applicationID == app_id:
->>>>>>> 7affef10851a8d831abd563b365d2b0993191a93
             return app
     
     raise HTTPException(status_code=404, detail=f"Application with ID {app_id} not found")
@@ -113,17 +85,9 @@ async def update_application(application_id: int, new_application_data: dict):
     Update a specific application by its ID.
     """
     from fastapi import HTTPException
-    
-<<<<<<< HEAD
-<<<<<<< HEAD
+
     for app in _global_applications_db:
-=======
-    for app in applications_db:
->>>>>>> 6bd32a3 (edited the update_app())
-=======
-    for app in _global_applications_db:
->>>>>>> 7affef10851a8d831abd563b365d2b0993191a93
-        if app.applicationID == application_id:
+        if app.id == application_id:
             # Create User object for editApplication
             user = User(id=app.userID, username="username", date_created=date.today(), hashed_password="pass") # TODO: should be replaced with actual user retrieval logic e.g. get_user_by_id()
             assign_role(user, UserType.APPLICANT) 

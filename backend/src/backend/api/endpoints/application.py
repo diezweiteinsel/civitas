@@ -7,15 +7,22 @@ from fastapi import APIRouter, HTTPException
 # project imports
 from backend.api.deps import   RoleChecker
 from backend.businesslogic.services.applicationService import createApplication, getApplication, editApplication
+<<<<<<< HEAD
 from backend.businesslogic.services.formService import createForm
 from backend.businesslogic.services.adminService import adminApproveApplication, adminRejectApplication
+=======
+>>>>>>> 6bd32a3 (edited the update_app())
 from backend.models.domain.application import Application, ApplicationStatus
 from backend.crud.user import get_user_by_id
 from backend.models.domain.user import User, UserType
 from backend.businesslogic.user import ensure_applicant, ensure_admin, ensure_reporter, assign_role
 from backend.models import Form   
 from datetime import date 
+<<<<<<< HEAD
 from backend.businesslogic.services.mockups import _global_applications_db, _global_users_db, _global_forms_db
+=======
+from backend.businesslogic.services.mockups import _global_applications_db as applications_db
+>>>>>>> 6bd32a3 (edited the update_app())
 
 # print("i only exist because of merge conflicts")
 
@@ -37,7 +44,11 @@ async def list_applications():
     """
     Retrieve all applications in the system.
     """
+<<<<<<< HEAD
     return _global_applications_db
+=======
+    pass
+>>>>>>> 6bd32a3 (edited the update_app())
 
 @router.post("", response_model=bool, tags=["Applications"], summary="Create a new application")
 async def create_application(application_data: dict):
@@ -86,7 +97,11 @@ async def update_application(application_id: int, new_application_data: dict):
     """
     from fastapi import HTTPException
     
+<<<<<<< HEAD
     for app in _global_applications_db:
+=======
+    for app in applications_db:
+>>>>>>> 6bd32a3 (edited the update_app())
         if app.applicationID == application_id:
             # Create User object for editApplication
             user = User(id=app.userID, username="username", date_created=date.today(), hashed_password="pass") # TODO: should be replaced with actual user retrieval logic e.g. get_user_by_id()

@@ -5,6 +5,8 @@ from backend.models.domain.user import UserType
 from requests import session
 from backend.businesslogic.user import assign_role, ensure_admin, ensure_applicant, ensure_reporter
 from backend.businesslogic.services.mockups import _global_applications_db 
+from sqlalchemy.orm import Session
+
 
 from backend.models import (
 	User,
@@ -13,11 +15,11 @@ from backend.models import (
 	ApplicationStatus,
 
 )
-from backend.crud import dbActions
+from backend.crud import dbActions, application as applicationCrud
 
 
 
-def createApplication(user: User, form: Form, payload: dict) -> Application:
+def createApplication(user: User, form: Form, payload: dict, session: Session) -> Application:
 	if not ensure_applicant(user):
 		raise PermissionError("Only applicants can create applications.")
 	""" Creates a new application for a user."""
@@ -31,15 +33,15 @@ def createApplication(user: User, form: Form, payload: dict) -> Application:
 	#	applicationID=1,  # Placeholder, should be set by the database
 		user_id=user.id,
 		form_id=form.id,
-		id=application_id,  # Use generated ID
 		jsonPayload=payload
 	) # Still missing : importing formfields into application, snapshots and filling them with data from payload
 	# Logic to save the new application into the db is not defined yet
-	_global_applications_db.append(newApplication) # for testing purposes only
+	appFromTable = applicationCrud.insert_application(session, newApplication)
+	newApplication=applicationCrud.rowToApplication(appFromTable)
 	return newApplication
 
 
-def editApplication(user: User, application: Application, newApplicationData: dict) -> Application:
+def editApplication(user: User, application: Application, newApplicationData: dict, session: Session) -> Application:
 	""" Allows an applicant to edit their application before it getting processed."""
 	if user.id != application.user_id:  # Ensure the user is the owner of the application
 		raise PermissionError("Users can only edit their own applications.")

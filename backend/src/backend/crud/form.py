@@ -19,8 +19,8 @@ def add_orm_form(session, form: OrmForm) -> OrmForm:
         updatedOrmForm: OrmForm = dbActions.insertRow(session, OrmForm, form)
         dbActions.createFormTable(updatedOrmForm.id, updatedOrmForm.xoev)
         return updatedOrmForm
-    except Exception:
-        raise Exception("Something went wrong")
+    except Exception as e:
+        raise Exception("Something went wrong", e)
 
 
 def add_form(session, form:Form) -> Form:

@@ -18,9 +18,11 @@ admin_permission = RoleChecker(["ADMIN"])
 
 router = APIRouter(prefix="/forms", tags=["forms"])
 
-@router.get("", response_model=list[Form], tags=["Forms"], summary="List all forms")
-async def list_forms():
-  pass
+@router.get("", response_model=list[Form], tags=["Forms"], summary="List all forms") #TODO: Once UI is ready, implement Admin guard
+async def list_forms(session: Session = Depends(db.get_session_dep)):
+  forms_list = formCrud.get_all_forms(session)
+  forms = [Form.from_orm_model(orm_form) for orm_form in forms_list]
+  return forms
 
 
 @router.get("/{form_id}",

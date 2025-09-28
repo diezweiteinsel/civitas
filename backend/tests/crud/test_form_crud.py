@@ -41,8 +41,9 @@ def setup(request):
 
 def test_add_and_getById_func():
     Base = db.get_base(reload=True)  # Ensure we have the latest Base
-    Base.metadata.drop_all(bind=db.engine)  # Clean up before test
-    Base.metadata.create_all(bind=db.engine)  # Create tables
+    Base.metadata.drop_all(bind=db.engine) # Clean up before test
+    Base.metadata.clear()  # löscht alle Tabellen, die bisher registriert wurden, in memory not db
+    user_db_setup()  
 
     with db.get_session() as session:
         # Create table if not exists

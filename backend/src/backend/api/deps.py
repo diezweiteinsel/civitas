@@ -25,7 +25,7 @@ async def get_current_user_payload(token: str = Depends(oauth2_scheme)) -> dict:
     Raises HTTP 401 if the token is invalid or expired.
     
     """
-    print("get_current_user_payload: Secret Key used: ", SECRET_KEY)  # Debugging line
+    
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Could not validate credentials",

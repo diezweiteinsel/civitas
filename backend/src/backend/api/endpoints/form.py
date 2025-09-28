@@ -5,7 +5,8 @@ from datetime import datetime
 from fastapi import APIRouter
 
 # project imports
-from backend.models import Form
+from backend.models.domain.form import Form, FormCreate
+from backend.crud import formCrud
 
 
 router = APIRouter(prefix="/forms", tags=["forms"])
@@ -26,10 +27,13 @@ async def get_form(form_id: int,
 # "/api/v1/forms/{form_id}?returnAsXml=true"
 
 @router.post("", response_model=Form, tags=["Forms"], summary="Create a new form")
-async def create_form(form: Form, asXml: bool = False):
-  if asXml:
-    pass
-  pass
+async def create_form(formCreate: FormCreate):
+  form = formCreate.toForm()
+  form_db = formCrud.add_form(form)
+  if form.form_name == form_db.form_name and form.blocks == form_db.blocks:
+    return True
+  else:
+    return False
 
 # explicitly no PUT method, forms are immutable after creation
 

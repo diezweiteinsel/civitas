@@ -52,11 +52,19 @@ def matchType(blockType: str):
 # don't think it's necessary since User and Form tables will be defined as ORM classes -ps
 
 def createFormTable(id: int, xoev: str):
+    """
+    Takes:\n
+    The form's id\n
+    The form's xoev\n
+    Does:\n
+    Creates a tableClass
+    """
     tablename = "form_" + str(id)
     # TODO we need to ensure that created buildingblocks do not have a label conflicting with these existing columns
     columns = { "id": Column(Integer, primary_key=True),
                 "user_id": Column(Integer, nullable=False),
                 "form_id": Column(Integer, nullable=False),
+                "admin_id": Column(Integer, nullable=True),
                 "status": Column(String, server_default=text("'PENDING'"), nullable=False),
                 "created_at": Column(DateTime, server_default=text("CURRENT_TIMESTAMP"), nullable=False),
                 "current_snapshot_id": Column(Integer, server_default=text("-1")),

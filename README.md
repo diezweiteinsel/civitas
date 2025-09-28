@@ -1,4 +1,10 @@
-Civitas Application
+# Civitas
+
+[![pipeline status](https://cau-git.rz.uni-kiel.de/ifi-ag-se/softwareprojekt/lms8_eg_017/civitas/badges/main/pipeline.svg)](https://cau-git.rz.uni-kiel.de/ifi-ag-se/softwareprojekt/lms8_eg_017/civitas/-/commits/main)
+[![coverage report](https://cau-git.rz.uni-kiel.de/ifi-ag-se/softwareprojekt/lms8_eg_017/civitas/badges/main/coverage.svg)](https://cau-git.rz.uni-kiel.de/ifi-ag-se/softwareprojekt/lms8_eg_017/civitas/-/pipelines)
+
+
+![Civitas Logo](./frontend/src/img/civitas.png)
 
 This is my full-stack web application project for managing applications with different user roles. I built it using React for the frontend and Express.js for the backend as part of my web development coursework.
 

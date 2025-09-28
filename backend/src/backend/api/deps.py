@@ -12,7 +12,18 @@ from backend.schemas.token import TokenData
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/v1/auth/token")
 
 async def get_current_user_payload(token: str = Depends(oauth2_scheme)) -> dict:
-    """Decodes the JWT token and returns its payload."""
+    """Decodes the JWT token and returns its payload.
+    
+    Expected output: A dictionary containing the token's payload.
+    
+    "sub": user.id,
+    "username": user.username,
+    "roles": user.roles,  # List of roles assigned to the user
+    "exp": expiration_time # currently + 30 minutes
+    
+    Raises HTTP 401 if the token is invalid or expired.
+    
+    """
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Could not validate credentials",
@@ -30,6 +41,13 @@ async def get_current_user_payload(token: str = Depends(oauth2_scheme)) -> dict:
 class RoleChecker:
     """
     A dependency class that checks if the current user has the required roles.
+    Usage:
+    
+        @app.get("/some-endpoint")
+        async def some_endpoint(role_check: None = Depends(RoleChecker(["admin", "user"]))):
+            return {"message": "You have access to this endpoint."}
+    
+    :param allowed_roles: List of roles that are allowed to access the endpoint.
     """
     def __init__(self, allowed_roles: List[str]):
         self.allowed_roles = allowed_roles

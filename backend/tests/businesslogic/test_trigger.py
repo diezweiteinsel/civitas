@@ -1,21 +1,26 @@
+import pytest
 from backend.models import Application
 from backend.models.domain.trigger import TriggerType, TriggerResultType, LogicTriggerType, StringTriggerType, IntTriggerType, DateTriggerType, FloatTriggerType
 from backend.businesslogic.trigger import evaluateTrigger, evaluateTriggerLogicExpression, evaluateTriggerLogic, evaluateTriggerLogicDate, evaluateTriggerLogicFloat, evaluateTriggerLogicInt, evaluateTriggerLogicString, evaluateTriggerResult
 
-application = Application()
-application.jsonPayload = {
-	"test_int_1": 1,
-	"test_int_2": 2,
-	"test_int_3": 3,
-	"test_int_6": 6,
-	"test_int_neg1": -1,
-	"test_int_100": 100,
-	"test_str_1": "hello world!",
-	"test_str_2": "hello mars!",
-	"test_str_3": "bye saturn!",
-	"test_str_4": "the cake is a lie...",
-	"test_str_5": "hello!",
-}
+application = Application(
+	user_id=-1,
+	form_id=-1,
+	applicationID=-1,
+	jsonPayload={
+		"test_int_1": 1,
+		"test_int_2": 2,
+		"test_int_3": 3,
+		"test_int_6": 6,
+		"test_int_neg1": -1,
+		"test_int_100": 100,
+		"test_str_1": "hello world!",
+		"test_str_2": "hello mars!",
+		"test_str_3": "bye saturn!",
+		"test_str_4": "the cake is a lie...",
+		"test_str_5": "hello!",
+	}
+)
 
 test_int_1 = {
 	"type": TriggerType.FIELD,
@@ -360,12 +365,12 @@ def test_evaluateTriggerLogicString():
 		},
 		{
 			"stringType": StringTriggerType.LENGTH_BIGGER_THAN_INT,
-			"body": [test_str_1, 1],
+			"body": [test_str_1, "1"],
 			"result": True,
 		},
 		{
 			"stringType": StringTriggerType.LENGTH_BIGGER_THAN_INT,
-			"body": [test_str_1, 100],
+			"body": [test_str_1, "100"],
 			"result": False,
 		},
 		{
@@ -380,12 +385,12 @@ def test_evaluateTriggerLogicString():
 		},
 		{
 			"stringType": StringTriggerType.LENGTH_EQUALS_INT,
-			"body": [test_str_5, 6],
+			"body": [test_str_5, "6"],
 			"result": True,
 		},
 		{
 			"stringType": StringTriggerType.LENGTH_EQUALS_INT,
-			"body": [test_str_5, 1],
+			"body": [test_str_5, "1"],
 			"result": False,
 		},
 		{

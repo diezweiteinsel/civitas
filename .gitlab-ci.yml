@@ -47,6 +47,7 @@ test-backend:
     DEV_SQLITE: "0"
   before_script:
     - apt-get update && apt-get install -y gcc libpq-dev
+    - pip install pytest-cov
     - pip install -r backend/requirements-linux.txt
     - pip install -e backend/.
   script:

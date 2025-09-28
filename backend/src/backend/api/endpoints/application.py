@@ -2,7 +2,9 @@
 from datetime import datetime
 
 # third party imports
-from fastapi import APIRouter, HTTPException
+from backend.core import db
+from fastapi import APIRouter, Depends, HTTPException
+from sqlalchemy.orm import Session
 
 # project imports
 from backend.api.deps import   RoleChecker
@@ -17,6 +19,9 @@ from backend.businesslogic.user import ensure_applicant, ensure_admin, ensure_re
 from backend.models import Form   
 from datetime import date 
 from backend.businesslogic.services.mockups import _global_applications_db, _global_users_db, _global_forms_db
+from backend.models.domain.buildingblock import BuildingBlock
+from backend.crud import formCrud, application as applicationCrud
+from sqlalchemy.orm import Session
 
 router = APIRouter(prefix="/applications", tags=["applications"])
 # admin_or_reporter_permission = RoleChecker(["ADMIN", "REPORTER"])
@@ -40,7 +45,7 @@ async def list_applications():
     return _global_applications_db
 
 @router.post("", response_model=bool, tags=["Applications"], summary="Create a new application")
-async def create_application(application_data: dict):
+async def create_application(application_data: dict, session: Session = Depends(db.get_session_dep)):
     """
     Create a new application in the system.
     """
@@ -55,13 +60,16 @@ async def create_application(application_data: dict):
         raise ValueError("User not found")
     if not ensure_applicant(user):
         raise PermissionError("Only applicants can create applications.")
-    form = Form(id=form_id)  # temporary, replace with actual form retrieval logic. But now we are skipping the form logic
-    
-    application = createApplication(user, form, payload)
+
+    bb = BuildingBlock(label="Name", data_type="STRING")
+
+    form = Form(form_name="Sample Form", blocks={"1": bb})  # temporary, replace with actual form retrieval logic. But now we are skipping the form logic
+    form = formCrud.add_form(session, form)  # saving the form to get an id   
+    application = createApplication(user, form, payload, session)
 
     # Save application to db
 
-    return application in _global_applications_db
+    return application == applicationCrud.get_application_by_id(session, application.form_id, application.id)
 
 @router.get("/{application_id}", response_model=Application, tags=["Applications"], summary="Get application by ID")
 async def get_application(application_id: int):
@@ -110,19 +118,6 @@ async def delete_application(application_id: int):
 
 
 
-# tests
-Admin = User(id=1, username="admin", date_created=date.today(), hashed_password="admin")
-assign_role(Admin, UserType.ADMIN)
-Applicant = User(id=2, username="applicant", date_created=date.today(), hashed_password="applicant")
-assign_role(Applicant, UserType.APPLICANT)
-Reporter = User(id=3, username="reporter", date_created=date.today(), hashed_password="reporter")
-assign_role(Reporter, UserType.REPORTER)
-_global_users_db.extend([Admin, Applicant, Reporter])
-form = createForm(Admin, {"title": "Form 1", "fields": [{"name": "field1", "type": "text"}, {"name": "field2", "type": "number"}]})
-createApplication(Applicant, form ,{"field1": "value1", "field2": "value2"})
-createApplication(Applicant, form ,{"field1": "value3", "field2": "value4"})
-adminRejectApplication(Admin, _global_applications_db[1])
-createApplication(Applicant, form ,{"field1": "value5", "field2": "value6"})
-adminApproveApplication(Admin, _global_applications_db[2])
-print(_global_applications_db)
+# Test data initialization should be moved to a separate initialization file or startup event
+# This code should not run at module import time
 

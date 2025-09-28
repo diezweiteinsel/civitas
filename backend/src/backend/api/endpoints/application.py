@@ -89,7 +89,7 @@ async def update_application(application_id: int, new_application_data: dict):
     for app in _global_applications_db:
         if app.id == application_id:
             # Create User object for editApplication
-            user = User(id=app.userID, username="username", date_created=date.today(), hashed_password="pass") # TODO: should be replaced with actual user retrieval logic e.g. get_user_by_id()
+            user = User(id=app.user_id, username="username", date_created=date.today(), hashed_password="pass") # TODO: should be replaced with actual user retrieval logic e.g. get_user_by_id()
             assign_role(user, UserType.APPLICANT) 
             
             # Update the application with new data

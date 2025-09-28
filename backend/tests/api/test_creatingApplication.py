@@ -35,6 +35,7 @@ def test_update_application_success():
         "json_payload": {"field1": "original", "field2": "original_value2"}
     }
     create_response = client.post("/api/v1/applications", json=create_payload)
+    print(_global_applications_db)
     
     application_id = 1  # Assuming an application with ID 1 exists
     new_data = {

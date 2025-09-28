@@ -61,7 +61,7 @@ def createApplication(user: User, form: Form, payload: dict) -> Application:
 	#	applicationID=1,  # Placeholder, should be set by the database
 		user_id=user.id,
 		form_id=form.id,
-		applicationID=application_id,  # Use generated ID
+		id=application_id,  # Use generated ID
 		jsonPayload=payload
 	) # Still missing : importing formfields into application, snapshots and filling them with data from payload
 	# Logic to save the new application into the db is not defined yet
@@ -77,7 +77,7 @@ def editApplication(user: User, application: Application, newApplicationData: di
 			raise ValueError("Only pending applications can be edited.")
 	# Update the application data with the new data and update the db
 	for app in _global_applications_db:
-		if app.applicationID == application.applicationID:
+		if app.id == application.id:
 			app.jsonPayload = newApplicationData
 			application = app # update the reference to the modified application
 			break

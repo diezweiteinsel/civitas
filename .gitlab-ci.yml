@@ -30,6 +30,12 @@ build-frontend:
 # ---- TEST ----
 test-backend:
   stage: test
+  cache:
+    key: ${CI_COMMIT_REF_SLUG}
+    paths:
+      - .cache/pip
+  variables:
+    PIP_CACHE_DIR: "$CI_PROJECT_DIR/.cache/pip"
   image: python:3.11-slim
   services:
     - name: postgres:15
@@ -45,17 +51,29 @@ test-backend:
     ALGORITHM: "HS256"
     DEV_SQLITE: "0"
   before_script:
-    - apt-get update && apt-get install -y gcc libpq-dev
+    # keep the image lean → avoid filling /var/cache/apt/archives
+    - rm -rf /var/lib/apt/lists/* /var/cache/apt/archives/*
+    - apt-get update
+    - apt-get install -y --no-install-recommends gcc libpq-dev
+    - apt-get clean
+    - rm -rf /var/lib/apt/lists/* /var/cache/apt/archives/*
     - pip install -r backend/requirements-linux.txt
     - pip install -e backend/.
+    - pip install pytest-cov
   script:
-  - pytest backend/ --junitxml=report.xml
+  - pytest backend/ --junitxml=report.xml --cov=backend --cov-report=xml:coverage.xml --cov-report=html:htmlcov --cov-report=term-missing
   - 'test -f report.xml || echo "<testsuite name=\"pytest\" tests=\"0\" failures=\"1\"><testcase classname=\"collection\" name=\"error\"><failure message=\"pytest crashed before producing report.xml\"/></testcase></testsuite>" > report.xml'
 
   artifacts:
     when: always
+    paths:
+      - report.xml
+      - coverage.xml
+      - htmlcov/
+    expire_in: 1 week
     reports:
       junit: report.xml
+      cobertura: coverage.xml
 
 # ---- DEPLOY (scp repo → build/run on VM) ----
 deploy-to-vm:

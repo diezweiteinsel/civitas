@@ -63,7 +63,7 @@ async def create_application(application_data: dict, session: Session = Depends(
 
     bb = BuildingBlock(label="Name", data_type="STRING")
 
-    form = Form(form_name="Sample Form", blocks={1: bb})  # temporary, replace with actual form retrieval logic. But now we are skipping the form logic
+    form = Form(form_name="Sample Form", blocks={"1": bb})  # temporary, replace with actual form retrieval logic. But now we are skipping the form logic
     form = formCrud.add_form(session, form)  # saving the form to get an id   
     application = createApplication(user, form, payload, session)
 

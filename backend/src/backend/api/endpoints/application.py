@@ -81,6 +81,7 @@ async def list_applications(
         # this should not be reachable because of the dependency above
         pass
 
+    return applicationCrud.get_all_applications(session)
 
 
 @router.post("", response_model=bool,
@@ -108,9 +109,6 @@ async def create_application(application_data: dict):
     form = Form(form_name="Sample Form", blocks={"1": bb})  # temporary, replace with actual form retrieval logic. But now we are skipping the form logic
     form = formCrud.add_form(session, form)  # saving the form to get an id   
     application = createApplication(user, form, payload, session)
-
-    # Save application to db
-
     return application == applicationCrud.get_application_by_id(session, application.form_id, application.id)
 
 
@@ -126,16 +124,16 @@ async def get_application(application_id: int):
         app_id = int(application_id)
     except ValueError:
         raise HTTPException(status_code=400, detail="Invalid application ID format")
-    
-    for app in _global_applications_db:
-        if app.id == app_id:
-            return app
-    
-    raise HTTPException(status_code=404, detail=f"Application with ID {app_id} not found")
+
+    application = applicationCrud.get_application_by_id(session, form_id, app_id)
+    if not application:
+        raise HTTPException(status_code=404, detail=f"Application with ID {app_id} not found")
+    return application
+
 
 
 @router.put("/{application_id}", response_model=Application, tags=["Applications"], summary="Update an application by ID")
-async def update_application(application_id: int, new_application_data: dict):
+async def update_application(application_id: int, new_application_data: dict, session: Session = Depends(db.get_session_dep)):
     """
     Update a specific application by its ID.
     """

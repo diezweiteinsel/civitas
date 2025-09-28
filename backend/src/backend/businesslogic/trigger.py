@@ -87,9 +87,8 @@ def getIntValue(var, application: Application) -> int:
 	if isinstance(var, int):
 		return var
 	elif var["type"] == TriggerType.FIELD:
-		# TODO get actual data from application via block name / id
-		blockIDorName = var["body"]
-		return -1
+		blockname = var["body"]
+		return application.jsonPayload[blockname]
 	return -1
 
 def evaluateTriggerLogicInt(dictionary: dict, application: Application) -> bool:

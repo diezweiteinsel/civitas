@@ -70,10 +70,10 @@ export default function Navbar({ role = Role.EMPTY }) {
                 <div className="dropdown-item">
                   <NavLink
                     className="nav-link"
-                    to="/admin/edit-form"
+                    to="/admin/create-forms"
                     onClick={() => setShowDropdown(false)}
                   >
-                    Edit Form
+                    Create Form
                   </NavLink>
                 </div>
                 <div className="dropdown-item">

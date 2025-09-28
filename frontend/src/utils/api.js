@@ -78,3 +78,22 @@ export const getAllUsers = async () => {
 
   return users;
 };
+
+export const createForm = async (formData) => {
+  const response = await fetch(`${API_BASE_URL}/api/v1/forms`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(formData),
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(
+      errorData.detail || errorData.error || "Failed to create form"
+    );
+  }
+
+  return response.json();
+};

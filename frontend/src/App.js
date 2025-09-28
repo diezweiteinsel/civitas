@@ -9,6 +9,7 @@ import ApplicationEdit from "./pages/applicant/ApplicationEdit";
 import AdminRegistration from "./pages/admin/AdminRegistration";
 import ReporterRegistration from "./pages/admin/ReporterRegistration";
 import ApplicationView from "./pages/ApplicationView";
+import CreateForms from "./pages/admin/CreateForms";
 
 const App = () => {
   return (
@@ -29,6 +30,7 @@ const App = () => {
           path="/admin/admin-registration"
           element={<AdminRegistration />}
         />
+        <Route path="/admin/create-forms" element={<CreateForms />} />
         <Route
           path="/admin/reporter-registration"
           element={<ReporterRegistration />}

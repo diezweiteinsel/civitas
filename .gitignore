@@ -15,6 +15,9 @@ devenv.lock
 # Ignore environment variable files
 .env
 
+# Ignore Node.js dependencies
+node_modules/
+
 # Ignore Python virtual environment directories
 .venv/
 

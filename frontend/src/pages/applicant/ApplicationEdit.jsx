@@ -40,23 +40,7 @@ export default function ApplicationEdit() {
         0: {
           label: "Name",
           value: form.name,
-        },
-        1: {
-          label: "Standort",
-          value: form.location,
-        },
-        2: {
-          label: "Datum",
-          value: form.date,
-        },
-        3: {
-          label: "Beschreibung",
-          value: form.description,
-        },
-        4: {
-          label: "Betrag",
-          value: form.amount,
-        },
+        }
       },
     };
     createApplicationMutation.mutate(applicationData);

@@ -3,7 +3,9 @@ from datetime import datetime
 from typing import Optional
 
 # third party imports
+from backend.core import db
 from fastapi import APIRouter, Depends, HTTPException
+from sqlalchemy.orm import Session
 
 # project imports
 from backend.api.deps import   RoleChecker
@@ -18,6 +20,9 @@ from backend.businesslogic.user import ensure_applicant, ensure_admin, ensure_re
 from backend.models import Form   
 from datetime import date 
 from backend.businesslogic.services.mockups import _global_applications_db, _global_users_db, _global_forms_db
+from backend.models.domain.buildingblock import BuildingBlock
+from backend.crud import formCrud, application as applicationCrud
+from sqlalchemy.orm import Session
 
 router = APIRouter(prefix="/applications", tags=["applications"])
 
@@ -97,13 +102,16 @@ async def create_application(application_data: dict):
         raise ValueError("User not found")
     if not ensure_applicant(user):
         raise PermissionError("Only applicants can create applications.")
-    form = Form(id=form_id)  # temporary, replace with actual form retrieval logic. But now we are skipping the form logic
-    
-    application = createApplication(user, form, payload)
+
+    bb = BuildingBlock(label="Name", data_type="STRING")
+
+    form = Form(form_name="Sample Form", blocks={"1": bb})  # temporary, replace with actual form retrieval logic. But now we are skipping the form logic
+    form = formCrud.add_form(session, form)  # saving the form to get an id   
+    application = createApplication(user, form, payload, session)
 
     # Save application to db
 
-    return application in _global_applications_db
+    return application == applicationCrud.get_application_by_id(session, application.form_id, application.id)
 
 
 @router.get("/{application_id}",

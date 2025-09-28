@@ -9,7 +9,7 @@ app = FastAPI()
 app.include_router(router, prefix="/api/v1")
 # app.include_router(auth.router, prefix="/api/v1")
 
-client = TestClient(app)
+# client = TestClient(app)
 
 # def test_create_application_success():
 #     user_id = 1  # Assuming a user with ID 1 exists

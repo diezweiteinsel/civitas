@@ -15,14 +15,19 @@ def add_orm_form(session, form: OrmForm) -> OrmForm:
     """
     Adds a new form to the database.
     """
-    return dbActions.insertRow(session, OrmForm, form)
+    try:
+        updatedOrmForm: OrmForm = dbActions.insertRow(session, OrmForm, form)
+        dbActions.createFormTable(updatedOrmForm.id, updatedOrmForm.xoev)
+        return updatedOrmForm
+    except Exception:
+        raise Exception("Something went wrong")
 
 
 def add_form(session, form:Form) -> Form:
     ormForm = form.to_orm_model()
     ormForm = add_orm_form(session, ormForm)
     updatedForm = Form.from_orm_model(ormForm)
-    dbActions.updateRow(session, OrmForm, {"id": ormForm.id, "xoev":updatedForm.to_json()})
+    updatedOrmForm: OrmForm = dbActions.updateRow(session, OrmForm, {"id": ormForm.id, "xoev":updatedForm.to_json()})
     return updatedForm
 
 def get_form_by_id(session, id: int) -> OrmForm:

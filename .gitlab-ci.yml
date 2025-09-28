@@ -2,6 +2,7 @@ stages:
   - build
   - test
   - deploy
+  - maintenance # to not fill up VM space
 
 default:
   interruptible: true
@@ -27,7 +28,8 @@ build-frontend:
   script:
     - docker build --build-arg REACT_APP_API_URL="/api" -f frontend/Dockerfile -t sanity-frontend:ci .
 
-# ---- TEST ----
+
+# ---- TEST ---- # old version, hopefully works again
 test-backend:
   stage: test
   image: python:3.11-slim
@@ -46,16 +48,20 @@ test-backend:
     DEV_SQLITE: "0"
   before_script:
     - apt-get update && apt-get install -y gcc libpq-dev
+    - pip install pytest-cov
     - pip install -r backend/requirements-linux.txt
     - pip install -e backend/.
   script:
-  - pytest backend/ --junitxml=report.xml
+  - pytest backend/ --junitxml=report.xml --cov=backend --cov-report=xml:coverage.xml --cov-report=html:htmlcov --cov-report=term-missing
   - 'test -f report.xml || echo "<testsuite name=\"pytest\" tests=\"0\" failures=\"1\"><testcase classname=\"collection\" name=\"error\"><failure message=\"pytest crashed before producing report.xml\"/></testcase></testsuite>" > report.xml'
 
   artifacts:
     when: always
     reports:
       junit: report.xml
+      coverage_report:
+        coverage_format: cobertura
+        path: coverage.xml
 
 # ---- DEPLOY (scp repo → build/run on VM) ----
 deploy-to-vm:
@@ -129,3 +135,28 @@ deploy-to-vm:
     name: production
     url: http://$SSH_SERVER_IP:1203
 
+cleanup_runner:
+  stage: maintenance
+  # This job must run on the runner you want to clean.
+  # Ensure your runner has a unique tag, like 'sopro-runner'.
+  tags:
+    - sopro-runner 
+  
+  # Use the official Docker image to get access to the `docker` CLI
+  image: docker:24.0
+
+  # This is the critical part: it gives the job's container access
+  # to the HOST's Docker daemon.
+  variables:
+    DOCKER_HOST: "unix:///var/run/docker.sock"
+
+  # The job will only run when you click the "play" button for it in the GitLab pipeline view.
+  when: manual
+
+  script:
+    - echo "Starting cleanup of Docker resources on the runner host. Current disk usage:"
+    - df -h
+    - echo "Running Docker system prune on the runner host..."
+    - docker system prune -a -f --volumes
+    - df -h
+    - echo "Cleanup complete."

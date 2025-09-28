@@ -57,7 +57,7 @@ def createFormTable(id: int, xoev: str):
     The form's id\n
     The form's xoev\n
     Does:\n
-    Creates a tableClass
+    Creates a tableClass for the given form's (as xoev) applications
     """
     tablename = "form_" + str(id)
     # TODO we need to ensure that created buildingblocks do not have a label conflicting with these existing columns
@@ -78,13 +78,15 @@ def createFormTable(id: int, xoev: str):
 
     for block in xoevDict["blocks"].values():
         columns[block["label"]] = matchType(block["data_type"])
-    return createTableClass(tablename=tablename, columns=columns)
+    try:
+        return createTableClass(tablename=tablename, columns=columns)
+    except Exception as e:
+        raise Exception("Something went wrong", e)
 
 
 def insertRow(session: Session, tableClass: type, rowData: dict | type) -> type:
     """
     Insert a row into the table represented by tableClass using SQLAlchemy ORM.
-    Uses get_session_dep() for session management.
     """
     # Can easily be adapted for fastapi use by making session a dependency
     if type(rowData) == dict:
@@ -113,7 +115,6 @@ def updateRow(session: Session, tableClass: type, rowData: dict):
     Returns updated row object.
 
     Update a row in the table represented by tableClass using SQLAlchemy ORM.
-    Uses get_session_dep() for session management.
     """
     # Can easily be adapted for fastapi use by making session a dependency
     if "id" not in rowData:
@@ -135,7 +136,6 @@ def removeRow(session: Session, tableClass: type, id: int):
     Give id of row/object to be deleted as arg.
 
     Delete a row from the table represented by tableClass using SQLAlchemy ORM.
-    Uses get_session_dep() for session management.
     """
 
     # Can easily be adapted for fastapi use by making session a dependency
@@ -149,16 +149,14 @@ def removeRow(session: Session, tableClass: type, id: int):
 def getRowById(session: Session, tableClass: type, id: int):
     """
     Get a row from the table represented by tableClass by primary key id using SQLAlchemy ORM.
-    Uses get_session_dep() for session management.
     """
     # Can easily be adapted for fastapi use by making session a dependency
     obj = session.get(tableClass, id) # get existing object by primary key
     return obj
 
-def getRows(session: Session, tableClass: type):
+def getRows(session: Session, tableClass: type) -> list[]:
     """
-    Get all rows from the table represented by tableClass using SQLAlchemy ORM.
-    Uses get_session_dep() for session management.
+    Get all rows from the table represented by tableClass, returns empty list when tableClass is empty\n
     """
     # Can easily be adapted for fastapi use by making session a dependency
     objs = session.query(tableClass).all() # get all objects
@@ -170,7 +168,6 @@ def getRowsByFilter(session: Session, tableClass: type, filterDict: dict):
     A filter is a key-value pair where the key is the column name and the value is the value to filter by.
 
     Get rows from the table represented by tableClass using SQLAlchemy ORM that match the filterDict.
-    Uses get_session_dep() for session management.
     """
     # Can easily be adapted for fastapi use by making session a dependency
     query = session.query(tableClass)

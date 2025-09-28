@@ -5,7 +5,7 @@ from backend.crud import dbActions
 from backend.models.orm.formtable import OrmForm
 from backend.models.domain.form import Form
 
-def get_all_forms(session) -> list:
+def get_all_forms(session) -> list[OrmForm]:
     """
     Returns a list containing all form ORM instances.
     """
@@ -13,7 +13,8 @@ def get_all_forms(session) -> list:
 
 def add_orm_form(session, form: OrmForm) -> OrmForm:
     """
-    Adds a new form to the database.
+    Adds the given orm form to the database and creates a table for it\n
+    Returns the updated "OrmForm" instance
     """
     try:
         updatedOrmForm: OrmForm = dbActions.insertRow(session, OrmForm, form)
@@ -24,6 +25,10 @@ def add_orm_form(session, form: OrmForm) -> OrmForm:
 
 
 def add_form(session, form:Form) -> Form:
+    """
+    Adds the given form to the formTable and creates a table for this form's applications\n
+    Returns the updated "Form" instance
+    """
     ormForm = form.to_orm_model()
     ormForm = add_orm_form(session, ormForm)
     updatedForm = Form.from_orm_model(ormForm)

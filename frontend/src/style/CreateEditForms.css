@@ -6,7 +6,6 @@
   background: #ffffff;
   border-radius: 12px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  min-height: 80vh;
 }
 
 .form-creation-header {
@@ -21,6 +20,40 @@
   font-size: 2.2rem;
   font-weight: 600;
   margin: 0;
+}
+
+/* Form title section */
+.form-title-section {
+  margin-bottom: 25px;
+}
+
+.form-title-section label {
+  display: block;
+  font-weight: 600;
+  color: #2c3e50;
+  margin-bottom: 8px;
+  font-size: 1.1rem;
+}
+
+.form-title-input {
+  width: 100%;
+  padding: 12px 16px;
+  border: 2px solid #e9ecef;
+  border-radius: 6px;
+  font-size: 1rem;
+  background: white;
+  box-sizing: border-box;
+}
+
+.form-title-input:focus {
+  outline: none;
+  border-color: #007bff;
+  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+}
+
+.form-title-input::placeholder {
+  color: #6c757d;
+  font-style: italic;
 }
 
 /* Button container for top actions */
@@ -40,14 +73,11 @@
   font-size: 1rem;
   font-weight: 500;
   cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 8px;
+  color: white;
 }
 
 .create-button {
   background: linear-gradient(135deg, #28a745, #20c997);
-  color: white;
 }
 
 .create-button:hover {
@@ -56,7 +86,6 @@
 
 .import-button {
   background: linear-gradient(135deg, #007bff, #0056b3);
-  color: white;
 }
 
 .import-button:hover {
@@ -94,21 +123,27 @@
   border: 1px solid #e9ecef;
 }
 
-.field-row:last-child {
-  margin-bottom: 0;
-}
-
-/* Input styling */
-.field-row input {
-  flex: 2;
+/* Input and Select styling */
+.field-row input,
+.field-row select {
   padding: 12px 16px;
   border: 2px solid #e9ecef;
   border-radius: 6px;
   font-size: 1rem;
-  background: #ffffff;
+  background: white;
 }
 
-.field-row input:focus {
+.field-row input {
+  flex: 2;
+}
+
+.field-row select {
+  flex: 1;
+  cursor: pointer;
+}
+
+.field-row input:focus,
+.field-row select:focus {
   outline: none;
   border-color: #007bff;
   box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
@@ -117,23 +152,6 @@
 .field-row input::placeholder {
   color: #6c757d;
   font-style: italic;
-}
-
-/* Select styling */
-.field-row select {
-  flex: 1;
-  padding: 12px 16px;
-  border: 2px solid #e9ecef;
-  border-radius: 6px;
-  font-size: 1rem;
-  background: white;
-  cursor: pointer;
-}
-
-.field-row select:focus {
-  outline: none;
-  border-color: #007bff;
-  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
 }
 
 /* Remove button styling */
@@ -192,9 +210,7 @@
 
 .error-message::before {
   content: "!";
-  font-size: 1.2rem;
   font-weight: bold;
-  color: #721c24;
   width: 20px;
   height: 20px;
   border-radius: 50%;
@@ -233,5 +249,3 @@
     flex: none;
   }
 }
-
-/* Removed animations for static design */

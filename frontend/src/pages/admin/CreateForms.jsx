@@ -12,6 +12,7 @@ import { useNavigate } from "react-router-dom";
 const dataTypes = ["String", "Date", "Float", "Boolean", "Number"];
 
 export default function CreateForms() {
+  const [formTitle, setFormTitle] = useState("");
   const [formFields, setFormFields] = useState([
     { id: "1", name: "Neues Feld 1", type: "Text", value: "" }, // needs to be implemnted as a dict instead? i dont know
   ]);
@@ -56,6 +57,11 @@ export default function CreateForms() {
   });
 
   const handleSave = () => {
+    if (!formTitle.trim()) {
+      setError("Bitte geben Sie einen Titel für das Formular ein.");
+      return;
+    }
+
     if (formFields.length === 0) {
       setError("Bitte fügen Sie mindestens ein Feld hinzu.");
       return;
@@ -64,7 +70,7 @@ export default function CreateForms() {
     // Convert frontend fields to backend format
     const formData = {
       code: `form_${Date.now()}`,
-      title: `Neues Formular ${new Date().toLocaleDateString()}`,
+      title: formTitle.trim(),
       isActive: true,
       sections: [
         {
@@ -96,6 +102,18 @@ export default function CreateForms() {
       <div className="form-creation-container">
         <div className="form-creation-header">
           <h2>Neues Meldeform erstellen</h2>
+        </div>
+
+        <div className="form-title-section">
+          <label htmlFor="form-title">Formular Titel:</label>
+          <input
+            id="form-title"
+            type="text"
+            placeholder="Geben Sie den Titel des Formulars ein..."
+            value={formTitle}
+            onChange={(e) => setFormTitle(e.target.value)}
+            className="form-title-input"
+          />
         </div>
 
         <div className="form-actions">

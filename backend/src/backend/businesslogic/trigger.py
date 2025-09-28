@@ -78,8 +78,36 @@ def evaluateTriggerLogicExpression(dictionary: dict, application: Application) -
 			return evaluateTriggerLogic(dictionary["body"][0], application) == evaluateTriggerLogic(dictionary["body"][1], application)
 	return False
 
+def getStringValue(var, application: Application) -> str:
+	if isinstance(var, str):
+		return var
+	elif var["type"] == TriggerType.FIELD:
+		return application.jsonPayload[var["body"]]
+	return ""
+
 def evaluateTriggerLogicString(dictionary: dict, application: Application) -> bool:
+	values: list[str] = [getStringValue(b, application) for b in dictionary["body"]]
 	match(dictionary["stringType"]):
+		case StringTriggerType.CONTAINS:
+			return values[1] in values[0]
+		case StringTriggerType.CONTAINS_NOT:
+			return not values[1] in values[0]
+		case StringTriggerType.STARTS_WITH:
+			return values[0].startswith(values[1])
+		case StringTriggerType.ENDS_WITH:
+			return values[0].endswith(values[1])
+		case StringTriggerType.LENGTH_BIGGER_THAN_INT:
+			return len(values[0]) > int(values[1])
+		case StringTriggerType.LENGTH_SMALLER_THAN_INT:
+			return len(values[0]) < int(values[1])
+		case StringTriggerType.LENGTH_EQUALS_INT:
+			return len(values[0]) == int(values[1])
+		case StringTriggerType.LENGTH_BIGGER_THAN_STRING:
+			return len(values[0]) > len(values[1])
+		case StringTriggerType.LENGTH_SMALLER_THAN_STRING:
+			return len(values[0]) < len(values[1])
+		case StringTriggerType.LENGTH_EQUALS_STRING:
+			return len(values[0]) == len(values[1])
 		case _:
 			return False
 
@@ -87,8 +115,7 @@ def getIntValue(var, application: Application) -> int:
 	if isinstance(var, int):
 		return var
 	elif var["type"] == TriggerType.FIELD:
-		blockname = var["body"]
-		return application.jsonPayload[blockname]
+		return application.jsonPayload[var["body"]]
 	return -1
 
 def evaluateTriggerLogicInt(dictionary: dict, application: Application) -> bool:

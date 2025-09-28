@@ -21,16 +21,16 @@ def createForm(admin: User, sections: list[Section]) -> Form:
 	
     # if not isinstance(sections, list) or not all(isinstance(s, Section) for s in sections): # type check
     #     raise ValueError("Forms must be a list of Section")
-    form = Form(formID=_form_id_counter)
+    form = Form(id=_form_id_counter)
     _form_id_counter += 1 #temporary id generation for tests
     _global_forms_db.append(form)
 	# Logic to save the form to the database is not defined yet
     return form
 
-def getForm(formID: int):
+def getForm(id: int):
 	""" Retrieves a form by its ID."""
 	for form in _global_forms_db:
-		if form.formID == formID:
+		if form.id == id:
 			return form
 	# Logic to retrieve the form from the database is not defined yet
 	return None

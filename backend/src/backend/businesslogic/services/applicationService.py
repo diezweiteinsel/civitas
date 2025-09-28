@@ -4,7 +4,7 @@ from backend.businesslogic.services.formService import createForm
 from backend.models.domain.user import UserType
 from requests import session
 from backend.businesslogic.user import assign_role, ensure_admin, ensure_applicant, ensure_reporter
-from .mockups import _global_applications_db, _global_forms_db
+from backend.businesslogic.services.mockups import _global_applications_db 
 
 from backend.models import (
 	User,
@@ -15,36 +15,6 @@ from backend.models import (
 )
 from backend.crud import dbActions
 
-# mockup db as list for testing purposes
-applications_db = [
-	first_application := Application(
-		user_id=1,
-		form_id=1,
-		status=ApplicationStatus.PENDING,
-		createdAt=datetime.now(),
-		currentSnapshotID=1,
-		previousSnapshotID=0,
-		jsonPayload={}
-	),
-	second_application := Application(
-		user_id=2,
-		form_id=1,
-		status=ApplicationStatus.APPROVED,
-		createdAt=datetime.now(),
-		currentSnapshotID=2,
-		previousSnapshotID=1,
-		jsonPayload={}
-	),
-	third_application := Application(	
-		user_id=3,
-		form_id=2,
-		status=ApplicationStatus.PUBLIC,
-		createdAt=datetime.now(),
-		currentSnapshotID=3,
-		previousSnapshotID=2,
-		jsonPayload={}	
-	)
-]
 
 
 def createApplication(user: User, form: Form, payload: dict) -> Application:

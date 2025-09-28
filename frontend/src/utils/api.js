@@ -4,7 +4,7 @@ const API_BASE_URL = process.env.REACT_APP_API_URL; // || "http://localhost:8000
 
 // WORKS
 export const createUser = async (userData) => {
-  const response = await fetch(`${API_BASE_URL}/api/v1/users`, {
+  const response = await fetch(`${API_BASE_URL}/users`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -31,7 +31,7 @@ export const loginUser = async (userData) => {
   formData.append("username", userData.username);
   formData.append("password", userData.password);
 
-  const response = await fetch(`${API_BASE_URL}/api/v1/auth/token`, {
+  const response = await fetch(`${API_BASE_URL}/auth/token`, {
     method: "POST",
     headers: {},
     body: formData,
@@ -63,7 +63,7 @@ export const getAllUsers = async () => {
     headers.Authorization = `Bearer ${accessToken}`;
   }
 
-  const response = await fetch(`${API_BASE_URL}/api/v1/users`, {
+  const response = await fetch(`${API_BASE_URL}/users`, {
     method: "GET",
     headers: headers,
   });
@@ -117,7 +117,7 @@ export const getApplicationById = async (application_id) => {
   }
 
   const response = await fetch(
-    `${API_BASE_URL}/api/v1/applications/${application_id}`,
+    `${API_BASE_URL}/applications/${application_id}`,
     {
       method: "GET",
       headers: headers,
@@ -152,7 +152,7 @@ export const createApplication = async (applicationData) => {
     payload: applicationData.payload || applicationData, // Use payload if provided, otherwise use the entire data
   };
 
-  const response = await fetch(`${API_BASE_URL}/api/v1/applications`, {
+  const response = await fetch(`${API_BASE_URL}/applications`, {
     method: "POST",
     headers: headers,
     body: JSON.stringify(requestBody),
@@ -170,7 +170,7 @@ export const createApplication = async (applicationData) => {
 };
 
 export const createForm = async (formData) => {
-  const response = await fetch(`${API_BASE_URL}/api/v1/forms`, {
+  const response = await fetch(`${API_BASE_URL}/forms`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",

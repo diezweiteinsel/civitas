@@ -55,7 +55,7 @@ async def create_application(application_data: dict):
         raise ValueError("User not found")
     if not ensure_applicant(user):
         raise PermissionError("Only applicants can create applications.")
-    form = Form(formID=form_id)  # temporary, replace with actual form retrieval logic. But now we are skipping the form logic
+    form = Form(id=form_id)  # temporary, replace with actual form retrieval logic. But now we are skipping the form logic
     
     application = createApplication(user, form, payload)
 

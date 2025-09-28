@@ -26,9 +26,9 @@ def createApplication(user: User, form: Form, payload: dict) -> Application:
 	application_id = len(_global_applications_db) + 1
 	
 	newApplication = Application(
-		applicationID=application_id,  # Use generated ID
-		userID=user.id,
-		formID=form.formID,
+	#	applicationID=1,  # Placeholder, should be set by the database
+		user_id=user.id,
+		form_id=form.id,
 		jsonPayload=payload
 	) # Still missing : importing formfields into application, snapshots and filling them with data from payload
 	# Logic to save the new application into the db is not defined yet
@@ -38,7 +38,7 @@ def createApplication(user: User, form: Form, payload: dict) -> Application:
 
 def editApplication(user: User, application: Application, newApplicationData: dict) -> Application:
 	""" Allows an applicant to edit their application before it getting processed."""
-	if user.id != application.userID:  # Ensure the user is the owner of the application
+	if user.id != application.user_id:  # Ensure the user is the owner of the application
 		raise PermissionError("Users can only edit their own applications.")
 	elif application.status != ApplicationStatus.PENDING:  # Only pending applications can be edited
 			raise ValueError("Only pending applications can be edited.")
@@ -54,7 +54,7 @@ def editApplication(user: User, application: Application, newApplicationData: di
 def getApplication(user: User, applicationId: int) -> Application:
 	application = dbActions.getRowById(session, Application, applicationId) # Retrieve the application from the database
 	""" Retrieves an application."""
-	if ensure_applicant(user) and application.userID != user.id and application.status != ApplicationStatus.PUBLIC:
+	if ensure_applicant(user) and application.user_id != user.id and application.status != ApplicationStatus.PUBLIC:
 		raise PermissionError("Applicants can only view their own applications.")
 	return application
 
@@ -86,7 +86,7 @@ def unpublishApplication(user: User, application: Application) -> Application:
 
 def submitApplication(user: User, application: Application):
 	""" Submits an application for processing."""
-	if user.id != application.userID:  # Ensure the user is the owner of the application
+	if user.id != application.user_id:  # Ensure the user is the owner of the application
 		raise PermissionError("Users can only submit their own applications.")
 	# Logic to submit the application is not defined yet
 	# dbActions.insertRow(session, Application, application.__dict__)
@@ -99,7 +99,7 @@ allApplications = []  # This would be replaced with actual database queries
 
 def listOwnApplications(user: User):
 	listOfApplications = [
-		app for app in allApplications if app.userID == user.id # Applicants can see their own applications
+		app for app in allApplications if app.user_id == user.id # Applicants can see their own applications
 	]
 	return listOfApplications
 

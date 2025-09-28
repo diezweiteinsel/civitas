@@ -3,6 +3,7 @@ from fastapi import HTTPException
 from sqlalchemy import Table
 from backend.crud import dbActions
 from backend.models.orm.formtable import OrmForm
+from backend.models.domain.form import Form
 
 def get_all_forms(session) -> list:
     """
@@ -10,13 +11,24 @@ def get_all_forms(session) -> list:
     """
     return dbActions.getRows(session, OrmForm)
 
-def add_form(session, form: OrmForm) -> OrmForm:
+def add_orm_form(session, form: OrmForm) -> OrmForm:
     """
     Adds a new form to the database.
     """
-    return dbActions.insertRow(session, OrmForm, form)
+    try:
+        updatedOrmForm: OrmForm = dbActions.insertRow(session, OrmForm, form)
+        dbActions.createFormTable(updatedOrmForm.id, updatedOrmForm.xoev)
+        return updatedOrmForm
+    except Exception:
+        raise Exception("Something went wrong")
 
 
+def add_form(session, form:Form) -> Form:
+    ormForm = form.to_orm_model()
+    ormForm = add_orm_form(session, ormForm)
+    updatedForm = Form.from_orm_model(ormForm)
+    updatedOrmForm: OrmForm = dbActions.updateRow(session, OrmForm, {"id": ormForm.id, "xoev":updatedForm.to_json()})
+    return updatedForm
 
 def get_form_by_id(session, id: int) -> OrmForm:
     """

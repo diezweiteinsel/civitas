@@ -73,7 +73,9 @@ test-backend:
     expire_in: 1 week
     reports:
       junit: report.xml
-      cobertura: coverage.xml
+      coverage_report:
+        coverage_format: cobertura
+        path: coverage.xml
 
 # ---- DEPLOY (scp repo → build/run on VM) ----
 deploy-to-vm:

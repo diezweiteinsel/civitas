@@ -1,6 +1,6 @@
 import { getToken } from "./data";
 
-const API_BASE_URL = process.env.REACT_APP_API_URL || "http://localhost:8000";
+const API_BASE_URL = process.env.REACT_APP_API_URL; // || "http://localhost:8000";
 
 // WORKS
 export const createUser = async (userData) => {
@@ -89,7 +89,7 @@ export const getAllApplications = async () => {
     headers.Authorization = `Bearer ${accessToken}`;
   }
 
-  const response = await fetch(`${API_BASE_URL}/api/v1/applications`, {
+  const response = await fetch(`${API_BASE_URL}/applications`, {
     method: "GET",
     headers: headers,
   });

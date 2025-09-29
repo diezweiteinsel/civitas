@@ -9,11 +9,13 @@ from sqlalchemy.orm import Session
 
 # project imports
 from backend.api.deps import   RoleChecker
+from backend.core import roleAuth
+from backend.models.orm import roletable
 from backend.businesslogic.services.applicationService import createApplication, getApplication, editApplication
 from backend.businesslogic.services.formService import createForm
 from backend.businesslogic.services.adminService import adminApproveApplication, adminRejectApplication
 from backend.businesslogic.services.formService import createForm
-from backend.models.domain.application import Application, ApplicationStatus, ApplicationID
+from backend.models.domain.application import Application, ApplicationFillout, ApplicationStatus, ApplicationID
 from backend.crud.user import get_user_by_id
 from backend.models.domain.user import User, UserType
 from backend.businesslogic.user import ensure_applicant, ensure_admin, ensure_reporter, assign_role
@@ -101,27 +103,15 @@ async def list_applications(session: Session = Depends(db.get_session_dep)):
             dependencies=[Depends(applicant_permission)],
             tags=["Applications"],
             summary="Create a new application")
-async def create_application(application_data: dict, session: Session = Depends(db.get_session_dep)):
+async def create_application(application_data: ApplicationFillout, session: Session = Depends(db.get_session_dep)):
     """
     Create a new application in the system.
     """
-    user_id = application_data.get("user_id", 1)  # Default to user 1 for testing
-    form_id = application_data.get("form_id", 1)  # Default to form 1 for testing
-    payload = application_data.get("payload", {})
+    user_id = 1 # get by jwt
+    form_id = application_data.form_id
+    jsonPayload = application_data.jsonPayload
     
-    # user = await get_user_by_id(user_id)
-    user = User(id=user_id, username="username", date_created=date.today(), hashed_password="pass") # temporary, replace with actual user retrieval logic
-    assign_role(user, UserType.APPLICANT) # temporary, remove when actual user retrieval logic is implemented
-    if not user:
-        raise ValueError("User not found")
-    if not ensure_applicant(user):
-        raise PermissionError("Only applicants can create applications.")
-
-    bb = BuildingBlock(label="Name", data_type="STRING")
-
-    form = Form(form_name="Sample Form", blocks={"1": bb})  # temporary, replace with actual form retrieval logic. But now we are skipping the form logic
-    form = formCrud.add_form(session, form)  # saving the form to get an id   
-    application = createApplication(user, form, payload, session)
+    application = createApplication(user_id, form_id, jsonPayload, session)
 
     return ApplicationID(id=application.id)
 

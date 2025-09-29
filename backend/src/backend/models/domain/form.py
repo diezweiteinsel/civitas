@@ -1,3 +1,5 @@
+import re
+
 from datetime import datetime
 from pydantic import BaseModel, ConfigDict
 from backend.models.domain.buildingblock import BuildingBlock, BBType
@@ -51,10 +53,32 @@ class Form(BaseModel):
 		)
 		return ormForm
 
+	@classmethod
+	def from_xml(cls, xml: str) -> "Form":
+		form = Form()
+
+		version_match = re.search(r'version="([^"]+)"', xml)
+		form.version = str(version_match.group(1)) if version_match else "1.0"
+
+		name_match = re.search(r'name="([^"]+)"', xml)
+		form.form_name = str(name_match.group(1)) if name_match else "UnknownForm"
+
+		all_blocks_match = re.findall(r'<attribute name="(?P<name>[^"]+)" type="(?P<type>[^"]+)" required="(?P<required>[^"]+)"/>', xml)
+		counter: int = 1
+		for match in all_blocks_match:
+			block = BuildingBlock()
+			block.label = match[0]
+			block.data_type = str(match[1]).upper()
+			block.required = bool(match[2])
+			form.blocks[counter] = block
+			counter += 1
+
+		return form
+
 	def to_xml(self) -> str:
 		result = '''<x{name}Export xmlns="urn:xoev:x{name}:{version}" version="{version}">
 	<!-- Formular-Definition -->
-	<formDefinition id="{id}" name="{name}">
+	<formDefinition name="{name}">
 		<attributes>'''
 		for b in self.blocks.keys():
 			result += "\n\t\t\t" + self.blocks.get(b).to_xml()
@@ -62,11 +86,13 @@ class Form(BaseModel):
 		</attributes>
 	</formDefinition>
 </x{name}Export>'''
-		return result.format(id=str(self.id), name=self.form_name, version=self.version)
+		return result.format(name=self.form_name, version=self.version)
 
 #blocks = {
 #	1: BuildingBlock(label="helpme",data_type=BBType.STRING,required=True,constraintsJson={})
 #}
 #example_form = Form(form_name="example",id=-1,blocks=blocks,version="6.9")
 #print(example_form.to_xml())
+#print("again")
+#print(Form.from_xml(example_form.to_xml()).to_xml())
 

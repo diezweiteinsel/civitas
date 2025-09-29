@@ -40,6 +40,13 @@ const App = () => {
         />
         <Route path="/admin/create-forms" element={<CreateForms />} />
         <Route path="/application/:id" element={<ApplicationView />} />
+
+        <Route path= "/reporter" element={<ReporterDashboard />}/>
+        <Route path= "/reporter/approved" element={<ApprovedApplication />}/>
+        <Route path="/reporter/public" element={<PublicApplication/>}/>
+        <Route path="/reporter/rejected" element={<RejectedApplication/>}/>
+        <Route path="/reporter/pending" element={<PendingApplication/>}/>
+
       </Routes>
     </>
   );

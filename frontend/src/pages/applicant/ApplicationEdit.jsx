@@ -1,7 +1,7 @@
 import "./../../style/ApplicationEdit.css";
 import React, { useState, useEffect } from "react";
-import Navbar from "./../../components/Navbar";
 import { useNavigate, useParams } from "react-router-dom";
+import Navbar from "./../../components/Navbar";
 import { Role } from "../../utils/const";
 import { useMutation } from "@tanstack/react-query";
 import { createApplication, getFormById } from "../../utils/api";
@@ -22,15 +22,15 @@ export default function ApplicationEdit() {
       console.log("Form data received:", data); // Debug log
       setFormData(data);
       setLoading(false);
-      // Initialize form values based on form blocks
-      if (data && data.blocks && Array.isArray(data.blocks)) {
+      // Initialize form values based on form blocks (dictionary/object)
+      if (data && data.blocks && typeof data.blocks === "object") {
         const initialValues = {};
-        data.blocks.forEach((block, index) => {
-          initialValues[`block_${index}`] = "";
+        Object.keys(data.blocks).forEach((key) => {
+          initialValues[`block_${key}`] = "";
         });
         setFormValues(initialValues);
       } else {
-        console.warn("Form blocks not found or not an array:", data.blocks);
+        console.warn("Form blocks not found or not an object:", data.blocks);
         setFormValues({});
       }
     },
@@ -74,20 +74,20 @@ export default function ApplicationEdit() {
   const handleSubmit = (e) => {
     e.preventDefault();
 
-    // Build payload from form values and blocks
+    // Build payload from form values and blocks (dictionary/object)
     const jsonPayload = {};
-    if (formData && formData.blocks && Array.isArray(formData.blocks)) {
-      formData.blocks.forEach((block, index) => {
-        jsonPayload[index] = {
-          label: block.label || block.name || `Field ${index + 1}`,
-          value: formValues[`block_${index}`] || "",
-          block_type: block.block_type,
+    if (formData && formData.blocks && typeof formData.blocks === "object") {
+      Object.keys(formData.blocks).forEach((key) => {
+        const block = formData.blocks[key];
+        jsonPayload[key] = {
+          label: block.label || `Field ${key}`,
+          value: formValues[`block_${key}`] || "",
+          data_type: block.data_type,
         };
       });
     }
 
     const applicationData = {
-      user_id: 1, // This should come from authentication context
       form_id: parseInt(formId, 10),
       payload: jsonPayload,
     };
@@ -104,7 +104,7 @@ export default function ApplicationEdit() {
       setSuccess("Antrag erfolgreich erstellt! Weiterleitung...");
       console.log("Antrag erfolgreich erstellt:", data);
 
-      navigate("/");
+      navigate("/applicant");
     },
     onError: (error) => {
       setSuccess("");
@@ -116,15 +116,15 @@ export default function ApplicationEdit() {
     },
   });
 
-  const renderFormField = (block, index) => {
-    const fieldName = `block_${index}`;
+  const renderFormField = (block, key) => {
+    const fieldName = `block_${key}`;
     const fieldValue = formValues[fieldName] || "";
-    const label = block.label || block.name || `Field ${index + 1}`;
+    const label = block.label || `Field ${key}`;
 
-    switch (block.block_type) {
-      case "TEXT_INPUT":
+    switch (block.data_type) {
+      case "TEXT":
         return (
-          <div key={index} className="form-group">
+          <div key={key} className="form-group">
             <label htmlFor={fieldName}>{label}:</label>
             <input
               type="text"
@@ -132,46 +132,32 @@ export default function ApplicationEdit() {
               name={fieldName}
               value={fieldValue}
               onChange={handleChange}
-              placeholder={block.placeholder || ""}
               required={block.required || false}
             />
           </div>
         );
 
-      case "TEXT_AREA":
+      case "FLOAT":
+      case "INTEGER":
+      case "NUMBER":
         return (
-          <div key={index} className="form-group">
-            <label htmlFor={fieldName}>{label}:</label>
-            <textarea
-              id={fieldName}
-              name={fieldName}
-              value={fieldValue}
-              onChange={handleChange}
-              placeholder={block.placeholder || ""}
-              required={block.required || false}
-            />
-          </div>
-        );
-
-      case "NUMBER_INPUT":
-        return (
-          <div key={index} className="form-group">
+          <div key={key} className="form-group">
             <label htmlFor={fieldName}>{label}:</label>
             <input
               type="number"
+              step={block.data_type === "FLOAT" ? "0.01" : "1"}
               id={fieldName}
               name={fieldName}
               value={fieldValue}
               onChange={handleChange}
-              placeholder={block.placeholder || ""}
               required={block.required || false}
             />
           </div>
         );
 
-      case "DATE_INPUT":
+      case "DATE":
         return (
-          <div key={index} className="form-group">
+          <div key={key} className="form-group">
             <label htmlFor={fieldName}>{label}:</label>
             <input
               type="date"
@@ -184,9 +170,9 @@ export default function ApplicationEdit() {
           </div>
         );
 
-      case "EMAIL_INPUT":
+      case "EMAIL":
         return (
-          <div key={index} className="form-group">
+          <div key={key} className="form-group">
             <label htmlFor={fieldName}>{label}:</label>
             <input
               type="email"
@@ -194,7 +180,21 @@ export default function ApplicationEdit() {
               name={fieldName}
               value={fieldValue}
               onChange={handleChange}
-              placeholder={block.placeholder || ""}
+              required={block.required || false}
+            />
+          </div>
+        );
+
+      case "TEXTAREA":
+      case "LONG_TEXT":
+        return (
+          <div key={key} className="form-group">
+            <label htmlFor={fieldName}>{label}:</label>
+            <textarea
+              id={fieldName}
+              name={fieldName}
+              value={fieldValue}
+              onChange={handleChange}
               required={block.required || false}
             />
           </div>
@@ -202,7 +202,7 @@ export default function ApplicationEdit() {
 
       default:
         return (
-          <div key={index} className="form-group">
+          <div key={key} className="form-group">
             <label htmlFor={fieldName}>{label}:</label>
             <input
               type="text"
@@ -210,7 +210,6 @@ export default function ApplicationEdit() {
               name={fieldName}
               value={fieldValue}
               onChange={handleChange}
-              placeholder={block.placeholder || ""}
               required={block.required || false}
             />
           </div>
@@ -256,10 +255,10 @@ export default function ApplicationEdit() {
           {formData && !loading && (
             <form className="application-edit-form" onSubmit={handleSubmit}>
               {formData.blocks &&
-              Array.isArray(formData.blocks) &&
-              formData.blocks.length > 0 ? (
-                formData.blocks.map((block, index) =>
-                  renderFormField(block, index)
+              typeof formData.blocks === "object" &&
+              Object.keys(formData.blocks).length > 0 ? (
+                Object.keys(formData.blocks).map((key) =>
+                  renderFormField(formData.blocks[key], key)
                 )
               ) : (
                 <div className="no-fields-message">

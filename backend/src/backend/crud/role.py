@@ -40,7 +40,8 @@ def get_user_roles(session: Session, user_id: int) -> list[user.RoleAssignment]:
 
 def get_all_admin_roles(session: Session) -> list[user.RoleAssignment]:
     """
-    Returns a list of all RoleAssignment domain models with role 'ADMIN'.
+    Returns a list of all RoleAssignment domain models with role 'ADMIN'.\n
+    Empty list when no admins are found
     """
     orm_role_assignments = dbActions.getRowsByFilter(
         session, OrmRoleAssignment, {"role": "ADMIN"}
@@ -52,7 +53,8 @@ def get_all_admin_roles(session: Session) -> list[user.RoleAssignment]:
 
 def get_all_applicant_roles(session: Session) -> list[user.RoleAssignment]:
     """
-    Returns a list of all RoleAssignment domain models with role 'APPLICANT'.
+    Returns a list of all RoleAssignment domain models with role 'APPLICANT'.\n
+    Empty list when no applicants are found
     """
     orm_role_assignments = dbActions.getRowsByFilter(
         session, OrmRoleAssignment, {"role": "APPLICANT"}
@@ -64,7 +66,8 @@ def get_all_applicant_roles(session: Session) -> list[user.RoleAssignment]:
 
 def get_all_reporter_roles(session: Session) -> list[user.RoleAssignment]:
     """
-    Returns a list of all RoleAssignment domain models with role 'REPORTER'.
+    Returns a list of all RoleAssignment domain models with role 'REPORTER'.\n
+    Empty list when no reporters are found
     """
     orm_role_assignments = dbActions.getRowsByFilter(
         session, OrmRoleAssignment, {"role": "REPORTER"}

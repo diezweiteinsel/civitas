@@ -11,6 +11,9 @@ export const saveToken = (tokenData) => {
   if (tokenData.roles) {
     localStorage.setItem("user_roles", JSON.stringify(tokenData.roles));
   }
+  if (tokenData.userid) {
+    localStorage.setItem("user_id", tokenData.userid);
+  }
 };
 
 // Get authentication token from localStorage
@@ -29,11 +32,17 @@ export const getUserRoles = () => {
   return roles ? JSON.parse(roles) : [];
 };
 
+// Get user ID from localStorage
+export const getUserId = () => {
+  return localStorage.getItem("user_id");
+};
+
 // Remove all authentication data
 export const clearAuthData = () => {
   localStorage.removeItem("access_token");
   localStorage.removeItem("token_type");
   localStorage.removeItem("user_roles");
+  localStorage.removeItem("user_id");
 };
 
 // Check if user is authenticated

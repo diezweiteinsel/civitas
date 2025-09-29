@@ -30,6 +30,12 @@ export default function Navbar({ role = Role.EMPTY }) {
     };
   }, [showDropdown]);
 
+  const handleLogout = () => {
+    setShowDropdown(false);
+    // Clear user data from localStorage
+    localStorage.clear();
+  };
+
   return (
     <nav className="navbar">
       <NavLink
@@ -171,7 +177,7 @@ export default function Navbar({ role = Role.EMPTY }) {
                 className="nav-link"
                 style={{ color: "red" }}
                 to="/"
-                onClick={() => setShowDropdown(false)}
+                onClick={() => handleLogout()}
               >
                 Abmelden
               </NavLink>

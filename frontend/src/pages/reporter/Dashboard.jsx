@@ -5,18 +5,14 @@ import { useState, useEffect } from "react";
 import "./../../style/AdminApplicantReporterPage.css";
 import Navbar from "./../../components/Navbar";
 import ApplicationContainer from "./../../components/ApplicationContainer";
-import { FaDog, FaFire, FaInfoCircle } from "react-icons/fa";
 import { Role } from "../../utils/const";
-import Checkbox from "react-custom-checkbox";
 
 export default function ReporterPage() {
-  const [applications, setApplications] = useState([]);
-
   const handleExport = () => {};
 
   return (
     <>
-      <Navbar role={Role.APPLICANT} />
+      <Navbar role={Role.REPORTER} />
       <ApplicationContainer applications={[]} title="Applications:" />
       <div style={{ textAlign: "center", marginTop: "20px" }}>
         <button

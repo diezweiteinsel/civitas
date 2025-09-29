@@ -7,7 +7,7 @@ export default function ReporterRegistration() {
   return (
     <>
       <Navbar role={Role.ADMIN} />
-      <RegistrationContainer role={Role.REPORTER} />
+      <RegistrationContainer roleToRegister={Role.REPORTER} />
     </>
   );
 }

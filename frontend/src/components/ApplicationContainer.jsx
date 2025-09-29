@@ -1,7 +1,7 @@
-import { useEffect, useState } from "react";
+import "./../style/AdminApplicantReporterPage.css";
+import { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import "./../style/AdminApplicantReporterPage.css";
 import { FaDog, FaFire, FaInfoCircle } from "react-icons/fa";
 import { getAllApplications } from "../utils/api";
 
@@ -9,10 +9,10 @@ export default function ApplicationContainer({
   applications: propsApplications = [],
   title = "Applications",
 }) {
-  const [expandedIds, setExpandedIds] = useState([]);
   const navigate = useNavigate();
   const location = useLocation();
 
+  // Fetch all applications using react-query
   const {
     data: fetchedApplications,
     isLoading: applicationsLoading,
@@ -26,26 +26,9 @@ export default function ApplicationContainer({
   });
 
   // Use fetched applications if available, otherwise use props
-  const applications = fetchedApplications || propsApplications;
+  const applications = fetchedApplications;
 
-  const getIconByFormId = (formId) => {
-    const iconMap = {
-      1: <FaDog />,
-      2: <FaFire />,
-      3: <FaInfoCircle />,
-    };
-    return iconMap[formId] || <FaInfoCircle />;
-  };
-
-  const getFormTypeByFormId = (formId) => {
-    const typeMap = {
-      1: "Dog License Application",
-      2: "Fire Permit Application",
-      3: "Information Request",
-    };
-    return typeMap[formId] || "Unknown Application";
-  };
-
+  // Function to route to ApplicationView and to give the redirection context
   const handleViewApplication = (applicationId) => {
     console.log(
       "ApplicationContainer - Navigating to application ID:",
@@ -126,15 +109,15 @@ export default function ApplicationContainer({
                 className="container-item"
               >
                 <div className="container-header">
-                  <div className="icon">
+                  {/* <div className="icon">
                     {getIconByFormId(application.formID || application.formId)}
-                  </div>
+                  </div> */}
                   <div className="info">
-                    <div className="form-type">
+                    {/* <div className="form-type">
                       {getFormTypeByFormId(
                         application.formID || application.formId
                       )}
-                    </div>
+                    </div> */}
                     <div
                       className={`status ${application.status.toLowerCase()}`}
                     >

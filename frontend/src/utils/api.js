@@ -169,6 +169,7 @@ export const createApplication = async (applicationData) => {
   return application;
 };
 
+// WORKS
 export const createForm = async (formData) => {
   const accessToken = getToken();
   const headers = {
@@ -191,4 +192,55 @@ export const createForm = async (formData) => {
   }
 
   return response.json();
+};
+
+// WORKS
+export const getAllForms = async () => {
+  const accessToken = getToken();
+  const headers = {
+    "Content-Type": "application/json",
+  };
+  if (accessToken) {
+    headers.Authorization = `Bearer ${accessToken}`;
+  }
+
+  const response = await fetch(`${API_BASE_URL}/forms`, {
+    method: "GET",
+    headers: headers,
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(
+      errorData.detail || errorData.error || "Failed to fetch forms"
+    );
+  }
+
+  const forms = await response.json();
+  return forms;
+};
+
+export const getFormById = async (form_id) => {
+  const accessToken = getToken();
+  const headers = {
+    "Content-Type": "application/json",
+  };
+  if (accessToken) {
+    headers.Authorization = `Bearer ${accessToken}`;
+  }
+
+  const response = await fetch(`${API_BASE_URL}/forms/${form_id}`, {
+    method: "GET",
+    headers: headers,
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(
+      errorData.detail || errorData.error || "Failed to fetch form by ID"
+    );
+  }
+
+  const form = await response.json();
+  return form;
 };

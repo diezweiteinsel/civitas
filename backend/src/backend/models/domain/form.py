@@ -18,11 +18,12 @@ class Form(BaseModel):
 
 
 
+<<<<<<< backend/src/backend/models/domain/form.py
 	id: int | None = None
 	form_name : str = ""
 	blocks: dict[int, BuildingBlock] = {} # key is the order of the block in the form
+	is_active: bool = True
 	version: str = "1.0"
-	#triggers: dict[int, Trigger] = {} # key is the order of the trigger in the form
 
 	# These are unnecessary not implemented fields for now
 	#code: str = "", createdAt: datetime = datetime.now(), isActive: bool = True
@@ -37,21 +38,22 @@ class Form(BaseModel):
     
     
 
-	@classmethod
-	def from_orm_model(cls, orm_model: OrmForm) -> "Form":
-		form = cls.from_json(orm_model.xoev)
-		if orm_model.id is not None:
-			form.id = orm_model.id
-		if orm_model.form_name:
-			form.form_name = orm_model.form_name
-		return form
+    @classmethod
+    def from_orm_model(cls, orm_model: OrmForm) -> "Form":
+        form = cls.from_json(orm_model.xoev)
+        if orm_model.id is not None:
+            form.id = orm_model.id
+            form.form_name = orm_model.form_name
+            form.is_active = orm_model.is_active
+        return form
     
-	def to_orm_model(self) -> OrmForm:
-		ormForm = OrmForm(
-			form_name =self.form_name,
-			xoev = self.to_json()
-		)
-		return ormForm
+    def to_orm_model(self) -> OrmForm:
+        ormForm = OrmForm(
+            form_name =self.form_name,
+            is_active = self.is_active,
+            xoev = self.to_json()
+        )
+        return ormForm
 
 	def to_xml(self) -> str:
 		result = '''<x{name}Export xmlns="urn:xoev:x{name}:{version}" version="{version}">
@@ -66,8 +68,9 @@ class Form(BaseModel):
 </x{name}Export>'''
 		return result.format(id=str(self.id), name=self.form_name, version=self.version)
 
-blocks = {
-	1: BuildingBlock(label="helpme",data_type=BBType.STRING,required=True,constraintsJson={})
-}
-example_form = Form(form_name="example",id=-1,blocks=blocks,version="6.9")
-print(example_form.to_xml())
+#blocks = {
+#	1: BuildingBlock(label="helpme",data_type=BBType.STRING,required=True,constraintsJson={})
+#}
+#example_form = Form(form_name="example",id=-1,blocks=blocks,version="6.9")
+#print(example_form.to_xml())
+

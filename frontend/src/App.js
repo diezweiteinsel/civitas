@@ -1,4 +1,6 @@
 import { Routes, Route } from "react-router-dom";
+import './style/fonts.css'; /* Chose Atkinson Hyperlegible as font */
+import './style/App.css';  /* Global styles, rn only font-family */
 import Login from "./pages/Login";
 import AdminDashboard from "./pages/admin/Dashboard";
 import ApplicantRegistration from "./pages/Registration";
@@ -10,6 +12,7 @@ import AdminRegistration from "./pages/admin/AdminRegistration";
 import ReporterRegistration from "./pages/admin/ReporterRegistration";
 import ApplicationView from "./pages/ApplicationView";
 import CreateForms from "./pages/admin/CreateForms";
+import ReporterDashboard from "./pages/reporter/Dashboard";
 
 const App = () => {
   return (
@@ -21,10 +24,11 @@ const App = () => {
         <Route path="/applicant/submit" element={<SubmitApplications />} />
         <Route path="/applicant/public" element={<PublicApplication />} />
         <Route
-          path="/applicant/application-edit"
+          path="/applicant/application-edit/:id"
           element={<ApplicationEdit />}
         />
         <Route path="/admin" element={<AdminDashboard />} />
+        <Route path="/reporter" element={<ReporterDashboard />} />
         <Route path="/admin/public" element={<PublicApplication />} />
         <Route
           path="/admin/admin-registration"

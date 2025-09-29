@@ -1,11 +1,15 @@
 import "./../style/AdminApplicantReporterPage.css";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { FaDog, FaFire, FaInfoCircle } from "react-icons/fa";
-import { getAllApplications } from "../utils/api";
+import {
+  getApplicationsByStatus,
+  getPublicApplicationsByStatus,
+} from "../utils/api";
+import "./../style/AdminApplicantReporterPage.css";
 
 export default function ApplicationContainer({
-  applications: propsApplications = [],
+  statuses = [],
+  isPublic = false,
   title = "Applications",
   enableFetch = true,
   isLoadingOverride = false,
@@ -15,7 +19,7 @@ export default function ApplicationContainer({
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Fetch all applications using react-query
+  // Fetch applications based on isPublic prop
   const {
     data: fetchedApplications,
     isLoading: applicationsLoading,
@@ -150,9 +154,6 @@ export default function ApplicationContainer({
                 className="container-item"
               >
                 <div className="container-header">
-                  {/* <div className="icon">
-                    {getIconByFormId(application.formID || application.formId)}
-                  </div> */}
                   <div className="info">
                       <div className="form-type">{formName}</div>
                       <div className="container-meta">

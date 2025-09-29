@@ -193,8 +193,6 @@ export const getPublicApplicationsByStatus = async (statuses) => {
   return applications;
 };
 
-
-// WORKS
 export const getApplicationById = async (application_id) => {
   const accessToken = getToken();
   const headers = {

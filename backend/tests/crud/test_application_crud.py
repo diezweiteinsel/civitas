@@ -105,8 +105,8 @@ def test_insert_application_func():
             form = formCrud.add_orm_form(session, Form1)
 
             applicationTableClass = dbActions.get_application_table_by_id(form.id)
-            application = Application(user_id= 1, form_id= Form1.id, jsonPayload={"label": "Hiya"})
-            application2 = Application(user_id= 1, form_id= Form1.id, jsonPayload={"label": "Hiya"})
+            application = Application(user_id= 1, form_id= Form1.id, jsonPayload={"1":{"label": "label", "value": "Hiya"}})
+            application2 = Application(user_id= 1, form_id= Form1.id, jsonPayload={"1":{"label": "label", "value": "Hiya"}})
 
             applicationOrm = appCrud.insert_application(session, application)
             assert len(appCrud.get_all_applications_of_type(session,form.id)) == 1
@@ -118,11 +118,11 @@ def test_insert_application_func():
 
             assert application.user_id == applicationFromOrm.user_id
             assert application.form_id == applicationFromOrm.form_id
-            assert application.jsonPayload == applicationFromOrm.jsonPayload
+            assert application.jsonPayload["1"]["value"] == applicationFromOrm.jsonPayload["label"]
 
             assert application2.user_id == applicationFromOrm2.user_id
             assert application2.form_id == applicationFromOrm2.form_id
-            assert application2.jsonPayload == applicationFromOrm2.jsonPayload
+            assert application2.jsonPayload["1"]["value"] == applicationFromOrm2.jsonPayload["label"]
 
             assert application.id == None
             assert applicationFromOrm.id == 1

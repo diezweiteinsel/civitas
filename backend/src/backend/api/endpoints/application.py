@@ -16,7 +16,7 @@ from backend.businesslogic.services.applicationService import createApplication,
 from backend.businesslogic.services.formService import createForm
 from backend.businesslogic.services.adminService import adminApproveApplication, adminRejectApplication
 from backend.businesslogic.services.formService import createForm
-from backend.models.domain.application import Application, ApplicationStatus, ApplicationID, ApplicationFillout
+from backend.models.domain.application import Application, ApplicationStatus, ApplicationID, ApplicationFillout, ApplicationUpdate
 from backend.crud import userCrud
 from backend.crud.user import get_user_by_id
 from backend.models.domain.user import User, UserType
@@ -221,26 +221,16 @@ async def get_application(application_id: int, form_id: int, session: Session = 
 
 
 @router.put("/{application_id}", response_model=Application, tags=["Applications"], summary="Update an application by ID")
-async def update_application(application_id: int, new_application_data: dict, session: Session = Depends(db.get_session_dep)):
+async def update_application(application_update: ApplicationUpdate, session: Session = Depends(db.get_session_dep)):
     """
     Update a specific application by its ID.
     """
-    from fastapi import HTTPException
+    # I need formID, appID, dict of data to update
+    form_id = application_update.form_id
+    application_id = application_update.application_id
+    payload = application_update.payload # {1: {"label": "bla", "value": "blup"}}
 
-    for app in _global_applications_db:
-        if app.id == application_id:
-            # Create User object for editApplication
-            user = User(id=app.user_id, username="username", date_created=date.today(), hashed_password="pass") # TODO: should be replaced with actual user retrieval logic e.g. get_user_by_id()
-            assign_role(user, UserType.APPLICANT) 
-            
-            # Update the application with new data
-            app.jsonPayload = new_application_data.get("json_payload", app.jsonPayload)
-            
-            editApplication(user, app, new_application_data.get("json_payload", {}))
-            return app
     
-    # If no application found, raise 404 error instead of returning None
-    raise HTTPException(status_code=404, detail="Application not found")
 
 
 @router.delete("/{application_id}", tags=["Applications"], summary="Delete an application by ID")

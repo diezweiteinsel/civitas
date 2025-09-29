@@ -45,3 +45,8 @@ class ApplicationFillout(BaseModel):
     user_id: int | None # TODO remove in front adn backend
     form_id: int
     payload: dict
+
+class ApplicationUpdate(BaseModel):
+    form_id: int
+    application_id: int
+    payload: dict

@@ -8,3 +8,16 @@ describe(ApplicationContainer, () => {
         const {} = render(<initialIcon/>)
     })
 })
+
+const mockApplication = [
+    {
+        id: 111,
+        formId: 1
+
+    },
+
+    {
+        id: 112,
+        forID: 2
+    }
+]

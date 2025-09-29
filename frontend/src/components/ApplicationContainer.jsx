@@ -62,6 +62,12 @@ export default function ApplicationContainer({
       fromPage = "applicant-dashboard";
     } else if (currentPath.includes("/public")) {
       fromPage = "public-applications";
+    } else if (currentPath.includes("/pending")) {
+      fromPage = "pending-applications";
+    } else if (currentPath.includes("/approved")) {
+      fromPage = "approved-applications";
+    } else if (currentPath.includes("/rejected")) {
+      fromPage = "rejected-applications";
     }
 
     // Navigate with state to provide context to ApplicationView

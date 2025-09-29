@@ -175,6 +175,15 @@ export default function Navbar({ role = Role.EMPTY }) {
                 <div className="dropdown-item">
                   <NavLink
                     className="nav-link"
+                    to="/reporter/approved"
+                    onClick={() => setShowDropdown(false)}
+                  >
+                    Genehmigte Anträge
+                  </NavLink>
+                </div>
+                <div className="dropdown-item">
+                  <NavLink
+                    className="nav-link"
                     to="/reporter/rejected"
                     onClick={() => setShowDropdown(false)}
                   >

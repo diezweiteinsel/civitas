@@ -57,9 +57,6 @@ class Form(BaseModel):
 	def from_xml(cls, xml: str) -> "Form":
 		form = Form()
 
-		#id_match = re.search(r'id="([^"]+)"', xml)
-		#form.id = int(id_match.group(1)) if id_match else -1
-
 		version_match = re.search(r'version="([^"]+)"', xml)
 		form.version = str(version_match.group(1)) if version_match else "1.0"
 
@@ -81,7 +78,7 @@ class Form(BaseModel):
 	def to_xml(self) -> str:
 		result = '''<x{name}Export xmlns="urn:xoev:x{name}:{version}" version="{version}">
 	<!-- Formular-Definition -->
-	<formDefinition id="{id}" name="{name}">
+	<formDefinition name="{name}">
 		<attributes>'''
 		for b in self.blocks.keys():
 			result += "\n\t\t\t" + self.blocks.get(b).to_xml()
@@ -89,7 +86,7 @@ class Form(BaseModel):
 		</attributes>
 	</formDefinition>
 </x{name}Export>'''
-		return result.format(id=str(self.id), name=self.form_name, version=self.version)
+		return result.format(name=self.form_name, version=self.version)
 
 #blocks = {
 #	1: BuildingBlock(label="helpme",data_type=BBType.STRING,required=True,constraintsJson={})

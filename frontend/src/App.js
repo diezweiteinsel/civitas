@@ -1,4 +1,6 @@
 import { Routes, Route } from "react-router-dom";
+import './style/fonts.css'; /* Chose Atkinson Hyperlegible as font */
+import './style/App.css';  /* Global styles, rn only font-family */
 import Login from "./pages/Login";
 import AdminDashboard from "./pages/admin/Dashboard";
 import ApplicantRegistration from "./pages/Registration";

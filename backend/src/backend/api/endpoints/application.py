@@ -88,7 +88,6 @@ applicant_permission = RoleChecker(["APPLICANT"])
 
 @router.get("", 
             response_model=list[Application],
-            dependencies=[Depends(admin_or_reporter_permission)],
             tags=["Applications"],
             summary="List all applications")
 async def list_applications(

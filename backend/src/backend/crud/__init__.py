@@ -2,5 +2,6 @@ from . import dbActions
 from . import form as formCrud
 from . import user as userCrud
 from . import role as roleCrud
+from . import application as applicationCrud
 
-__all__ = ["dbActions", "formCrud", "userCrud", "roleCrud"]
+__all__ = ["dbActions", "formCrud", "userCrud", "roleCrud", "applicationCrud"]

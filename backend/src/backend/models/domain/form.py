@@ -57,8 +57,8 @@ class Form(BaseModel):
 	def from_xml(cls, xml: str) -> "Form":
 		form = Form()
 
-		id_match = re.search(r'id="([^"]+)"', xml)
-		form.id = int(id_match.group(1)) if id_match else -1
+		#id_match = re.search(r'id="([^"]+)"', xml)
+		#form.id = int(id_match.group(1)) if id_match else -1
 
 		version_match = re.search(r'version="([^"]+)"', xml)
 		form.version = str(version_match.group(1)) if version_match else "1.0"

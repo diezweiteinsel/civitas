@@ -64,7 +64,7 @@ class Form(BaseModel):
 		form.form_name = str(name_match.group(1)) if name_match else "UnknownForm"
 
 		all_blocks_match = re.findall(r'<attribute name="(?P<name>[^"]+)" type="(?P<type>[^"]+)" required="(?P<required>[^"]+)"/>', xml)
-		counter: int = 0
+		counter: int = 1
 		for match in all_blocks_match:
 			block = BuildingBlock()
 			block.label = match[0]

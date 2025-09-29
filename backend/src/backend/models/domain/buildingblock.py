@@ -3,24 +3,28 @@ from enum import IntEnum, auto, StrEnum
 # backend.models.domain.trigger import Trigger
 
 class BBType(StrEnum):
-    NULL = "NULL"
-    STRING = "STRING"
-    INTEGER = "INTEGER"
-    DATE = "DATE"
-    FLOAT = "FLOAT"
-    LONG = "LONG"
+	NULL = "NULL"
+	STRING = "STRING"
+	INTEGER = "INTEGER"
+	DATE = "DATE"
+	FLOAT = "FLOAT"
+	LONG = "LONG"
 
 class BuildingBlock(BaseModel):
-    '''A building block represents a single field in a form, with a name and a data type.'''
-    #id: int = -1
-    # sorting purpose
-    #key: str = ""
+	'''A building block represents a single field in a form, with a name and a data type.'''
+	#id: int = -1
+	# sorting purpose
+	#key: str = ""
 
-    # label shown in frontend
-    label: str = ""
-    data_type: BBType = BBType.NULL
-    required: bool = False
-    #order: int = 0
-    constraintsJson: dict = {}
+	# label shown in frontend
+	label: str = ""
+	data_type: BBType = BBType.NULL
+	required: bool = False
+	#order: int = 0
+	constraintsJson: dict = {}
+
+	def to_xml(self) -> str:
+		result = ("<attribute name=\"" + self.label + "\" type=\"" + self.data_type.lower() + "\" required=\"" + str(self.required).lower() + "\"/>")
+		return result
     
 

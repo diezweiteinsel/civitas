@@ -45,6 +45,8 @@ export default function ApplicationContainer({
       fromPage = "applicant-dashboard";
     } else if (currentPath.includes("/public")) {
       fromPage = "public-applications";
+    } else if (currentPath.includes("/reporter")) {
+      fromPage = "reporter-applications";
     }
 
     // Navigate with state to provide context to ApplicationView

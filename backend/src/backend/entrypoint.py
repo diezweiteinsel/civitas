@@ -221,10 +221,23 @@ def create_demo_applications() -> None:
         admin_username = os.environ.get("ADMIN_USERNAME", "admin")
         admin_id = _get_user(admin_username)
 
+        from copy import deepcopy
+
         payload = {
-            block.label: _sample_value_for_block(block)
+            block.label: {
+                "label": block.label,
+                "value": _sample_value_for_block(block),
+            }
             for block in target_form.blocks.values()
         }
+
+        def _with_override(source: dict[str, dict[str, object]], label: str, value: object):
+            clone = deepcopy(source)
+            if label not in clone:
+                clone[label] = {"label": label, "value": value}
+            else:
+                clone[label]["value"] = value
+            return clone
 
         demo_applications = [
             Application(
@@ -239,14 +252,18 @@ def create_demo_applications() -> None:
                 form_id=target_form_orm.id,
                 admin_id=admin_id,
                 status=ApplicationStatus.APPROVED,
-                jsonPayload={**payload, "issue_description": "Approved request"},
+                jsonPayload=_with_override(
+                    payload, "issue_description", "Approved request"
+                ),
             ),
             Application(
                 user_id=applicant_id,
                 form_id=target_form_orm.id,
                 admin_id=admin_id,
                 status=ApplicationStatus.REJECTED,
-                jsonPayload={**payload, "issue_description": "Rejected request"},
+                jsonPayload=_with_override(
+                    payload, "issue_description", "Rejected request"
+                ),
             ),
         ]
 

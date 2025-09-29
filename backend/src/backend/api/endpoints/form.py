@@ -34,6 +34,9 @@ async def get_form(form_id: int,
                   session: Session = Depends(db.get_session_dep)):
   
   ormForm = formCrud.get_form_by_id(session, form_id)
+  # if returnAsXml:
+  #   form = FormXML.from_orm_model(ormForm)
+  #   return form
   form = Form.from_orm_model(ormForm)
   return form
 

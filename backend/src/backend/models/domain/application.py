@@ -47,9 +47,29 @@ class ApplicationFillout(BaseModel):
     payload: dict
 
 
-class ApplicationListResponseItem(BaseModel):
-    application: Application
-    form: Form
+class ApplicationResponseItem(BaseModel):
+    id: int
+    form_id: int
+    title: str
+    status: ApplicationStatus
+    created_at: datetime
+    is_public: bool
+    currentSnapshotID: int
+    previousSnapshotID: int
+    jsonPayload: dict
+    
 
-class ApplicationListResponse(BaseModel):
-    items: list[ApplicationListResponseItem]
+
+def application_to_response_item(application: Application) -> ApplicationResponseItem:
+    
+    return ApplicationResponseItem(
+        id=application.id,
+        form_id=application.form_id,
+        title="",
+        status=application.status,
+        created_at=application.created_at,
+        is_public=application.is_public,
+        currentSnapshotID=application.currentSnapshotID,
+        previousSnapshotID=application.previousSnapshotID,
+        jsonPayload=application.jsonPayload
+    )

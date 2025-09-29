@@ -10,14 +10,14 @@ import { Role } from "../../utils/const";
 // import Checkbox from "react-custom-checkbox";
 
 export default function ReporterPage() {
-  const [applications, setApplications] = useState([]);
+  const [publicapplications, setApplications] = useState([]);
 
   const handleExport = () => {};
 
   return (
     <>
-      <Navbar role={Role.APPLICANT} />
-      <ApplicationContainer applications={[]} title="Applications:" />
+      <Navbar role={Role.REPORTER} />
+      <ApplicationContainer applications={[]} title="Anträge:" />
       <div style={{ textAlign: "center", marginTop: "20px" }}>
         <button
           onClick={handleExport}

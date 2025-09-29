@@ -11,6 +11,10 @@ import ReporterRegistration from "./pages/admin/ReporterRegistration";
 import ApplicationView from "./pages/ApplicationView";
 import CreateForms from "./pages/admin/CreateForms";
 import ReporterDashboard from "./pages/reporter/Dashboard";
+import RejectedApplication from "./pages/Rejected"
+import ApprovedApplication from "./pages/Approved"
+import PendingApplication from "./pages/pendning"
+
 
 const App = () => {
   return (
@@ -38,6 +42,11 @@ const App = () => {
         />
         <Route path="/admin/create-forms" element={<CreateForms />} />
         <Route path="/application/:id" element={<ApplicationView />} />
+
+        <Route path="/reporter/" element={<ReporterDashboard />} />
+        <Route path="/reporter/rejected" element={<RejectedApplication />} />
+        <Route path="/reporter/approved" element={<ApprovedApplication />} />
+        <Route path="/reporter/pending" element={<PendingApplication />} />
       </Routes>
     </>
   );

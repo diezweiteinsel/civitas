@@ -101,6 +101,8 @@ export default function ApplicationView() {
       navigate("/admin");
     } else if (currentRole === Role.APPLICANT) {
       navigate("/applicant");
+    } else if (currentRole === Role.REPORTER) {
+      navigate("/reporter")
     } else {
       navigate(-1);
     }

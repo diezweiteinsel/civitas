@@ -19,6 +19,10 @@ Usage non-API:
 """
 
 def createTableClass(tablename: str, columns: dict) -> type:
+    """
+    ATTENTION: You most likely DON'T want to call this directly!\n
+    Creates an Orm table class from a dict of columns
+    """
     Base = db.get_base(reload=True)
     attrs = {"__tablename__": tablename}
     attrs.update(columns)  # add the column definitions
@@ -86,7 +90,9 @@ def createFormTable(id: int, xoev: str):
 
 def insertRow(session: Session, tableClass: type, rowData: dict | type) -> type:
     """
-    Insert a row into the table represented by tableClass using SQLAlchemy ORM.
+    Takes an object of tableClass or a dict of tableClass' columns\n
+    Inserts a row into the table represented by tableClass\n
+    Returns the updated/created row object or raises an error
     """
     # Can easily be adapted for fastapi use by making session a dependency
     if type(rowData) == dict:
@@ -109,12 +115,12 @@ def insertRow(session: Session, tableClass: type, rowData: dict | type) -> type:
 
 def updateRow(session: Session, tableClass: type, rowData: dict):
     """
-    rowData must include the primary key 'id' to identify which row to update.
-    Attributes which are not included in rowData will remain unchanged.
+    rowData MUST include the primary key 'id' to identify which row to update
+    Attributes which are not included in rowData will remain unchanged
 
     Returns updated row object.
 
-    Update a row in the table represented by tableClass using SQLAlchemy ORM.
+    Update a row in the table represented by tableClass
     """
     # Can easily be adapted for fastapi use by making session a dependency
     if "id" not in rowData:
@@ -167,7 +173,7 @@ def getRowsByFilter(session: Session, tableClass: type, filterDict: dict):
     Returns all rows from the table that match ALL filters in filterDict.
     A filter is a key-value pair where the key is the column name and the value is the value to filter by.
 
-    Get rows from the table represented by tableClass using SQLAlchemy ORM that match the filterDict.
+    Returns all rows as a list or an empty list if no matches are found.
     """
     # Can easily be adapted for fastapi use by making session a dependency
     query = session.query(tableClass)

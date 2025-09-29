@@ -68,8 +68,7 @@ async def non_public_applications(public: Optional[bool] = False):
             dependencies=[Depends(non_public_applications)], # Custom dependency to handle public access
             tags=["Applications"],
             summary="List all applications")
-async def list_applications(
-    public: Optional[bool] = False):
+async def list_applications(public: Optional[bool] = False, session: Session = Depends(db.get_session_dep)):
     """
     Retrieve all applications in the system.
     """
@@ -88,7 +87,7 @@ async def list_applications(
             dependencies=[Depends(applicant_permission)],
             tags=["Applications"],
             summary="Create a new application")
-async def create_application(application_data: dict):
+async def create_application(application_data: dict, session: Session = Depends(db.get_session_dep)):
     """
     Create a new application in the system.
     """
@@ -116,7 +115,7 @@ async def create_application(application_data: dict):
             response_model=Application,
             tags=["Applications"],
             summary="Get application by ID")
-async def get_application(application_id: int):
+async def get_application(application_id: int, form_id: int, session: Session = Depends(db.get_session_dep)):
     """
     Retrieve a specific application by its ID.
     """

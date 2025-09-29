@@ -3,11 +3,13 @@ from datetime import datetime
 
 # third party imports
 from backend.api.deps import RoleChecker
+from backend.core import db
 from fastapi import APIRouter, Depends
 
 # project imports
 from backend.models.domain.form import Form, FormCreate
 from backend.crud import formCrud
+from pytest import Session
 
 admin_permission = RoleChecker(["ADMIN"])
 
@@ -29,9 +31,9 @@ async def get_form(form_id: int,
 # "/api/v1/forms/{form_id}?returnAsXml=true"
 
 @router.post("", response_model=Form, tags=["Forms"], summary="Create a new form", dependencies=[Depends(admin_permission)])
-async def create_form(formCreate: FormCreate):
+async def create_form(formCreate: FormCreate, session: Session = Depends(db.get_session_dep)):
   form = formCreate.toForm()
-  form_db = formCrud.add_form(form)
+  form_db = formCrud.add_form(session, form)
   if form.form_name == form_db.form_name and form.blocks == form_db.blocks:
     return True
   else:

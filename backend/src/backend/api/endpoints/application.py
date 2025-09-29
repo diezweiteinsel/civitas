@@ -8,7 +8,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
 # project imports
-from backend.api.deps import   RoleChecker, get_current_user_payload
+from backend.api.deps import   RoleChecker, get_current_user_payload, get_current_user_payload_optional
 from backend.core import roleAuth
 from backend.crud import userCrud
 from backend.models.orm import roletable
@@ -154,16 +154,20 @@ async def list_applications(
             dependencies=[Depends(applicant_permission)],
             tags=["Applications"],
             summary="Create a new application")
-async def create_application(application_data: ApplicationFillout, session: Session = Depends(db.get_session_dep)):
+async def create_application( application_data: ApplicationFillout,
+                              session: Session = Depends(db.get_session_dep),
+                              payload: Optional[dict] = Depends(deps.get_current_user_payload_optional)
+
+                             ):
     """
     Create a new application in the system.
     """
-    jwtpayload = get_current_user_payload() # TODO change to get user_id from jwt directly
-    username = jwtpayload.get("sub")
-    user = userCrud.get_user_by_name(username)
-    user_id = user.id
+    username = payload.get("sub")           # TODO get id from jwt and not application
+    user_id = application_data.user_id
+    if userCrud.get_user_by_id(user_id, session) == None:
+        raise Exception("User not found")
     form_id = application_data.form_id
-    jsonPayload = application_data.jsonPayload
+    jsonPayload = application_data.payload
     
     application = createApplication(user_id, form_id, jsonPayload, session)
 

@@ -24,8 +24,8 @@ from backend.crud import dbActions, application as applicationCrud
 def createApplication(user_id: int, form_id: int, payload: dict, session: Session) -> Application:
 	""" Creates a new application for a user."""
 	# Ensure the user specified in the application has the applicant role
-	if not roleAuth.check_role(user_id=user_id, role="APPLICANT"):
-		raise HTTPException(status_code=404, detail="User from application not found")
+	if not roleAuth.check_role(session, user_id=user_id, role="APPLICANT"): #TODO
+		raise HTTPException(status_code=404, detail="User from application not found or is not applicant")
 	# generate application from ApplicationFillout
 	try:
 		newApplication = Application(

@@ -42,7 +42,7 @@ def to_domain_model(orm_role_assignment: OrmRoleAssignment) -> DomainRoleAssignm
 
 
 
-def get_user_roles(orm_user: Type, session: Session) -> list[DomainRoleAssignment]:
+def get_user_roles(orm_user: usertable.OrmUser, session: Session) -> list[OrmRoleAssignment]:
     integerthing = orm_user.id
     role_assignments = dbActions.getRowsByFilter(
         session, OrmRoleAssignment, {"user_id": integerthing}
@@ -51,8 +51,10 @@ def get_user_roles(orm_user: Type, session: Session) -> list[DomainRoleAssignmen
     return role_assignments
 
 
-def get_user_roles_by_id(user_id: int, session:Session):
-    from backend.crud import userCrud
-    user = userCrud.get_user_by_id(user_id, session)
-    ormUser = usertable.to_orm_model(user)
-    return get_user_roles(ormUser)
+def get_user_roles_by_id(user_id: int, session:Session) -> list[OrmRoleAssignment]:
+    integerthing = user_id
+    role_assignments = dbActions.getRowsByFilter(
+        session, OrmRoleAssignment, {"user_id": integerthing}
+    )
+
+    return role_assignments

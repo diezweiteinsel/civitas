@@ -19,15 +19,19 @@ export default function ApplicationEdit() {
   const getFormByIdMutation = useMutation({
     mutationFn: getFormById,
     onSuccess: (data) => {
+      console.log("Form data received:", data); // Debug log
       setFormData(data);
       setLoading(false);
       // Initialize form values based on form blocks
-      if (data.blocks) {
+      if (data && data.blocks && Array.isArray(data.blocks)) {
         const initialValues = {};
         data.blocks.forEach((block, index) => {
           initialValues[`block_${index}`] = "";
         });
         setFormValues(initialValues);
+      } else {
+        console.warn("Form blocks not found or not an array:", data.blocks);
+        setFormValues({});
       }
     },
     onError: (error) => {
@@ -72,7 +76,7 @@ export default function ApplicationEdit() {
 
     // Build payload from form values and blocks
     const jsonPayload = {};
-    if (formData && formData.blocks) {
+    if (formData && formData.blocks && Array.isArray(formData.blocks)) {
       formData.blocks.forEach((block, index) => {
         jsonPayload[index] = {
           label: block.label || block.name || `Field ${index + 1}`,
@@ -251,7 +255,9 @@ export default function ApplicationEdit() {
 
           {formData && !loading && (
             <form className="application-edit-form" onSubmit={handleSubmit}>
-              {formData.blocks && formData.blocks.length > 0 ? (
+              {formData.blocks &&
+              Array.isArray(formData.blocks) &&
+              formData.blocks.length > 0 ? (
                 formData.blocks.map((block, index) =>
                   renderFormField(block, index)
                 )

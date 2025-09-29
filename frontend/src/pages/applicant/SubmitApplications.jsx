@@ -1,4 +1,3 @@
-import { useState } from "react";
 import "./../../style/AdminApplicantReporterPage.css";
 import Navbar from "../../components/Navbar";
 import { FaDog, FaFire, FaInfoCircle } from "react-icons/fa";

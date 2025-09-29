@@ -14,7 +14,7 @@ const dataTypes = ["String", "Date", "Float", "Boolean", "Number"];
 export default function CreateForms() {
   const [formTitle, setFormTitle] = useState("");
   const [formFields, setFormFields] = useState([
-    { id: "1", name: "Neues Feld 1", type: "Text", value: "" }, // needs to be implemnted as a dict instead? i dont know
+    { id: "1", name: "Neues Feld 1", type: "Text" },
   ]);
   const [error, setError] = useState("");
   const navigate = useNavigate();
@@ -33,7 +33,6 @@ export default function CreateForms() {
       id: getNextId(),
       name: `Neues Feld ${formFields.length + 1}`,
       type: "String",
-      value: "",
     };
     setFormFields([...formFields, newField]);
   };
@@ -43,11 +42,12 @@ export default function CreateForms() {
     setFormFields(data);
   };
 
+  // Mutation for creating a form
   const createFormMutation = useMutation({
     mutationFn: createForm,
     onSuccess: (data) => {
       setError("");
-      console.log("Form creation successful:", data);
+      alert("Meldeform wurde erflogreich erstellt!");
       navigate("/admin");
     },
     onError: (error) => {
@@ -56,6 +56,7 @@ export default function CreateForms() {
     },
   });
 
+  // Handle form save
   const handleSave = () => {
     if (!formTitle.trim()) {
       setError("Bitte geben Sie einen Titel für das Formular ein.");
@@ -67,12 +68,6 @@ export default function CreateForms() {
       return;
     }
 
-    // Convert frontend fields to backend format
-    // BACKEND FORMAT:
-    // {
-    //   "form_name": "",
-    //   "blocks": {}
-    // }
     const formData = {
       form_name: formTitle.trim(),
       blocks: formFields.reduce((acc, field, index) => {
@@ -86,7 +81,6 @@ export default function CreateForms() {
 
     // Call the API to create the form
     createFormMutation.mutate(formData);
-    console.log("Form data to be saved:", formData);
   };
 
   const handleImport = () => {

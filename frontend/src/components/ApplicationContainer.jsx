@@ -126,11 +126,7 @@ export default function ApplicationContainer({
                   </div>
                   <button
                     className="toggle-btn"
-                    onClick={() =>
-                      handleViewApplication(
-                        application.applicationID || application.id
-                      )
-                    }
+                    onClick={() => handleViewApplication(application.id)}
                     style={{ marginLeft: "10px" }}
                   >
                     Zeige Details

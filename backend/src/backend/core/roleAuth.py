@@ -26,8 +26,6 @@ def check_role(session: Session, user_id: int, role: str)-> bool:
     if domain_role_assignments == []:
         Exception("No role assignments found")
     for role_assignment in domain_role_assignments:
-        print(role_assignment)
-        print(role)
         if role_assignment:
             return True
     return False

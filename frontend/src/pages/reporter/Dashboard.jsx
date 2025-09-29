@@ -8,7 +8,13 @@ import ApplicationContainer from "./../../components/ApplicationContainer";
 import { Role } from "../../utils/const";
 
 export default function ReporterPage() {
-  const handleExport = () => {};
+  const [applications, setApplications] = useState([]);
+
+  useEffect(() => {
+    const persistentApplications = getAllApplications();
+    setApplications(persistentApplications);
+  }, []);
+
 
   return (
     <>

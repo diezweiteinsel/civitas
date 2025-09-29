@@ -2,12 +2,14 @@ import "./../style/AdminApplicantReporterPage.css";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import {
+  getAllApplications,
   getApplicationsByStatus,
+  getPublicApplications,
   getPublicApplicationsByStatus,
 } from "../utils/api";
-import "./../style/AdminApplicantReporterPage.css";
 
 export default function ApplicationContainer({
+  applications: providedApplications = [],
   statuses = [],
   isPublic = false,
   title = "Applications",
@@ -20,21 +22,46 @@ export default function ApplicationContainer({
   const location = useLocation();
 
   // Fetch applications based on isPublic prop
+  const normalizedStatuses = Array.isArray(statuses)
+    ? statuses.filter(Boolean)
+    : [];
+
+  const queryKey = [
+    "applications",
+    isPublic ? "public" : "private",
+    normalizedStatuses.length ? normalizedStatuses.join(",") : "all",
+  ];
+
+  const queryFn = () => {
+    if (isPublic) {
+      if (normalizedStatuses.length) {
+        return getPublicApplicationsByStatus(normalizedStatuses);
+      }
+      return getPublicApplications();
+    }
+
+    if (normalizedStatuses.length) {
+      return getApplicationsByStatus(normalizedStatuses);
+    }
+
+    return getAllApplications();
+  };
+
   const {
     data: fetchedApplications,
     isLoading: applicationsLoading,
     error: applicationsError,
     refetch: refetchApplications,
   } = useQuery({
-    queryKey: ["AllApplications"],
-    queryFn: getAllApplications,
+    queryKey,
+    queryFn,
     enabled: enableFetch,
     retry: 1,
   });
 
   const applications = enableFetch
     ? fetchedApplications
-    : propsApplications;
+    : providedApplications;
   const isLoading = enableFetch
     ? applicationsLoading
     : isLoadingOverride;

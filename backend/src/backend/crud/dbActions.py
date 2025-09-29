@@ -32,7 +32,7 @@ def matchType(blockType: str):
     match blockType:
         case "NULL":
             raise Exception # Why does this exist?
-        case "STRING":
+        case "STRING" | "TEXT" | "EMAIL":
             return Column(String, nullable=True)
         case "INTEGER":
             return Column(Integer, nullable=True)

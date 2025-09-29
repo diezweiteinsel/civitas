@@ -22,8 +22,7 @@ def test_get_current_user_payload_valid_token():
 
     # Create a valid token for testing
     test_payload = {
-        "sub": "42",
-        "username": "testuser",
+        "sub": "testuser",
         "roles": ["admin", "user"],
         "exp": 9999999999  # far future expiration for testing
     }
@@ -31,8 +30,7 @@ def test_get_current_user_payload_valid_token():
 
     # Test with the valid token
     payload = asyncio.run(get_current_user_payload(token=valid_token))
-    assert payload["sub"] == "42"
-    assert payload["username"] == "testuser"
+    assert payload["sub"] == "testuser"
     assert payload["roles"] == ["admin", "user"]
     
     
@@ -47,8 +45,7 @@ def test_get_current_user_payload_valid_token():
 
         # Create an expired token for testing
         test_payload = {
-            "sub": "42",
-            "username": "testuser",
+            "sub": "testuser",
             "roles": ["admin", "user"],
             "exp": int(time.time()) - 10  # expired 10 seconds ago
         }
@@ -70,8 +67,7 @@ def test_get_current_user_payload_wrong_signature_token():
 
     # Create a token with a wrong signature for testing
     test_payload = {
-        "sub": "42",
-        "username": "testuser",
+        "sub": "testuser",
         "roles": ["admin", "user"],
         "exp": 9999999999  # far future expiration for testing
     }

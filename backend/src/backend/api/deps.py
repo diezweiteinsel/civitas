@@ -7,6 +7,7 @@ from typing import List
 
 from backend.core.security import SECRET_KEY, ALGORITHM
 from backend.schemas.token import TokenData
+from backend import config
 
 # This should point to your login endpoint
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/v1/auth/token")
@@ -24,18 +25,34 @@ async def get_current_user_payload(token: str = Depends(oauth2_scheme)) -> dict:
     Raises HTTP 401 if the token is invalid or expired.
     
     """
+    
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Could not validate credentials",
         headers={"WWW-Authenticate": "Bearer"},
     )
+    debug_exception = HTTPException(
+        status_code=status.HTTP_418_IM_A_TEAPOT,
+        detail="Debugging Exception Triggered",
+        headers={"WWW-Authenticate": "Bearer"},
+    )
     try:
-        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        payload = jwt.decode(token, 
+                            SECRET_KEY,
+                            algorithms=[ALGORITHM],
+                            # options={"verify_aud": False},  # you don't set 'aud', so skip it
+                            )
+        print("Successfully decoded token")  # Debugging line
+        print("Decoded JWT payload:", payload)  # Debugging line
+        print("sub as per payload:", payload.get("sub"))  # Debugging line
         username: str = payload.get("sub")
         if username is None:
-            raise credentials_exception
+            raise debug_exception
         return payload
     except JWTError:
+        raise credentials_exception
+    except Exception as e:
+        print(f"Unexpected error during token decoding: {e}")  # Debugging line
         raise credentials_exception
 
 class RoleChecker:

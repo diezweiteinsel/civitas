@@ -1,21 +1,28 @@
 # standard library imports
 from datetime import datetime
 
+from pydantic import BaseModel
+
 # third party imports
-from backend.api.deps import RoleChecker
+from sqlalchemy.orm import Session
+
 from fastapi import APIRouter, Depends
 
 # project imports
 from backend.models.domain.form import Form, FormCreate
 from backend.crud import formCrud
+from backend.api.deps import RoleChecker
+from backend.core import db
 
 admin_permission = RoleChecker(["ADMIN"])
 
 router = APIRouter(prefix="/forms", tags=["forms"])
 
-@router.get("", response_model=list[Form], tags=["Forms"], summary="List all forms")
-async def list_forms():
-  pass
+@router.get("", response_model=list[Form], tags=["Forms"], summary="List all forms") #TODO: Once UI is ready, implement Admin guard
+async def list_forms(session: Session = Depends(db.get_session_dep)):
+  forms_list = formCrud.get_all_forms(session)
+  forms = [Form.from_orm_model(orm_form) for orm_form in forms_list]
+  return forms
 
 
 @router.get("/{form_id}",
@@ -28,14 +35,21 @@ async def get_form(form_id: int,
 
 # "/api/v1/forms/{form_id}?returnAsXml=true"
 
-@router.post("", response_model=Form, tags=["Forms"], summary="Create a new form", dependencies=[Depends(admin_permission)])
-async def create_form(formCreate: FormCreate):
+
+class CreationStatus(BaseModel):
+    success: bool
+    message: str
+
+@router.post("", response_model=CreationStatus, tags=["Forms"], summary="Create a new form", dependencies=[Depends(admin_permission)])
+async def create_form(formCreate: FormCreate, session: Session = Depends(db.get_session_dep)):
   form = formCreate.toForm()
-  form_db = formCrud.add_form(form)
+  form_db = formCrud.add_form(session, form)
   if form.form_name == form_db.form_name and form.blocks == form_db.blocks:
-    return True
+    return CreationStatus(success=True, message="Form created successfully")
   else:
-    return False
+    return CreationStatus(success=False, message="Form creation failed")
+  
+
 
 # explicitly no PUT method, forms are immutable after creation
 

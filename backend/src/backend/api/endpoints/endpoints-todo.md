@@ -15,3 +15,11 @@ Besser:
 api/v1/applications?public=true # 🚀 kannst du gerne einbauen schon done
     api/v1/applications?status=APPROVED
     api/v1/applications?status=APPROVED&?status=PENDING
+
+
+## TO DO FOR ME
+
+- [ ] Implement the enum query "?status=", `PENDING;APPROVED;REJECTED` in the backend
+  - [ ] Ensure that multiple status values can be provided, e.g. `?status=APPROVED&?status=PENDING`
+- [x] Implement the "public" query "?public=true" in the backend
+- [ ] Implement the "userid" query "?userid=" in the backend

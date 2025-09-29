@@ -13,7 +13,7 @@ import CreateForms from "./pages/admin/CreateForms";
 import ReporterDashboard from "./pages/reporter/Dashboard";
 import RejectedApplication from "./pages/Rejected"
 import ApprovedApplication from "./pages/Approved"
-import PendingApplication from "./pages/pendning"
+import PendingApplication from "./pages/Pending"
 
 
 const App = () => {

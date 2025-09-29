@@ -3,14 +3,14 @@ from enum import IntEnum, auto, StrEnum
 # backend.models.domain.trigger import Trigger
 
 class BBType(StrEnum):
-    NULL = "NULL"
-    STRING = "STRING"
-    TEXT = "TEXT"
-    EMAIL = "EMAIL"
-    INTEGER = "INTEGER"
-    DATE = "DATE"
-    FLOAT = "FLOAT"
-    LONG = "LONG"
+	NULL = "NULL"
+	STRING = "STRING"
+	TEXT = "TEXT"
+	EMAIL = "EMAIL"
+	INTEGER = "INTEGER"
+	DATE = "DATE"
+	FLOAT = "FLOAT"
+	LONG = "LONG"
 
 class BuildingBlock(BaseModel):
 	'''A building block represents a single field in a form, with a name and a data type.'''

@@ -15,10 +15,6 @@ class FormCreate(BaseModel):
 
 class Form(BaseModel):
 	'''A form represents a specific version of a form, with a name and a list of building blocks.'''
-
-
-
-<<<<<<< backend/src/backend/models/domain/form.py
 	id: int | None = None
 	form_name : str = ""
 	blocks: dict[int, BuildingBlock] = {} # key is the order of the block in the form
@@ -38,22 +34,22 @@ class Form(BaseModel):
     
     
 
-    @classmethod
-    def from_orm_model(cls, orm_model: OrmForm) -> "Form":
-        form = cls.from_json(orm_model.xoev)
-        if orm_model.id is not None:
-            form.id = orm_model.id
-            form.form_name = orm_model.form_name
-            form.is_active = orm_model.is_active
-        return form
+	@classmethod
+	def from_orm_model(cls, orm_model: OrmForm) -> "Form":
+		form = cls.from_json(orm_model.xoev)
+		if orm_model.id is not None:
+			form.id = orm_model.id
+			form.form_name = orm_model.form_name
+			form.is_active = orm_model.is_active
+		return form
     
-    def to_orm_model(self) -> OrmForm:
-        ormForm = OrmForm(
-            form_name =self.form_name,
-            is_active = self.is_active,
-            xoev = self.to_json()
-        )
-        return ormForm
+	def to_orm_model(self) -> OrmForm:
+		ormForm = OrmForm(
+			form_name =self.form_name,
+			is_active = self.is_active,
+			xoev = self.to_json()
+		)
+		return ormForm
 
 	def to_xml(self) -> str:
 		result = '''<x{name}Export xmlns="urn:xoev:x{name}:{version}" version="{version}">

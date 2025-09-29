@@ -275,10 +275,22 @@ async def get_application(application_id: int, form_id: int, session: Session = 
         raise HTTPException(status_code=400, detail="Invalid application ID format")
 
     application = applicationCrud.get_application_by_id(session, form_id, app_id)
-    application.title = formCrud.get_form_by_id(session, application.form_id).title
     if not application:
         raise HTTPException(status_code=404, detail=f"Application with ID {app_id} not found")
-    return application
+    app = ApplicationResponseItem(
+            id=application.id,
+            form_id=application.form_id,
+            title=formCrud.get_form_by_id(session, application.form_id).form_name,
+            status=application.status,
+            created_at=application.created_at,
+            is_public=application.is_public,
+            currentSnapshotID=application.currentSnapshotID,
+            previousSnapshotID=application.previousSnapshotID,
+            jsonPayload=application.jsonPayload
+            )
+    app.title = formCrud.get_form_by_id(session, app.form_id).title
+    
+    return app
 
 
 

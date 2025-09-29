@@ -89,6 +89,7 @@ def get_application_by_id(session: Session, form_id:int, app_id: int):
     applicationRow = dbActions.getRowById(session=session, tableClass=applicationTable, id=app_id)
     return rowToApplication(applicationTable = applicationTable, row = applicationRow)
 
+
 def get_all_applications_of_type(session: Session, form_id: int) -> list[Application]:
     """
     Takes:\n
@@ -108,7 +109,17 @@ def get_all_applications_of_type(session: Session, form_id: int) -> list[Applica
     
     return applications
 
+
 def get_all_applications(session: Session) -> list[Application]:
+    """
+    Returns all applications across all forms. Should be rejected by the API if the requesting user does not have admin/reporting privileges.
+    
+    Args:
+        session (Session): SQLAlchemy session object.
+    
+    Returns:
+        list[Application]: A list of all "Application" instances across all forms.
+    """
     applications: list[Application] = []
     all_forms = formCrud.get_all_forms(session)
     for form in all_forms:
@@ -117,6 +128,53 @@ def get_all_applications(session: Session) -> list[Application]:
 
     return applications
 
+
+def get_applications_by_status(session: Session, status: str) -> list[Application]:
+    """
+    Returns all applications with a specific status across all forms.
+
+    Args:
+        session (Session): SQLAlchemy session object.
+        status (str): The status to filter applications by. Must be one of "PENDING", "APPROVED", "REJECTED", or "REVISED".
+
+    Raises:
+        ValueError: If the status is invalid.
+
+    Returns:
+        list[Application]: A list of all "Application" instances with the specified status.
+    """
+    if status not in ["PENDING", "APPROVED", "REJECTED", "REVISED"]:
+        raise ValueError("Invalid status")
+    applications: list[Application] = []
+    all_forms = formCrud.get_all_forms(session)
+    for form in all_forms:
+        applicationTable = get_application_table_by_id(form.id)
+        rows = getRowsByFilter(session, applicationTable, {"status": status})
+        for row in rows:
+            applications.append(rowToApplication(row=row, applicationTable=applicationTable))
+    return applications
+
+
+def get_applications_by_user_id(session: Session, user_id: int) -> list[Application]:
+    """
+    Returns all applications submitted by a specific user across all forms.
+    Should be rejected by the API if the requesting user does not match the user_id or does not have admin/reporting privileges.
+    
+    ARGS:
+        session (Session): SQLAlchemy session object.
+        user_id (int): The ID of the user whose applications are to be retrieved.
+    
+    RETURNS:
+        list[Application]: List of Application objects submitted by the specified user.
+    """
+    applications: list[Application] = []
+    all_forms = formCrud.get_all_forms(session)
+    for form in all_forms:
+        applicationTable = get_application_table_by_id(form.id)
+        rows = getRowsByFilter(session, applicationTable, {"user_id": user_id})
+        for row in rows:
+            applications.append(rowToApplication(row=row, applicationTable=applicationTable))
+    return applications
 
 def get_all_public_applications(session: Session) -> list[Application]:
     """

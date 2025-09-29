@@ -1,10 +1,10 @@
 # standard library imports
 from datetime import datetime
-from typing import Optional
+from typing import List, Optional
 
 # third party imports
 from backend.core import db
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 
 # project imports
@@ -96,31 +96,57 @@ applicant_permission = RoleChecker(["APPLICANT"])
 async def list_applications(
     session: Session = Depends(db.get_session_dep),
     public: Optional[bool] = None,
+    status: Optional[List[ApplicationStatus]] = Query(None, description="Filter by one or more statuses."),
+    user_id: Optional[int] = None,
     payload: Optional[dict] = Depends(deps.get_current_user_payload_optional)):
     """
     Retrieve all applications in the system.
+    
+    Possible query parameters:
+    - **public**: `true` or `false`. If `true`, only public applications are returned. If `false` or not provided, all applications are returned, if you have the right permissions.
+    - **status**: Filter applications by one or more statuses (e.g., `PENDING`, `APPROVED`, `REJECTED`).
+    - **user_id**: Filter applications by a specific user ID.
     """
     is_privileged = False
+    user_id_in_token = None
     if payload:
         user_roles = payload.get("roles", [])
+        user_id_in_token = payload.get("userid")
         if set(user_roles) & {"ADMIN", "REPORTER"}:
             is_privileged = True
-    
     if is_privileged:
-        if public:
-            response = applicationCrud.get_all_public_applications(session)
-            return response
-        else:
-            result = applicationCrud.get_all_applications(session)
+        if status and not public:
+            status = [s.upper() for s in status]
+            result = []
+            for s in status:
+                result.extend(applicationCrud.get_applications_by_status(session, s))
             return result
+        
+        elif status and public:
+            status = [s.upper() for s in status]
+            result = []
+            for s in status:
+                apps = applicationCrud.get_applications_by_status(session, s)
+                public_apps = [app for app in apps if app.is_public]
+                result.extend(public_apps)
+            return result
+        
+        else:
+            return applicationCrud.get_all_applications(session)
     else:
         if public:
             result = applicationCrud.get_all_public_applications(session)
             return result
+        elif user_id and user_id == user_id_in_token:
+            result = applicationCrud.get_applications_by_user_id(session, user_id)
+            return result
+        elif user_id and user_id != user_id_in_token:
+            raise HTTPException(status_code=403, detail="WRONG USER ID. You do not have permission to view applications of other users. These applications are not for you, you nosy parker!")
         else:
-            raise HTTPException(status_code=403, detail="You do not have permission to perform this action. Only public applications are visible to all users.")
-
-
+            raise HTTPException(status_code=403, detail="WRONG PERMISSIONS. You do not have permission to perform this action. Only public applications are visible to all users.")
+        
+        
+        
 # @router.post("", response_model=ApplicationID,
 #             dependencies=[Depends(applicant_permission)],
 #             tags=["Applications"],

@@ -129,6 +129,25 @@ def main():
     except Exception:
         print("Demo admin creation failed:")
         traceback.print_exc()
+    try:
+        from backend.core import db
+        from backend.models.domain.form import Form
+        from backend.crud import formCrud
+        from backend.models.domain.buildingblock import BuildingBlock
+        with db.get_session() as session:
+            if len(formCrud.get_all_forms(session)) == 0:
+                block1 = BuildingBlock(label="label :)", data_type="STRING")
+                block2 = BuildingBlock(label="label Int :)", data_type="INTEGER")
+                form = Form(
+                    form_name = "Jay's test form",
+                    blocks = {1 : block1, 2: block2}
+                )
+                formCrud.add_form(session, form)
+            if len(formCrud.get_all_forms(session)) == 0:
+                raise Exception("No forms in DB")
+    except Exception as e:
+        raise Exception("Form couldn't be created", e)
+
 
     # --- seed an initial admin user if no users exist ---
     # try:

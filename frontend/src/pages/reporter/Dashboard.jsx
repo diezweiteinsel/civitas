@@ -7,7 +7,7 @@ import Navbar from "./../../components/Navbar";
 import ApplicationContainer from "./../../components/ApplicationContainer";
 import { FaDog, FaFire, FaInfoCircle } from "react-icons/fa";
 import { Role } from "../../utils/const";
-import Checkbox from "react-custom-checkbox";
+// import Checkbox from "react-custom-checkbox";
 
 export default function ReporterPage() {
   const [applications, setApplications] = useState([]);

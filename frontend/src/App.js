@@ -10,6 +10,7 @@ import AdminRegistration from "./pages/admin/AdminRegistration";
 import ReporterRegistration from "./pages/admin/ReporterRegistration";
 import ApplicationView from "./pages/ApplicationView";
 import CreateForms from "./pages/admin/CreateForms";
+import ReporterDashboard from "./pages/reporter/Dashboard";
 
 const App = () => {
   return (
@@ -25,6 +26,7 @@ const App = () => {
           element={<ApplicationEdit />}
         />
         <Route path="/admin" element={<AdminDashboard />} />
+        <Route path="/reporter" element={<ReporterDashboard />} />
         <Route path="/admin/public" element={<PublicApplication />} />
         <Route
           path="/admin/admin-registration"

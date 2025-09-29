@@ -12,7 +12,12 @@ import AdminRegistration from "./pages/admin/AdminRegistration";
 import ReporterRegistration from "./pages/admin/ReporterRegistration";
 import ApplicationView from "./pages/ApplicationView";
 import CreateForms from "./pages/admin/CreateForms";
-import ReporterDashboard from "./pages/reporter/Dashboard";
+import ReporterDashboard from "./pages/reporter/Dashboard"
+import RejectedApplication from "./pages/Rejected";
+import ApplicationView from "./pages/ApplicationView";
+import ApprovedApplication from "./pages/Approved";
+import PendingApplication from "./pages/Pending";
+
 
 const App = () => {
   return (

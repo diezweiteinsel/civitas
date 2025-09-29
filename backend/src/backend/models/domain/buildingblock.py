@@ -5,6 +5,8 @@ from enum import IntEnum, auto, StrEnum
 class BBType(StrEnum):
     NULL = "NULL"
     STRING = "STRING"
+    TEXT = "TEXT"
+    EMAIL = "EMAIL"
     INTEGER = "INTEGER"
     DATE = "DATE"
     FLOAT = "FLOAT"

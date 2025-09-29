@@ -9,6 +9,8 @@ from backend.core import db
 from backend.crud import dbActions
 from backend.models.domain.application import Application
 
+from backend.crud import formCrud
+
 def get_application_table_by_id(id):
     """
     Takes:\n
@@ -101,6 +103,15 @@ def get_all_applications_of_type(session: Session, form_id: int) -> list[Applica
     for row in allRows:
         applications.append(rowToApplication(row=row, applicationTable=applicationTable))
     
+    return applications
+
+def get_all_applications(session: Session) -> list[Application]:
+    applications: list[Application] = []
+    all_forms = formCrud.get_all_forms(session)
+    for form in all_forms:
+        applications_of_type = get_all_applications_of_type(session, form.id)
+        applications.extend(applications_of_type)
+
     return applications
 
 def insert_application(session:Session, application: Application):

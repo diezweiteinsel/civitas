@@ -36,3 +36,6 @@ class Application(BaseModel):
     previousSnapshotID: int = -1  # Points to the previous snapshot of the application
     jsonPayload: dict = {}  # The actual data of the application
 
+
+class ApplicationID(BaseModel):
+    id: int

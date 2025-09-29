@@ -20,6 +20,7 @@ class Form(BaseModel):
 
     id: int | None = None
     form_name : str = ""
+    is_active: bool = True
     blocks: dict[int, BuildingBlock] = {} # key is the order of the block in the form
     #triggers: dict[int, Trigger] = {} # key is the order of the trigger in the form
 
@@ -41,13 +42,14 @@ class Form(BaseModel):
         form = cls.from_json(orm_model.xoev)
         if orm_model.id is not None:
             form.id = orm_model.id
-        if orm_model.form_name:
             form.form_name = orm_model.form_name
+            form.is_active = orm_model.is_active
         return form
     
     def to_orm_model(self) -> OrmForm:
         ormForm = OrmForm(
             form_name =self.form_name,
+            is_active = self.is_active,
             xoev = self.to_json()
         )
         return ormForm

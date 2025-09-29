@@ -218,8 +218,8 @@ def insert_application(session:Session, application: Application):
         current_snapshot_id = application.currentSnapshotID,
         previous_snapshot_id = application.previousSnapshotID
         )
-    for key, value in application.jsonPayload.items():
-        setattr(application_in_db, key, value)
+    for key in application.jsonPayload.keys(): # TODO key = "1" value = {label="bla", value = "blo"} WRONG
+        setattr(application_in_db, application.jsonPayload[key]["label"] , application.jsonPayload[key]["value"])
     return dbActions.insertRow(session, applicationTable, application_in_db)
 
 # wrapper for updating application status

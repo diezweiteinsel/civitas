@@ -22,7 +22,7 @@ const App = () => {
         <Route path="/applicant/submit" element={<SubmitApplications />} />
         <Route path="/applicant/public" element={<PublicApplication />} />
         <Route
-          path="/applicant/application-edit"
+          path="/applicant/application-edit/:id"
           element={<ApplicationEdit />}
         />
         <Route path="/admin" element={<AdminDashboard />} />

@@ -57,7 +57,13 @@ def test_form_json_conversion():
 
     assert form1 == form1_from_json
 
-
+def test_form_xlm_conversion():
+	blocks = {
+		1: BuildingBlock(label="helpme", data_type=BBType.STRING, required=True, constraintsJson={})
+	}
+	example_form = Form(form_name="example", id=-1, blocks=blocks, version="6.9")
+	xml: str = example_form.to_xml()
+	assert(xml == Form.from_xml(xml).to_xml())
 
 
 def test_form_to_orm():

@@ -28,6 +28,7 @@ export default function ApplicationView() {
     const referrer = location.state?.from || document.referrer;
     if (referrer?.includes("/admin")) return Role.ADMIN;
     if (referrer?.includes("/applicant")) return Role.APPLICANT;
+    if (referrer?.includes("/reporter")) return Role.REPORTER;
     return Role.EMPTY;
   })();
 

@@ -13,7 +13,8 @@ from backend.businesslogic.services.applicationService import createApplication,
 from backend.businesslogic.services.formService import createForm
 from backend.businesslogic.services.adminService import adminApproveApplication, adminRejectApplication
 from backend.businesslogic.services.formService import createForm
-from backend.models.domain.application import Application, ApplicationStatus, ApplicationID
+from backend.models.domain.application import Application, ApplicationStatus, ApplicationID, ApplicationFillout
+from backend.crud import userCrud
 from backend.crud.user import get_user_by_id
 from backend.models.domain.user import User, UserType
 from backend.businesslogic.user import ensure_applicant, ensure_admin, ensure_reporter, assign_role
@@ -23,6 +24,8 @@ from backend.businesslogic.services.mockups import _global_applications_db, _glo
 from backend.models.domain.buildingblock import BuildingBlock
 from backend.crud import formCrud, applicationCrud
 from sqlalchemy.orm import Session
+
+from backend.api import deps
 
 router = APIRouter(prefix="/applications", tags=["applications"])
 
@@ -88,42 +91,81 @@ applicant_permission = RoleChecker(["APPLICANT"])
             dependencies=[Depends(admin_or_reporter_permission)],
             tags=["Applications"],
             summary="List all applications")
-async def list_applications(session: Session = Depends(db.get_session_dep)):
+async def list_applications(
+    session: Session = Depends(db.get_session_dep),
+    public: Optional[bool] = None,
+    payload: Optional[dict] = Depends(deps.get_current_user_payload_optional)):
     """
     Retrieve all applications in the system.
     """
-    # iterate over all forms to get all applications by type
-    result = applicationCrud.get_all_applications(session)
-    return result
+    is_privileged = False
+    if payload:
+        user_roles = payload.get("roles", [])
+        if set(user_roles) & {"ADMIN", "REPORTER"}:
+            is_privileged = True
+    
+    if is_privileged:
+        if public:
+            response = applicationCrud.get_all_public_applications(session)
+            return response
+        else:
+            result = applicationCrud.get_all_applications(session)
+            return result
+    else:
+        if public:
+            result = applicationCrud.get_all_public_applications(session)
+            return result
+        else:
+            raise HTTPException(status_code=403, detail="You do not have permission to perform this action. Only public applications are visible to all users.")
 
+
+# @router.post("", response_model=ApplicationID,
+#             dependencies=[Depends(applicant_permission)],
+#             tags=["Applications"],
+#             summary="Create a new application")
+# async def create_application(application_data: dict, session: Session = Depends(db.get_session_dep)):
+#     """
+#     Create a new application in the system.
+#     """
+#     user_id = application_data.get("user_id", 1)  # Default to user 1 for testing
+#     form_id = application_data.get("form_id", 1)  # Default to form 1 for testing
+#     payload = application_data.get("payload", {})
+    
+#     # user = await get_user_by_id(user_id)
+#     user = User(id=user_id, username="username", date_created=date.today(), hashed_password="pass") # temporary, replace with actual user retrieval logic
+#     assign_role(user, UserType.APPLICANT) # temporary, remove when actual user retrieval logic is implemented
+#     if not user:
+#         raise ValueError("User not found")
+#     if not ensure_applicant(user):
+#         raise PermissionError("Only applicants can create applications.")
+
+#     bb = BuildingBlock(label="Name", data_type="STRING")
+
+#     form = Form(form_name="Sample Form", blocks={"1": bb})  # temporary, replace with actual form retrieval logic. But now we are skipping the form logic
+#     form = formCrud.add_form(session, form)  # saving the form to get an id   
+#     application = createApplication(user, form, payload, session)
+
+#     return ApplicationID(id=application.id)
 
 @router.post("", response_model=ApplicationID,
             dependencies=[Depends(applicant_permission)],
             tags=["Applications"],
             summary="Create a new application")
-async def create_application(application_data: dict, session: Session = Depends(db.get_session_dep)):
+async def create_application(application_data: ApplicationFillout, session: Session = Depends(db.get_session_dep)):
     """
     Create a new application in the system.
     """
-    user_id = application_data.get("user_id", 1)  # Default to user 1 for testing
-    form_id = application_data.get("form_id", 1)  # Default to form 1 for testing
-    payload = application_data.get("payload", {})
+    jwtpayload = deps.get_current_user_payload() # TODO change to get user_id from jwt directly
+    username = jwtpayload.get("sub")
+    user = userCrud.get_user_by_name(username)
+    user_id = user.id
+    form_id = application_data.form_id
+    jsonPayload = application_data.jsonPayload
     
-    # user = await get_user_by_id(user_id)
-    user = User(id=user_id, username="username", date_created=date.today(), hashed_password="pass") # temporary, replace with actual user retrieval logic
-    assign_role(user, UserType.APPLICANT) # temporary, remove when actual user retrieval logic is implemented
-    if not user:
-        raise ValueError("User not found")
-    if not ensure_applicant(user):
-        raise PermissionError("Only applicants can create applications.")
-
-    bb = BuildingBlock(label="Name", data_type="STRING")
-
-    form = Form(form_name="Sample Form", blocks={"1": bb})  # temporary, replace with actual form retrieval logic. But now we are skipping the form logic
-    form = formCrud.add_form(session, form)  # saving the form to get an id   
-    application = createApplication(user, form, payload, session)
+    application = createApplication(user_id, form_id, jsonPayload, session)
 
     return ApplicationID(id=application.id)
+
 
 
 @router.get("/{application_id}",

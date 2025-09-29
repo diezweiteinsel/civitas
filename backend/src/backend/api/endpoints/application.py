@@ -30,6 +30,10 @@ from sqlalchemy.orm import Session
 
 from backend.api import deps
 
+from backend.models.domain.application import ApplicationResponseItem
+
+from backend.models.domain.application import application_to_response_item
+
 router = APIRouter(prefix="/applications", tags=["applications"])
 
 # CAN READ ALL
@@ -90,7 +94,7 @@ applicant_permission = RoleChecker(["APPLICANT"])
 #     return applicationCrud.get_all_applications(session)
 
 @router.get("", 
-            response_model=list[Application],
+            response_model=list[ApplicationResponseItem],
             tags=["Applications"],
             summary="List all applications")
 async def list_applications(
@@ -120,6 +124,10 @@ async def list_applications(
             result = []
             for s in status:
                 result.extend(applicationCrud.get_applications_by_status(session, s))
+                
+                for app in result:
+                    app = application_to_response_item(app)
+                    app.title = formCrud.get_form_by_id(session, app.form_id).title
             return result
         
         elif status and public:
@@ -129,16 +137,29 @@ async def list_applications(
                 apps = applicationCrud.get_applications_by_status(session, s)
                 public_apps = [app for app in apps if app.is_public]
                 result.extend(public_apps)
+                for app in result:
+                    app = application_to_response_item(app)
+                    app.title = formCrud.get_form_by_id(session, app.form_id).title
             return result
         
         else:
-            return applicationCrud.get_all_applications(session)
+            apps = applicationCrud.get_all_applications(session)
+            for app in apps:
+                app = application_to_response_item(app)
+                app.title = formCrud.get_form_by_id(session, app.form_id).title
+            return apps
     else:
         if public:
             result = applicationCrud.get_all_public_applications(session)
+            for app in result:
+                app = application_to_response_item(app)
+                app.title = formCrud.get_form_by_id(session, app.form_id).title
             return result
         elif user_id and user_id == user_id_in_token:
             result = applicationCrud.get_applications_by_user_id(session, user_id)
+            for app in result:
+                app = application_to_response_item(app)
+                app.title = formCrud.get_form_by_id(session, app.form_id).title
             return result
         elif user_id and user_id != user_id_in_token:
             raise HTTPException(status_code=403, detail="WRONG USER ID. You do not have permission to view applications of other users. These applications are not for you, you nosy parker!")
@@ -201,7 +222,7 @@ async def create_application( application_data: ApplicationFillout,
 
 
 @router.get("/{application_id}",
-            response_model=Application,
+            response_model=ApplicationResponseItem,
             tags=["Applications"],
             summary="Get application by ID")
 async def get_application(application_id: int, form_id: int, session: Session = Depends(db.get_session_dep)):
@@ -214,13 +235,14 @@ async def get_application(application_id: int, form_id: int, session: Session = 
         raise HTTPException(status_code=400, detail="Invalid application ID format")
 
     application = applicationCrud.get_application_by_id(session, form_id, app_id)
+    application.title = formCrud.get_form_by_id(session, application.form_id).title
     if not application:
         raise HTTPException(status_code=404, detail=f"Application with ID {app_id} not found")
     return application
 
 
 
-@router.put("/{application_id}", response_model=Application, tags=["Applications"], summary="Update an application by ID")
+@router.put("/{application_id}", response_model=ApplicationResponseItem, tags=["Applications"], summary="Update an application by ID")
 async def update_application(application_id: int, new_application_data: dict, session: Session = Depends(db.get_session_dep)):
     """
     Update a specific application by its ID.

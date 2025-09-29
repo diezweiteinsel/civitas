@@ -10,6 +10,275 @@ import traceback
 from typing import Callable
 
 
+def _env_truthy(value: str | None, default: bool = True) -> bool:
+    if value is None:
+        return default
+    return value.strip().lower() in {"1", "true", "yes", "on"}
+
+
+def create_demo_users() -> None:
+    """Ensure demo users for every role exist."""
+    from datetime import date
+
+    from fastapi import HTTPException
+
+    from backend.core import db as core_db
+    from backend.core import security
+    from backend.crud.user import add_user, get_user_by_name
+    from backend.models.domain.user import RoleAssignment, User, UserType
+
+    demo_definitions = [
+        {
+            "username": os.environ.get("DEMO_USERNAME", "demo"),
+            "password": os.environ.get("DEMO_PASSWORD", "demo"),
+            "roles": [UserType.APPLICANT],
+            "email": os.environ.get("DEMO_EMAIL", "demo@example.com"),
+        },
+        {
+            "username": os.environ.get("ADMIN_USERNAME", "admin"),
+            "password": os.environ.get("ADMIN_PASSWORD", "admin"),
+            "roles": [UserType.ADMIN],
+            "email": os.environ.get("ADMIN_EMAIL", "admin@example.com"),
+        },
+        {
+            "username": os.environ.get("REPORTER_USERNAME", "reporter"),
+            "password": os.environ.get("REPORTER_PASSWORD", "reporter"),
+            "roles": [UserType.REPORTER],
+            "email": os.environ.get("REPORTER_EMAIL", "reporter@example.com"),
+        },
+    ]
+
+    with core_db.get_session() as session:
+        for definition in demo_definitions:
+            username = definition["username"].strip()
+            try:
+                get_user_by_name(username, session)
+                print(f"Demo user '{username}' already exists, skipping")
+                continue
+            except HTTPException as exc:
+                if exc.status_code != 404:
+                    print(f"Lookup for user '{username}' failed: {exc.detail}")
+                    raise
+            except Exception:
+                traceback.print_exc()
+                raise
+
+            try:
+                hashed_password = security.hash_password(definition["password"])
+                roles = [
+                    RoleAssignment(role=role, assignment_date=date.today())
+                    for role in definition["roles"]
+                ]
+                new_user = User(
+                    username=username,
+                    date_created=date.today(),
+                    hashed_password=hashed_password,
+                    user_roles=roles,
+                    email=definition["email"],
+                )
+                created = add_user(session, new_user)
+                if created is None:
+                    print(f"add_user returned None - could not create '{username}'")
+                else:
+                    print(f"Demo user '{username}' created with id={created.id}")
+            except HTTPException as exc:
+                if exc.status_code == 409:
+                    print(f"User '{username}' already exists ({exc.detail}), skipping")
+                    session.rollback()
+                    continue
+                raise
+
+
+def create_demo_forms() -> None:
+    """Ensure at least one rich demo form exists."""
+    from backend.core import db
+    from backend.crud import formCrud
+    from backend.models.domain.buildingblock import BBType, BuildingBlock
+    from backend.models.domain.form import Form
+
+    demo_form_name = os.environ.get("DEMO_FORM_NAME", "Civic Service Request")
+
+    with db.get_session() as session:
+        existing_forms = formCrud.get_all_forms(session)
+        if any(form.form_name == demo_form_name for form in existing_forms):
+            print(f"Demo form '{demo_form_name}' already exists, skipping")
+            return
+
+        blocks = {
+            "1": BuildingBlock(
+                label="full_name",
+                data_type=BBType.STRING,
+                required=True,
+                constraintsJson={"min_length": 3},
+            ),
+            "2": BuildingBlock(
+                label="contact_email",
+                data_type=BBType.EMAIL,
+                required=False,
+            ),
+            "3": BuildingBlock(
+                label="issue_description",
+                data_type=BBType.TEXT,
+                required=True,
+                constraintsJson={"max_length": 500},
+            ),
+            "4": BuildingBlock(
+                label="submission_date",
+                data_type=BBType.DATE,
+                required=True,
+            ),
+            "5": BuildingBlock(
+                label="estimated_cost",
+                data_type=BBType.FLOAT,
+                required=False,
+            ),
+            "6": BuildingBlock(
+                label="household_size",
+                data_type=BBType.INTEGER,
+                required=False,
+            ),
+        }
+
+        form = Form(form_name=demo_form_name, blocks=blocks)
+        created_form = formCrud.add_form(session, form)
+        print(
+            f"Demo form '{created_form.form_name}' created with id={created_form.id}"
+        )
+
+
+def _sample_value_for_block(block) -> object:
+    from datetime import date
+
+    from backend.models.domain.buildingblock import BBType
+
+    data_type = block.data_type
+    if isinstance(data_type, str):
+        try:
+            data_type = BBType(data_type)
+        except ValueError:
+            data_type = BBType.STRING
+
+    if data_type == BBType.STRING or data_type == BBType.TEXT:
+        return "Sample text for " + block.label.replace("_", " ")
+    if data_type == BBType.EMAIL:
+        return "civic.user@example.com"
+    if data_type == BBType.INTEGER:
+        return 3
+    if data_type == BBType.DATE:
+        return date.today()
+    if data_type == BBType.FLOAT:
+        return 42.5
+    return "N/A"
+
+
+def create_demo_applications() -> None:
+    """Ensure demo applications exist for the demo form."""
+    from typing import Optional
+
+    from fastapi import HTTPException
+
+    from backend.core import db
+    from backend.crud import applicationCrud, dbActions, formCrud
+    from backend.crud.user import get_user_by_name
+    from backend.models.domain.application import Application, ApplicationStatus
+    from backend.models.domain.form import Form
+
+    with db.get_session() as session:
+        existing_apps = applicationCrud.get_all_applications(session)
+        if existing_apps:
+            print("Demo applications already exist, skipping")
+            return
+
+        forms = formCrud.get_all_forms(session)
+        if not forms:
+            print("No forms available; skipping demo application creation")
+            return
+
+        demo_form_name = os.environ.get("DEMO_FORM_NAME", "Civic Service Request")
+        target_form_orm = next(
+            (form for form in forms if form.form_name == demo_form_name),
+            forms[0],
+        )
+        target_form = Form.from_orm_model(target_form_orm)
+
+        def _get_user(username: str) -> Optional[int]:
+            try:
+                user = get_user_by_name(username, session)
+                return user.id
+            except HTTPException as exc:
+                if exc.status_code == 404:
+                    return None
+                raise
+
+        applicant_username = os.environ.get("DEMO_USERNAME", "demo")
+        applicant_id = _get_user(applicant_username)
+        if applicant_id is None:
+            print(
+                f"Applicant user '{applicant_username}' not found; skipping demo applications"
+            )
+            return
+
+        admin_username = os.environ.get("ADMIN_USERNAME", "admin")
+        admin_id = _get_user(admin_username)
+
+        payload = {
+            block.label: _sample_value_for_block(block)
+            for block in target_form.blocks.values()
+        }
+
+        demo_applications = [
+            Application(
+                user_id=applicant_id,
+                form_id=target_form_orm.id,
+                admin_id=admin_id,
+                status=ApplicationStatus.PENDING,
+                jsonPayload=payload,
+            ),
+            Application(
+                user_id=applicant_id,
+                form_id=target_form_orm.id,
+                admin_id=admin_id,
+                status=ApplicationStatus.APPROVED,
+                jsonPayload={**payload, "issue_description": "Approved request"},
+            ),
+            Application(
+                user_id=applicant_id,
+                form_id=target_form_orm.id,
+                admin_id=admin_id,
+                status=ApplicationStatus.REJECTED,
+                jsonPayload={**payload, "issue_description": "Rejected request"},
+            ),
+        ]
+
+        table_class = dbActions.get_application_table_by_id(target_form_orm.id)
+
+        for index, application in enumerate(demo_applications, start=1):
+            inserted = applicationCrud.insert_application(session, application)
+            status = application.status.value
+            print(
+                f"Demo application #{index} created with id={inserted.id} (status={status})"
+            )
+            if index == 2:
+                dbActions.updateRow(
+                    session,
+                    table_class,
+                    {"id": inserted.id, "is_public": True},
+                )
+
+
+def populate_db_with_demo_data() -> None:
+    if not _env_truthy(os.environ.get("SEED_DEMO_DATA", "1")):
+        print("Skipping demo data population (SEED_DEMO_DATA disabled)")
+        return
+
+    try:
+        create_demo_users()
+        create_demo_forms()
+        create_demo_applications()
+    except Exception:
+        print("Demo data population failed:")
+        traceback.print_exc()
+
 def wait_for_db(
     connect_fn: Callable[[], object], retries: int = 30, delay: float = 1.0
 ):
@@ -60,93 +329,10 @@ def main():
         traceback.print_exc()
     
     try:
-        # we insert a demo user for easier testing
-        from backend.core import security
-        from backend.core import db as core_db
-        from backend.crud.user import add_user, get_user_by_name
-        from backend.models.domain.user import RoleAssignment, User, UserType
-        from datetime import date
-        demo_username = os.environ.get("DEMO_USERNAME", "demo")
-        demo_password = os.environ.get("DEMO_PASSWORD", "demo")
-        with core_db.get_session() as s:
-            try:
-                existing = get_user_by_name(demo_username, s)
-                print(f"Demo user '{demo_username}' already exists, skipping demo user creation")
-            except Exception:
-                print(f"Creating demo user '{demo_username}' (password from DEMO_PASSWORD env)")
-                new_user = User(
-                    username=demo_username,
-                    date_created=date.today(),
-                    hashed_password=security.hash_password(demo_password),
-                    user_roles=[
-                        RoleAssignment(
-                            role=UserType.APPLICANT,
-                            assignment_date=date.today(),
-                        ),
-                    ],
-                    email="demo@example.com"
-                )
-                created = add_user(s, new_user)
-                if created is None:
-                    print("add_user returned None - demo user creation failed or user already exists")
-                else:
-                    print(f"Demo user '{demo_username}' created with id={created.id}")
+        populate_db_with_demo_data()
     except Exception:
-        print("Demo user creation failed:")
+        print("populate_db_with_demo_data() failed:")
         traceback.print_exc()
-
-    try:
-        # we insert a demo admin user for easier testing
-        from backend.core import security
-        from backend.core import db as core_db
-        from backend.crud.user import add_user, get_user_by_name
-        from backend.models.domain.user import RoleAssignment, User, UserType
-        from datetime import date
-        with core_db.get_session() as s:
-            try:
-                existing = get_user_by_name("admin", s)
-                print(f"Demo user 'admin' already exists, skipping demo admin creation")
-            except Exception:
-                print(f"Creating demo admin 'admin' (password from DEMO_PASSWORD env)")
-                new_admin = User(
-                    username="admin",
-                    date_created=date.today(),
-                    hashed_password=security.hash_password("admin"),
-                    user_roles=[
-                        RoleAssignment(
-                            role=UserType.ADMIN,
-                            assignment_date=date.today(),
-                        )
-                    ],
-                    email="admin@example.com"
-                )
-                created = add_user(s, new_admin)
-                if created is None:
-                    print("add_user returned None - demo admin creation failed or user already exists")
-                else:
-                    print(f"Demo admin 'admin' created with id={created.id}")
-        traceback.print_exc()
-    except Exception:
-        print("Demo admin creation failed:")
-        traceback.print_exc()
-    try:
-        from backend.core import db
-        from backend.models.domain.form import Form
-        from backend.crud import formCrud
-        from backend.models.domain.buildingblock import BuildingBlock
-        with db.get_session() as session:
-            if len(formCrud.get_all_forms(session)) == 0:
-                block1 = BuildingBlock(label="label :)", data_type="STRING")
-                block2 = BuildingBlock(label="label Int :)", data_type="INTEGER")
-                form = Form(
-                    form_name = "Jay's test form",
-                    blocks = {1 : block1, 2: block2}
-                )
-                formCrud.add_form(session, form)
-            if len(formCrud.get_all_forms(session)) == 0:
-                raise Exception("No forms in DB")
-    except Exception as e:
-        raise Exception("Form couldn't be created", e)
 
 
     # --- seed an initial admin user if no users exist ---

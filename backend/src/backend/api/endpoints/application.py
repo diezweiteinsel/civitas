@@ -125,10 +125,18 @@ async def list_applications(
             for s in status:
                 result.extend(applicationCrud.get_applications_by_status(session, s))
                 
-                for app in result:
-                    app = application_to_response_item(app)
-                    app.title = formCrud.get_form_by_id(session, app.form_id).title
-            return result
+                return [
+            ApplicationResponseItem(
+            id=app.id,
+            form_id=app.form_id,
+            title=formCrud.get_form_by_id(session, app.form_id).form_name,
+            status=app.status,
+            created_at=app.created_at,
+            is_public=app.is_public,
+            currentSnapshotID=app.currentSnapshotID,
+            previousSnapshotID=app.previousSnapshotID,
+            jsonPayload=app.jsonPayload
+            ) for app in result]
         
         elif status and public:
             status = [s.upper() for s in status]
@@ -137,30 +145,62 @@ async def list_applications(
                 apps = applicationCrud.get_applications_by_status(session, s)
                 public_apps = [app for app in apps if app.is_public]
                 result.extend(public_apps)
-                for app in result:
-                    app = application_to_response_item(app)
-                    app.title = formCrud.get_form_by_id(session, app.form_id).title
-            return result
+                return [
+            ApplicationResponseItem(
+            id=app.id,
+            form_id=app.form_id,
+            title=formCrud.get_form_by_id(session, app.form_id).form_name,
+            status=app.status,
+            created_at=app.created_at,
+            is_public=app.is_public,
+            currentSnapshotID=app.currentSnapshotID,
+            previousSnapshotID=app.previousSnapshotID,
+            jsonPayload=app.jsonPayload
+            ) for app in result]
         
         else:
             apps = applicationCrud.get_all_applications(session)
-            for app in apps:
-                app = application_to_response_item(app)
-                app.title = formCrud.get_form_by_id(session, app.form_id).title
-            return apps
+            return [
+            ApplicationResponseItem(
+            id=app.id,
+            form_id=app.form_id,
+            title=formCrud.get_form_by_id(session, app.form_id).form_name,
+            status=app.status,
+            created_at=app.created_at,
+            is_public=app.is_public,
+            currentSnapshotID=app.currentSnapshotID,
+            previousSnapshotID=app.previousSnapshotID,
+            jsonPayload=app.jsonPayload
+            ) for app in apps]
     else:
         if public:
-            result = applicationCrud.get_all_public_applications(session)
-            for app in result:
-                app = application_to_response_item(app)
-                app.title = formCrud.get_form_by_id(session, app.form_id).title
-            return result
+            applications = applicationCrud.get_all_public_applications(session)
+            return [
+            ApplicationResponseItem(
+            id=app.id,
+            form_id=app.form_id,
+            title=formCrud.get_form_by_id(session, app.form_id).form_name,
+            status=app.status,
+            created_at=app.created_at,
+            is_public=app.is_public,
+            currentSnapshotID=app.currentSnapshotID,
+            previousSnapshotID=app.previousSnapshotID,
+            jsonPayload=app.jsonPayload
+            ) for app in applications]
         elif user_id and user_id == user_id_in_token:
             result = applicationCrud.get_applications_by_user_id(session, user_id)
-            for app in result:
-                app = application_to_response_item(app)
-                app.title = formCrud.get_form_by_id(session, app.form_id).title
-            return result
+            return [
+            ApplicationResponseItem(
+            id=app.id,
+            form_id=app.form_id,
+            title=formCrud.get_form_by_id(session, app.form_id).form_name,
+            status=app.status,
+            created_at=app.created_at,
+            is_public=app.is_public,
+            currentSnapshotID=app.currentSnapshotID,
+            previousSnapshotID=app.previousSnapshotID,
+            jsonPayload=app.jsonPayload
+            ) for app in applications]
         elif user_id and user_id != user_id_in_token:
             raise HTTPException(status_code=403, detail="WRONG USER ID. You do not have permission to view applications of other users. These applications are not for you, you nosy parker!")
         else:

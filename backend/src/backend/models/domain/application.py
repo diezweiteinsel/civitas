@@ -39,7 +39,7 @@ class Application(BaseModel):
 
 class ApplicationID(BaseModel):
     id: int
-    
+
 
 class ApplicationFillout(BaseModel):
     form_id: int

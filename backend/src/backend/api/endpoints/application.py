@@ -8,7 +8,10 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
 # project imports
-from backend.api.deps import   RoleChecker
+from backend.api.deps import   RoleChecker, get_current_user_payload
+from backend.core import roleAuth
+from backend.crud import userCrud
+from backend.models.orm import roletable
 from backend.businesslogic.services.applicationService import createApplication, getApplication, editApplication
 from backend.businesslogic.services.formService import createForm
 from backend.businesslogic.services.adminService import adminApproveApplication, adminRejectApplication
@@ -155,7 +158,7 @@ async def create_application(application_data: ApplicationFillout, session: Sess
     """
     Create a new application in the system.
     """
-    jwtpayload = deps.get_current_user_payload() # TODO change to get user_id from jwt directly
+    jwtpayload = get_current_user_payload() # TODO change to get user_id from jwt directly
     username = jwtpayload.get("sub")
     user = userCrud.get_user_by_name(username)
     user_id = user.id

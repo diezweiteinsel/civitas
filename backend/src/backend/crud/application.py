@@ -11,6 +11,8 @@ from backend.models.domain.application import Application
 
 from backend.crud import formCrud
 
+from backend.crud.dbActions import getRowsByFilter
+
 def get_application_table_by_id(id):
     applicationTableName = "form_" + str(id)
     Base = db.get_base(True)
@@ -47,7 +49,8 @@ def rowToApplication(row, applicationTable = None) -> Application:
         created_at = row.created_at,
         currentSnapshotID= row.current_snapshot_id,
         previousSnapshotID= row.previous_snapshot_id,
-        jsonPayload= jsonPayload
+        jsonPayload= jsonPayload,
+        is_public= row.is_public
     )
     return application
 
@@ -79,6 +82,28 @@ def get_all_applications(session: Session) -> list[Application]:
 
     return applications
 
+
+def get_all_public_applications(session: Session) -> list[Application]:
+    """
+    Returns all applications that are marked as public.
+    
+    ARGS:
+        session (Session): SQLAlchemy session object.
+    
+    RETURNS:
+        list[Application]: List of public Application objects.
+    """
+    applications: list[Application] = []
+    all_forms = formCrud.get_all_forms(session)
+    for form in all_forms:
+        applications_of_type = get_all_applications_of_type(session, form.id)
+        applications.extend(applications_of_type)
+    public_applications : list[Application] = []
+    for application in applications:
+        if application.is_public:
+            public_applications.append(application)
+    return public_applications
+
 def insert_application(session:Session, application: Application):
     applicationTable = get_application_table_by_id(id = application.form_id)
     application_in_db = applicationTable(   
@@ -92,3 +117,9 @@ def insert_application(session:Session, application: Application):
     for key, value in application.jsonPayload.items():
         setattr(application_in_db, key, value)
     return dbActions.insertRow(session, applicationTable, application_in_db)
+
+# wrapper for updating application status
+def updateApplicationStatus(session: Session, tableClass: type, id: int, newStatus: str):
+    if newStatus not in ["PENDING", "APPROVED", "REJECTED", "REVISED"]:
+        raise ValueError("Invalid status")
+    return dbActions.updateRow(session, tableClass, {"id": id, "status": newStatus})

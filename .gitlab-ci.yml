@@ -139,6 +139,8 @@ reset_deployment:
   stage: maintenance
   image: alpine:latest
   needs: ["deploy-to-vm"]
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
   when: manual
 
   before_script:

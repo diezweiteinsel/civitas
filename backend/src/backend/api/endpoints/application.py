@@ -53,42 +53,42 @@ applicant_permission = RoleChecker(["APPLICANT"])
 # If `public` is true, anyone can access, but only public applications are returned.
 
 # 1 - Define a dependency to check the public status and user role
-async def non_public_applications(public: Optional[bool] = False):
-    """
-    Dependency to filter applications based on their public status.
-    """
-    # print("Checking public status:", public)
-    if not public:
-        await Depends(admin_or_reporter_permission) # Ensure user is admin or reporter (as per JWT token)
+# async def non_public_applications(public: Optional[bool] = False):
+#     """
+#     Dependency to filter applications based on their public status.
+#     """
+#     # print("Checking public status:", public)
+#     if not public:
+#         await Depends(admin_or_reporter_permission) # Ensure user is admin or reporter (as per JWT token)
 
 # 2 - If public is True, allow access to everyone (no role check needed)
 # 3 - If public is False, ensure the user has admin or reporter role (handled in the dependency above)
-@router.get("", 
-            response_model=list[Application],
-            dependencies=[Depends(non_public_applications)], # Custom dependency to handle public access
-            tags=["Applications"],
-            summary="List all applications")
-async def list_applications(
-    public: Optional[bool] = False):
-    """
-    Retrieve all applications in the system.
-    """
-    #TODO: add session management?
-    if public:
-        # Fetch applications from db that are public
-        pass
-    else:
-        # this should not be reachable because of the dependency above
-        pass
+# @router.get("", 
+#             response_model=list[Application],
+#             dependencies=[Depends(non_public_applications)], # Custom dependency to handle public access
+#             tags=["Applications"],
+#             summary="List all applications")
+# async def list_applications(
+#     public: Optional[bool] = False):
+#     """
+#     Retrieve all applications in the system.
+#     """
+#     #TODO: add session management?
+#     if public:
+#         # Fetch applications from db that are public
+#         pass
+#     else:
+#         # this should not be reachable because of the dependency above
+#         pass
 
-    return applicationCrud.get_all_applications(session)
+#     return applicationCrud.get_all_applications(session)
 
 
 @router.post("", response_model=bool,
             dependencies=[Depends(applicant_permission)],
             tags=["Applications"],
             summary="Create a new application")
-async def create_application(application_data: dict):
+async def create_application(application_data: dict, session: Session = Depends(db.get_session_dep)):
     """
     Create a new application in the system.
     """
@@ -116,7 +116,7 @@ async def create_application(application_data: dict):
             response_model=Application,
             tags=["Applications"],
             summary="Get application by ID")
-async def get_application(application_id: int):
+async def get_application(application_id: int, form_id: int, session: Session = Depends(db.get_session_dep)):
     """
     Retrieve a specific application by its ID.
     """

@@ -7,7 +7,7 @@ export default function AdminRegistration() {
   return (
     <>
       <Navbar role={Role.ADMIN} />
-      <RegistrationContainer role={Role.ADMIN} />
+      <RegistrationContainer roleToRegister={Role.ADMIN} />
     </>
   );
 }

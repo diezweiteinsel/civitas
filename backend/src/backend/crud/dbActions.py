@@ -3,7 +3,7 @@ import json
 from typing import Type
 
 from fastapi import HTTPException
-from sqlalchemy import Column, Date, Float, Integer, String, delete, DateTime, text
+from sqlalchemy import Boolean, Column, Date, Float, Integer, String, delete, DateTime, text
 from sqlalchemy.orm import Session
 
 # from backend.models.orm import Base
@@ -72,7 +72,8 @@ def createFormTable(id: int, xoev: str):
                 "status": Column(String, server_default=text("'PENDING'"), nullable=False),
                 "created_at": Column(DateTime, server_default=text("CURRENT_TIMESTAMP"), nullable=False),
                 "current_snapshot_id": Column(Integer, server_default=text("-1")),
-                "previous_snapshot_id": Column(Integer, server_default=text("-1"))
+                "previous_snapshot_id": Column(Integer, server_default=text("-1")),
+                "is_public": Column(Boolean, server_default=text("false"), nullable=False)
                 }
     if xoev == "":
         raise Exception("xoev is empty")
@@ -135,6 +136,7 @@ def updateRow(session: Session, tableClass: type, rowData: dict):
     session.flush()       # push to DB
     session.refresh(obj)  # refresh to get DB-generated values
     return obj
+
 
 
 def removeRow(session: Session, tableClass: type, id: int):

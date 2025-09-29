@@ -11,7 +11,6 @@ class ApplicationStatus(StrEnum):
     PENDING = "PENDING"
     APPROVED = "APPROVED"
     REJECTED = "REJECTED"
-    PUBLIC = "PUBLIC"
     REVISED = "REVISED"
 
 
@@ -35,7 +34,13 @@ class Application(BaseModel):
     currentSnapshotID: int = -1  # Points to the latest snapshot of the application
     previousSnapshotID: int = -1  # Points to the previous snapshot of the application
     jsonPayload: dict = {}  # The actual data of the application
+    is_public: bool = False  # Indicates if the application is public
 
 
 class ApplicationID(BaseModel):
     id: int
+    
+
+class ApplicationFillout(BaseModel):
+    form_id: int
+    jsonPayload: dict

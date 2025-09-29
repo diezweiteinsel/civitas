@@ -3,7 +3,7 @@
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from jose import JWTError, jwt
-from typing import List
+from typing import List, Optional
 
 from backend.core.security import SECRET_KEY, ALGORITHM
 from backend.schemas.token import TokenData
@@ -54,6 +54,19 @@ async def get_current_user_payload(token: str = Depends(oauth2_scheme)) -> dict:
     except Exception as e:
         print(f"Unexpected error during token decoding: {e}")  # Debugging line
         raise credentials_exception
+    
+async def get_current_user_payload_optional(token: str = Depends(oauth2_scheme)) -> Optional[dict]:
+    """
+    Tries to get the user payload but returns None on failure instead of raising an error.
+    This allows unauthenticated or invalid token requests to proceed to the endpoint.
+    """
+    try:
+        # This calls your existing function that raises an exception on failure.
+        return await get_current_user_payload(token)
+    except HTTPException:
+        # If the token is invalid, expired, or missing, we catch the error
+        # and return None, indicating an unauthenticated user.
+        return None
 
 class RoleChecker:
     """

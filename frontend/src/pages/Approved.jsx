@@ -4,7 +4,7 @@ import { useSearchParams } from "react-router-dom";
 import { Role } from "../utils/const";
 
 export default function ApprovedApplication() {
-  const [searchParams] = useSearchParams();
+  const [ApprovedApplications, setApprovedApplications] = useState([]);
   const sourceRole = searchParams.get("from");
 
   const currentRole =

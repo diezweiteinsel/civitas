@@ -4,7 +4,7 @@ import { useSearchParams } from "react-router-dom";
 import { Role } from "../utils/const";
 
 export default function PendingApplication() {
-  const [searchParams] = useSearchParams();
+  const [pendingApplications, setPendingApplications] = useState([]);
   const sourceRole = searchParams.get("from");
 
   const currentRole =

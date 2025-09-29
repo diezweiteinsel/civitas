@@ -33,7 +33,8 @@ export default function ApplicationView() {
 
   const sourceContext = location.state?.fromPage || "unknown";
 
-  const getApplicationMutation = useMutation({
+  // Fetch application data
+  const getApplicationByIdMutation = useMutation({
     mutationFn: getApplicationById,
     onSuccess: (data) => {
       setError("");
@@ -56,7 +57,7 @@ export default function ApplicationView() {
         setLoading(false);
         return;
       }
-      getApplicationMutation.mutate(numericId);
+      getApplicationByIdMutation.mutate(numericId);
     } else {
       setError("No application ID provided");
       setLoading(false);
@@ -235,7 +236,7 @@ export default function ApplicationView() {
                 if (!isNaN(numericId)) {
                   setLoading(true);
                   setError("");
-                  getApplicationMutation.mutate(numericId);
+                  getApplicationByIdMutation.mutate(numericId);
                 }
               }}
               style={{ marginLeft: "10px" }}

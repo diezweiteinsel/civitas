@@ -12,6 +12,7 @@ export default function LoginPage() {
   const [error, setError] = useState("");
   const navigate = useNavigate();
 
+  // Fetch all users for demonstration
   const {
     data: usersData,
     isLoading: usersLoading,
@@ -24,6 +25,7 @@ export default function LoginPage() {
     retry: false,
   });
 
+  // Mutation for logging in
   const loginMutation = useMutation({
     mutationFn: loginUser,
     onSuccess: (data) => {

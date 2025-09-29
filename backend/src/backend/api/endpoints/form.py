@@ -30,8 +30,12 @@ async def list_forms(session: Session = Depends(db.get_session_dep)):
             tags=["Forms"],
             summary="Get form by ID")
 async def get_form(form_id: int,
-                  returnAsXml: bool = False):
-  pass
+                  returnAsXml: bool = False,
+                  session: Session = Depends(db.get_session_dep)):
+  
+  ormForm = formCrud.get_form_by_id(session, form_id)
+  form = Form.from_orm_model(ormForm)
+  return form
 
 # "/api/v1/forms/{form_id}?returnAsXml=true"
 

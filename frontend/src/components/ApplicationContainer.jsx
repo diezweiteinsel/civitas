@@ -1,33 +1,34 @@
-import "./../style/AdminApplicantReporterPage.css";
-import { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { FaDog, FaFire, FaInfoCircle } from "react-icons/fa";
-import { getAllApplications } from "../utils/api";
+import {
+  getApplicationsByStatus,
+  getPublicApplicationsByStatus,
+} from "../utils/api";
+import "./../style/AdminApplicantReporterPage.css";
 
 export default function ApplicationContainer({
-  applications = [],
+  statuses = [],
   isPublic = false,
   title = "Applications",
 }) {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Fetch all applications using react-query
+  // Fetch applications based on isPublic prop
   const {
     data: fetchedApplications,
     isLoading: applicationsLoading,
     error: applicationsError,
     refetch: refetchApplications,
   } = useQuery({
-    queryKey: ["AllApplications"],
-    queryFn: getAllApplications,
-    enabled: true, // Enable automatic fetching
+    queryKey: isPublic ? ["PublicApplicationsByStatus", statuses] : ["ApplicationsByStatus", statuses],
+    queryFn: () => isPublic ? getPublicApplicationsByStatus(statuses) : getApplicationsByStatus(statuses),
+    enabled: true,
     retry: 1,
   });
 
-  // Use fetched applications if available, otherwise use props
-  const applications = fetchedApplications;
+  // Use fetched applications
+  const applications = fetchedApplications || [];
 
   // Function to route to ApplicationView and to give the redirection context
   const handleViewApplication = (applicationId) => {

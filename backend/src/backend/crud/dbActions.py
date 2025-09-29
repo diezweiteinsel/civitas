@@ -154,9 +154,10 @@ def removeRow(session: Session, tableClass: type, id: int):
     session.flush()       # push to DB
 
 
-def getRowById(session: Session, tableClass: type, id: int):
+def getRowById(session: Session, tableClass: type, id: int) -> type | None:
     """
     Get a row from the table represented by tableClass by primary key id using SQLAlchemy ORM.
+    Returns None when not found
     """
     # Can easily be adapted for fastapi use by making session a dependency
     obj = session.get(tableClass, id) # get existing object by primary key

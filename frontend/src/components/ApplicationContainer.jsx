@@ -6,7 +6,8 @@ import { FaDog, FaFire, FaInfoCircle } from "react-icons/fa";
 import { getAllApplications } from "../utils/api";
 
 export default function ApplicationContainer({
-  applications: propsApplications = [],
+  applications = [],
+  isPublic = false,
   title = "Applications",
 }) {
   const navigate = useNavigate();
@@ -104,25 +105,23 @@ export default function ApplicationContainer({
           ) : (
             applications &&
             applications.map((application) => (
-              <div
-                key={application.applicationID || application.id}
-                className="container-item"
-              >
+              <div key={application.id} className="container-item">
                 <div className="container-header">
-                  {/* <div className="icon">
-                    {getIconByFormId(application.formID || application.formId)}
-                  </div> */}
                   <div className="info">
-                    {/* <div className="form-type">
-                      {getFormTypeByFormId(
-                        application.formID || application.formId
-                      )}
-                    </div> */}
+                    <div className="form-type">
+                      {application.title || "Untitled Form"}
+                    </div>
                     <div
-                      className={`status ${application.status.toLowerCase()}`}
+                      className={`status ${
+                        application.is_public === true
+                          ? "public"
+                          : application.status?.toLowerCase() || "unknown"
+                      }`}
                     >
-                      {application.status.charAt(0).toUpperCase() +
-                        application.status.slice(1)}
+                      {application.status
+                        ? application.status.charAt(0).toUpperCase() +
+                          application.status.slice(1)
+                        : "Unknown"}
                     </div>
                   </div>
                   <button

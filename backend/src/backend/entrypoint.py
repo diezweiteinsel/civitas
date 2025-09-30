@@ -261,6 +261,15 @@ def create_demo_applications() -> None:
                 user_id=applicant_id,
                 form_id=target_form_orm.id,
                 admin_id=admin_id,
+                status=ApplicationStatus.APPROVED,
+                jsonPayload=_with_override(
+                    payload, "issue_description", "Approved request"
+                ),
+            ),
+            Application(
+                user_id=applicant_id,
+                form_id=target_form_orm.id,
+                admin_id=admin_id,
                 status=ApplicationStatus.REJECTED,
                 jsonPayload=_with_override(
                     payload, "issue_description", "Rejected request"

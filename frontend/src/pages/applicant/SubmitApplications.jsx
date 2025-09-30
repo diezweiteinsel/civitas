@@ -44,7 +44,7 @@ export default function SubmitApplications() {
 
   return (
     <>
-      <Navbar role={Role.APPLICANT} />
+      <Navbar />
       <div className="page-container">
         <div className="containers-card">
           <h2 className="card-title">Antrag einreichen</h2>

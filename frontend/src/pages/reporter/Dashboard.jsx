@@ -195,7 +195,7 @@ export default function ReporterPage() {
 
   return (
     <>
-      <Navbar role={Role.REPORTER} />
+      <Navbar />
       <div className="filter-bar">
         <div className="filter-group">
           <label htmlFor="status-filter">Status</label>

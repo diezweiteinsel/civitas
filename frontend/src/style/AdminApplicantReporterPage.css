@@ -84,7 +84,7 @@
 .status.rejected {
   background-color: red;
 }
-.status.published {
+.status.public {
   background-color: rgb(83, 235, 255);
 }
 

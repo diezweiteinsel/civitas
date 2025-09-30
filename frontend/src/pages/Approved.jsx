@@ -29,7 +29,7 @@ export default function ApprovedApplication() {
 
   return (
     <>
-      <Navbar role={currentRole} />
+      <Navbar />
       <ApplicationContainer
         applications={applications}
         title="Genehmigte Anträge:"

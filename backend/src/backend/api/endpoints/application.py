@@ -292,7 +292,7 @@ async def get_application(application_id: int, form_id: int, session: Session = 
             previousSnapshotID=application.previousSnapshotID,
             jsonPayload=application.jsonPayload
             )
-    app.title = formCrud.get_form_by_id(session, form_id).title 
+    app.title = formCrud.get_form_by_id(session, form_id).form_name
     
     return app
 

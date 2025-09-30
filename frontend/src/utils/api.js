@@ -222,17 +222,6 @@ export const getApplicationById = async (form_id, application_id) => {
   return application;
 };
 
-  if (!response.ok) {
-    const errorData = await response.json();
-    throw new Error(
-      errorData.detail || errorData.error || "Failed to fetch application by ID"
-    );
-  }
-
-  const application = await response.json();
-  return application;
-};
-
 // WORKS
 export const createApplication = async (applicationData) => {
   const accessToken = getToken();

@@ -193,7 +193,7 @@ export const getPublicApplicationsByStatus = async (statuses) => {
   return applications;
 };
 
-export const getApplicationById = async (application_id) => {
+export const getApplicationById = async (form_id, application_id) => {
   const accessToken = getToken();
   const headers = {
     "Content-Type": "application/json",
@@ -202,13 +202,25 @@ export const getApplicationById = async (application_id) => {
     headers.Authorization = `Bearer ${accessToken}`;
   }
 
+  // Changed URL structure
   const response = await fetch(
-    `${API_BASE_URL}/applications/${application_id}`,
+    `${API_BASE_URL}/applications/${form_id}/${application_id}`,
     {
       method: "GET",
       headers: headers,
     }
   );
+
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(
+      errorData.detail || errorData.error || "Failed to fetch application by ID"
+    );
+  }
+
+  const application = await response.json();
+  return application;
+};
 
   if (!response.ok) {
     const errorData = await response.json();

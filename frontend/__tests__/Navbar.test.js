@@ -6,6 +6,13 @@ import { Role } from '../utils/const';
 
 describe('Navbar', () => {
 
+    const renderNavbar = (role = Role.APPLICANT, initialEntries = ['/']) => {
+        return render(
+          <MemoryRouter initialEntries={initialEntries}>
+            <Navbar role={role} />
+          </MemoryRouter>
+        );
+      };
   
     test.each([
       [Role.APPLICANT, '/applicant'],

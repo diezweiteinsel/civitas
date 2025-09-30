@@ -71,11 +71,19 @@ export default function ApplicationContainer({
   const safeApplications = Array.isArray(applications) ? applications : [];
 
   // Function to route to ApplicationView and to give the redirection context
-  const handleViewApplication = (applicationId) => {
+  const handleViewApplication = (formId, applicationId) => {
     console.log(
-      "ApplicationContainer - Navigating to application ID:",
-      applicationId
+      "ApplicationContainer - Navigating to form/application IDs:",
+      { formId, applicationId }
     );
+
+    if (!formId || !applicationId) {
+      console.error("Missing identifiers for application view", {
+        formId,
+        applicationId,
+      });
+      return;
+    }
 
     // Determine the source page context
     const currentPath = location.pathname;
@@ -92,7 +100,7 @@ export default function ApplicationContainer({
     }
 
     // Navigate with state to provide context to ApplicationView
-    navigate(`/application/${applicationId}`, {
+    navigate(`/applications/${formId}/${applicationId}`, {
       state: {
         fromPage: fromPage,
         from: currentPath,
@@ -194,7 +202,8 @@ export default function ApplicationContainer({
                     className="toggle-btn"
                     onClick={() =>
                       handleViewApplication(
-                          applicationId
+                        formId,
+                        applicationId
                       )
                     }
                     style={{ marginLeft: "10px" }}

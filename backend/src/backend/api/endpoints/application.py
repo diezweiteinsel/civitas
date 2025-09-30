@@ -170,35 +170,6 @@ async def list_applications(
             result = applicationCrud.get_applications_by_user_id(session, user_id_in_token)
             return app_list_to_appResp_list(session, result)
         
-        
-        
-# @router.post("", response_model=ApplicationID,
-#             dependencies=[Depends(applicant_permission)],
-#             tags=["Applications"],
-#             summary="Create a new application")
-# async def create_application(application_data: dict, session: Session = Depends(db.get_session_dep)):
-#     """
-#     Create a new application in the system.
-#     """
-#     user_id = application_data.get("user_id", 1)  # Default to user 1 for testing
-#     form_id = application_data.get("form_id", 1)  # Default to form 1 for testing
-#     payload = application_data.get("payload", {})
-    
-#     # user = await get_user_by_id(user_id)
-#     user = User(id=user_id, username="username", date_created=date.today(), hashed_password="pass") # temporary, replace with actual user retrieval logic
-#     assign_role(user, UserType.APPLICANT) # temporary, remove when actual user retrieval logic is implemented
-#     if not user:
-#         raise ValueError("User not found")
-#     if not ensure_applicant(user):
-#         raise PermissionError("Only applicants can create applications.")
-
-#     bb = BuildingBlock(label="Name", data_type="STRING")
-
-#     form = Form(form_name="Sample Form", blocks={"1": bb})  # temporary, replace with actual form retrieval logic. But now we are skipping the form logic
-#     form = formCrud.add_form(session, form)  # saving the form to get an id   
-#     application = createApplication(user, form, payload, session)
-
-#     return ApplicationID(id=application.id)
 
 @router.post("", response_model=ApplicationID,
             dependencies=[Depends(applicant_permission)],

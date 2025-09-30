@@ -1,7 +1,9 @@
 # standard library imports
 from datetime import date, datetime
+from typing import Optional
 
 # third party imports
+from backend.api import deps
 from fastapi import APIRouter, Depends, status, HTTPException
 from sqlalchemy.orm import Session
 
@@ -29,11 +31,25 @@ admin_or_reporter_permission = RoleChecker(["ADMIN", "REPORTER"])
 
 
 @router.get("/me", response_model=User, tags=["Users"], summary="Get current user")
-async def get_current_user():
+async def get_current_user(payload: Optional[dict] = Depends(deps.get_current_user_payload_optional)):
     """
     Retrieve the currently authenticated user.
     """
-    return User(id=1, username="alice", user_type=UserType.APPLICANT, date_created=datetime(2023, 10, 1, 12, 0, 0))
+    try:
+        user_id = payload.get("sub")
+    except Exception as e:  # TODO add JWT errors
+        print("Error retrieving user_id from JWT: ", e)
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Your JWT is expired or broken")
+    try:
+        with db.get_session() as session:
+            user = userCrud.get_user_by_id(user_id, session)
+            if user:
+                return user
+            else:
+                raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+    except Exception as e:
+        print(f"Error retrieving user {user_id}: {e}")
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Internal server error")
 
 @router.put("/me", response_model=User, tags=["Users"], summary="Update current user")
 async def update_current_user(user: User):

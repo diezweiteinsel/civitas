@@ -4,7 +4,6 @@
 import React, { useState } from "react";
 import "./../../style/CreateForms.css";
 import Navbar from "../../components/Navbar";
-import { Role } from "../../utils/const";
 import { useMutation } from "@tanstack/react-query";
 import { createForm } from "../../utils/api";
 import { useNavigate } from "react-router-dom";
@@ -84,7 +83,155 @@ export default function CreateForms() {
   };
 
   const handleImport = () => {
-    alert("Meldeform wurde erflogreich importiert TODO"); //TODO:
+    // Create file input for XML import
+    const fileInput = document.createElement("input");
+    fileInput.type = "file";
+    fileInput.accept = ".xml";
+    fileInput.onchange = handleXMLFileImport;
+    fileInput.click();
+  };
+
+  const handleXMLFileImport = (event) => {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      try {
+        const xmlContent = e.target.result;
+        const parsedForm = parseXMLToForm(xmlContent);
+
+        if (parsedForm) {
+          setFormTitle(parsedForm.name);
+          setFormFields(parsedForm.fields);
+          setError("");
+          alert("XML-Formular wurde erfolgreich importiert!");
+        }
+      } catch (error) {
+        console.error("XML Import Error:", error);
+        setError("Fehler beim Importieren der XML-Datei: " + error.message);
+      }
+    };
+    reader.readAsText(file);
+  };
+
+  const parseXMLToForm = (xmlContent) => {
+    // Parse XML according to backend structure:
+    // <xNameExport><formDefinition name="..."><attributes><attribute name="..." type="..." required="..."/></attributes></formDefinition></xNameExport>
+
+    const parser = new DOMParser();
+    const xmlDoc = parser.parseFromString(xmlContent, "text/xml");
+
+    // Check for parsing errors
+    const parserError = xmlDoc.getElementsByTagName("parsererror");
+    if (parserError.length > 0) {
+      throw new Error("Ungültiges XML-Format");
+    }
+
+    // Extract form name from formDefinition
+    const formDefinition = xmlDoc.getElementsByTagName("formDefinition")[0];
+    if (!formDefinition) {
+      throw new Error("Keine formDefinition im XML gefunden");
+    }
+
+    const formName =
+      formDefinition.getAttribute("name") || "Importiertes Formular";
+
+    // Extract all attribute elements (form fields)
+    const attributes = xmlDoc.getElementsByTagName("attribute");
+    const fields = [];
+
+    for (let i = 0; i < attributes.length; i++) {
+      const attr = attributes[i];
+      const fieldName = attr.getAttribute("name");
+      const fieldType = attr.getAttribute("type");
+      const isRequired = attr.getAttribute("required") === "true";
+
+      if (fieldName && fieldType) {
+        // Map backend types to frontend dropdown options
+        const mappedType = mapBackendTypeToFrontend(fieldType);
+
+        fields.push({
+          id: getNextId(),
+          name: fieldName,
+          type: mappedType,
+          required: isRequired, // Store required info (though not used in current UI)
+        });
+      }
+    }
+
+    if (fields.length === 0) {
+      throw new Error("Keine gültigen Felder in der XML-Datei gefunden");
+    }
+
+    return {
+      name: formName,
+      fields: fields,
+    };
+  };
+
+  const mapBackendTypeToFrontend = (backendType) => {
+    // Map backend BBType enum values to frontend dataTypes
+    const typeMapping = {
+      STRING: "String",
+      TEXT: "String",
+      EMAIL: "String",
+      INTEGER: "Number",
+      NUMBER: "Number",
+      DATE: "Date",
+      FLOAT: "Float",
+      LONG: "Number",
+      BOOLEAN: "Boolean",
+      // Handle lowercase variants too
+      string: "String",
+      text: "String",
+      email: "String",
+      integer: "Number",
+      number: "Number",
+      date: "Date",
+      float: "Float",
+      long: "Number",
+      boolean: "Boolean",
+    };
+
+    return typeMapping[backendType] || "String"; // Default to String if unknown type
+  };
+
+  const generateXMLFromCurrentForm = () => {
+    const formNameSafe = formTitle.trim().replace(/[^a-zA-Z0-9]/g, "");
+    let xml = `<x${formNameSafe}Export xmlns="urn:xoev:x${formNameSafe}:1.0" version="1.0">
+	<!-- Formular-Definition -->
+	<formDefinition name="${formTitle.trim()}">
+		<attributes>`;
+
+    formFields.forEach((field) => {
+      const typeUpper = field.type.toUpperCase();
+      xml += `\n			<attribute name="${field.name}" type="${typeUpper}" required="false"/>`;
+    });
+
+    xml += `
+		</attributes>
+	</formDefinition>
+</x${formNameSafe}Export>`;
+
+    return xml;
+  };
+
+  const handleExport = () => {
+    const xmlContent = generateXMLFromCurrentForm();
+
+    // Create and download the XML file
+    const blob = new Blob([xmlContent], { type: "application/xml" });
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `${formTitle.trim() || "Civitas_formular"}.xml`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    window.URL.revokeObjectURL(url);
+
+    alert("XML-Datei wurde erfolgreich heruntergeladen!");
   };
 
   return (
@@ -112,7 +259,10 @@ export default function CreateForms() {
             Neues Feld Hinzufügen
           </button>
           <button className="import-button" onClick={handleImport}>
-            Meldeform Importieren
+            XML-Datei Importieren
+          </button>
+          <button className="export-button" onClick={handleExport}>
+            XML-Datei Exportieren
           </button>
         </div>
 

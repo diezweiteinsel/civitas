@@ -59,6 +59,10 @@ export default function ApplicationView() {
     retry: 1,
   });
 
+  const handleStatusChange = (newStatus) => {
+    // TODO: Implement status change logic
+  };
+
   const statusKey = application?.is_public
     ? "PUBLISHED"
     : (application?.status || application?.Status || "")
@@ -154,17 +158,29 @@ export default function ApplicationView() {
       return (
         <div className="button-group">
           {!isApproved && (
-            <button type="button" className="action-btn approve-btn" disabled>
+            <button
+              type="button"
+              className="action-btn approve-btn"
+              onClick={() => handleStatusChange("APPROVED")}
+            >
               Genehmigen
             </button>
           )}
           {!isRejected && (
-            <button type="button" className="action-btn reject-btn" disabled>
+            <button
+              type="button"
+              className="action-btn reject-btn"
+              onClick={() => handleStatusChange("REJECTED")}
+            >
               Ablehnen
             </button>
           )}
           {!isPublished && (
-            <button type="button" className="action-btn publish-btn" disabled>
+            <button
+              type="button"
+              className="action-btn publish-btn"
+              onClick={() => handleStatusChange("PUBLISHED")}
+            >
               Veröffentlichen
             </button>
           )}
@@ -176,10 +192,14 @@ export default function ApplicationView() {
       return (
         <div className="button-group">
           {!(isPublished || isApproved || isRejected) && (
-            <button 
-              type="button" 
+            <button
+              type="button"
               className="action-btn edit-btn"
-              onClick={() => navigate(`/applicant/application-revise/${formId}/${applicationId}`)}
+              onClick={() =>
+                navigate(
+                  `/applicant/application-revise/${formId}/${applicationId}`
+                )
+              }
             >
               Antrag bearbeiten
             </button>

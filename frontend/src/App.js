@@ -43,7 +43,10 @@ const App = () => {
           element={<ReporterRegistration />}
         />
         <Route path="/admin/create-forms" element={<CreateForms />} />
-        <Route path="/application/:id" element={<ApplicationView />} />
+        <Route
+          path="/applications/:formId/:applicationId"
+          element={<ApplicationView />}
+        />
 
 
   <Route path="/reporter/approved" element={<ApprovedApplication />} />

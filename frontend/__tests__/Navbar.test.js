@@ -13,6 +13,17 @@ describe('Navbar', () => {
           </MemoryRouter>
         );
       };
+    
+      const mockedUsedNavigate = jest.fn();
+      jest.mock('react-router-dom', () => ({
+        ...jest.requireActual('react-router-dom'),
+        useNavigate: () => mockedUsedNavigate,
+        NavLink: ({ to, children, className, onClick, style }) => (
+          <a href={to} className={className} onClick={onClick} style={style}>
+            {children}
+          </a>
+        ),
+      }));
   
     test.each([
       [Role.APPLICANT, '/applicant'],

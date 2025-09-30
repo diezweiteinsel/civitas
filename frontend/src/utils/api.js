@@ -245,10 +245,9 @@ export const createApplication = async (applicationData) => {
   }
 
   // Structure the data to match backend expectations
-  const requestBody = {
-    user_id: applicationData.user_id || 1, // Default to user 1 if not provided
-    form_id: applicationData.form_id || 1, // Default to form 1 if not provided
-    payload: applicationData.payload || applicationData, // Use payload if provided, otherwise use the entire data
+   const requestBody = {
+    form_id: applicationData.form_id,
+    payload: applicationData.payload,
   };
 
   const response = await fetch(`${API_BASE_URL}/applications`, {

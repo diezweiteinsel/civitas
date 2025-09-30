@@ -212,8 +212,7 @@ async def create_application( application_data: ApplicationFillout,
     """
     Create a new application in the system.
     """
-    username = payload.get("sub")           # TODO get id from jwt and not application
-    user_id = application_data.user_id
+    user_id = payload.get("userid") 
     if userCrud.get_user_by_id(user_id, session) == None:
         raise Exception("User not found")
     form_id = application_data.form_id

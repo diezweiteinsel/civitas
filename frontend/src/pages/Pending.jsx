@@ -30,7 +30,7 @@ export default function PendingApplication() {
 
   return (
     <>
-      <Navbar role={currentRole} />
+      <Navbar />
       <ApplicationContainer
         applications={applications}
         title="Ausstehende Anträge:"

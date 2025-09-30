@@ -133,7 +133,7 @@ export default function ApplicationEdit() {
 
   return (
     <>
-      <Navbar role={Role.APPLICANT} />
+      <Navbar />
       <div className="application-edit-container">
         <div className="application-edit-card">
           <h2 className="application-edit-title">

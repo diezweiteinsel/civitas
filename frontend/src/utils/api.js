@@ -123,7 +123,9 @@ export const getPublicApplications = async () => {
   if (!response.ok) {
     const errorData = await response.json();
     throw new Error(
-      errorData.detail || errorData.error || "Failed to fetch public applications"
+      errorData.detail ||
+        errorData.error ||
+        "Failed to fetch public applications"
     );
   }
 
@@ -143,18 +145,23 @@ export const getApplicationsByStatus = async (statuses) => {
   // Create a new URLSearchParams object
   const params = new URLSearchParams();
   // Append each status to the params with the same key
-  statuses.forEach(status => params.append('status', status));
+  statuses.forEach((status) => params.append("status", status));
 
   // Use the generated query string
-  const response = await fetch(`${API_BASE_URL}/applications?${params.toString()}`, {
-    method: "GET",
-    headers: headers,
-  });
+  const response = await fetch(
+    `${API_BASE_URL}/applications?public=false&${params.toString()}`,
+    {
+      method: "GET",
+      headers: headers,
+    }
+  );
 
   if (!response.ok) {
     const errorData = await response.json();
     throw new Error(
-      errorData.detail || errorData.error || "Failed to fetch applications by status"
+      errorData.detail ||
+        errorData.error ||
+        "Failed to fetch applications by status"
     );
   }
 
@@ -174,18 +181,23 @@ export const getPublicApplicationsByStatus = async (statuses) => {
   // Create a new URLSearchParams object
   const params = new URLSearchParams();
   // Append each status to the params with the same key
-  statuses.forEach(status => params.append('status', status));
+  statuses.forEach((status) => params.append("status", status));
 
   // Use the generated query string
-  const response = await fetch(`${API_BASE_URL}/applications?public=true&${params.toString()}`, {
-    method: "GET",
-    headers: headers,
-  });
+  const response = await fetch(
+    `${API_BASE_URL}/applications?public=true&${params.toString()}`,
+    {
+      method: "GET",
+      headers: headers,
+    }
+  );
 
   if (!response.ok) {
     const errorData = await response.json();
     throw new Error(
-      errorData.detail || errorData.error || "Failed to fetch public applications by status"
+      errorData.detail ||
+        errorData.error ||
+        "Failed to fetch public applications by status"
     );
   }
 

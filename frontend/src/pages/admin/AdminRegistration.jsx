@@ -6,7 +6,7 @@ import RegistrationContainer from "./../../components/RegistrationContainer";
 export default function AdminRegistration() {
   return (
     <>
-      <Navbar role={Role.ADMIN} />
+      <Navbar />
       <RegistrationContainer roleToRegister={Role.ADMIN} />
     </>
   );

@@ -106,7 +106,93 @@ export const getAllApplications = async () => {
   return applications;
 };
 
-// WORKS
+export const getPublicApplications = async () => {
+  const accessToken = getToken();
+  const headers = {
+    "Content-Type": "application/json",
+  };
+  if (accessToken) {
+    headers.Authorization = `Bearer ${accessToken}`;
+  }
+
+  const response = await fetch(`${API_BASE_URL}/applications?public=true`, {
+    method: "GET",
+    headers: headers,
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(
+      errorData.detail || errorData.error || "Failed to fetch public applications"
+    );
+  }
+
+  const applications = await response.json();
+  return applications;
+};
+
+export const getApplicationsByStatus = async (statuses) => {
+  const accessToken = getToken();
+  const headers = {
+    "Content-Type": "application/json",
+  };
+  if (accessToken) {
+    headers.Authorization = `Bearer ${accessToken}`;
+  }
+
+  // Create a new URLSearchParams object
+  const params = new URLSearchParams();
+  // Append each status to the params with the same key
+  statuses.forEach(status => params.append('status', status));
+
+  // Use the generated query string
+  const response = await fetch(`${API_BASE_URL}/applications?${params.toString()}`, {
+    method: "GET",
+    headers: headers,
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(
+      errorData.detail || errorData.error || "Failed to fetch applications by status"
+    );
+  }
+
+  const applications = await response.json();
+  return applications;
+};
+
+export const getPublicApplicationsByStatus = async (statuses) => {
+  const accessToken = getToken();
+  const headers = {
+    "Content-Type": "application/json",
+  };
+  if (accessToken) {
+    headers.Authorization = `Bearer ${accessToken}`;
+  }
+
+  // Create a new URLSearchParams object
+  const params = new URLSearchParams();
+  // Append each status to the params with the same key
+  statuses.forEach(status => params.append('status', status));
+
+  // Use the generated query string
+  const response = await fetch(`${API_BASE_URL}/applications?public=true&${params.toString()}`, {
+    method: "GET",
+    headers: headers,
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(
+      errorData.detail || errorData.error || "Failed to fetch public applications by status"
+    );
+  }
+
+  const applications = await response.json();
+  return applications;
+};
+
 export const getApplicationById = async (application_id) => {
   const accessToken = getToken();
   const headers = {

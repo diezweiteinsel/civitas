@@ -172,7 +172,7 @@ export default function Navbar({ role = Role.EMPTY }) {
                 <div className="dropdown-item">
                   <NavLink
                     className="nav-link"
-                    to="/reporter/reporter/public"
+                    to="/reporter/public"
                     onClick={() => setShowDropdown(false)}
                   >
                     Offentliche Anträge

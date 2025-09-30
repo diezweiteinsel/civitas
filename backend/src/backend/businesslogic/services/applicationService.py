@@ -2,6 +2,7 @@ from datetime import datetime
 
 from backend.businesslogic.services.formService import createForm
 from backend.core import roleAuth
+from backend.models.domain.application import ApplicationResponseItem
 from backend.models.domain.user import UserType
 from fastapi import HTTPException
 from requests import session
@@ -17,7 +18,7 @@ from backend.models import (
 	ApplicationStatus,
 
 )
-from backend.crud import dbActions, application as applicationCrud
+from backend.crud import dbActions, application as applicationCrud, formCrud
 
 
 
@@ -130,3 +131,18 @@ def listAllPublicApplications(user: User):
 	return [app for app in allApplications if app.status == ApplicationStatus.PUBLIC]
 
 
+def app_list_to_appResp_list(session, appList: list[Application]):
+	resultList = []
+	for app in appList:
+		resultList.append(ApplicationResponseItem(
+				id=app.id,
+				form_id=app.form_id,
+				title=formCrud.get_form_by_id(session, app.form_id).form_name,
+				status=app.status,
+				created_at=app.created_at,
+				is_public=app.is_public,
+				currentSnapshotID=app.currentSnapshotID,
+				previousSnapshotID=app.previousSnapshotID,
+				jsonPayload=app.jsonPayload
+				))
+	return resultList

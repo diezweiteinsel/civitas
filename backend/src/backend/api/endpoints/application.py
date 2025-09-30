@@ -5,6 +5,7 @@ from typing import List, Optional
 # third party imports
 from backend.core import db
 from fastapi import APIRouter, Depends, HTTPException, Query
+from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
 # project imports
@@ -211,9 +212,7 @@ async def create_application( application_data: ApplicationFillout,
     """
     Create a new application in the system.
     """
-    username = payload.get("sub")
-    user_id_jwt = payload.get("userid")
-    user_id = application_data.user_id
+    user_id = payload.get("userid") 
     if userCrud.get_user_by_id(user_id, session) == None:
         raise Exception("User not found")
     form_id = application_data.form_id
@@ -260,9 +259,12 @@ async def get_application(application_id: int, form_id: int, session: Session = 
     
     return app
 
+class CreationStatus(BaseModel):
+    success: bool
+    message: str
 
 
-@router.put("/{application_id}", response_model=ApplicationID, tags=["Applications"], summary="Update an application by ID")
+@router.put("/{application_id}", response_model=CreationStatus, tags=["Applications"], summary="Update an application by ID")
 
 async def update_application(   application_update: ApplicationUpdate,
                                 session: Session = Depends(db.get_session_dep),
@@ -283,7 +285,11 @@ async def update_application(   application_update: ApplicationUpdate,
     if application.user_id != user_id:
         raise HTTPException(status_code=403, detail="Wrong user_id! Only the user who created an application may edit it!")
 
-    return ApplicationID(applicationCrud.update_application(form_id, application_id, jsonPayload, session))
+    try:
+        applicationCrud.update_application(form_id, application_id, jsonPayload, session)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error updating application: {e}")
+    return CreationStatus(success=True, message="Application updated successfully")
 
 
 @router.delete("/{application_id}", tags=["Applications"], summary="Delete an application by ID")

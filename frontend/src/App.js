@@ -8,6 +8,7 @@ import ApplicantDashboard from "./pages/applicant/Dashboard";
 import SubmitApplications from "./pages/applicant/SubmitApplications";
 import PublicApplication from "./pages/PublicApplication";
 import ApplicationEdit from "./pages/applicant/ApplicationEdit";
+import ApplicationRevise from "./pages/applicant/ApplicationRevise";
 import AdminRegistration from "./pages/admin/AdminRegistration";
 import ReporterRegistration from "./pages/admin/ReporterRegistration";
 import ApplicationView from "./pages/ApplicationView";
@@ -30,6 +31,10 @@ const App = () => {
         <Route
           path="/applicant/application-edit/:id"
           element={<ApplicationEdit />}
+        />
+        <Route
+          path="/applicant/application-revise/:formId/:applicationId"
+          element={<ApplicationRevise />}
         />
         <Route path="/admin" element={<AdminDashboard />} />
   <Route path="/reporter" element={<ReporterDashboard />} />

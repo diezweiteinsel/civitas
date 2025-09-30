@@ -146,18 +146,28 @@ export default function ApplicationView() {
   };
 
   const renderRoleSpecificActions = () => {
+    const isApproved = statusKey === "APPROVED";
+    const isRejected = statusKey === "REJECTED";
+    const isPublished = application?.is_public;
+
     if (currentRole === Role.ADMIN) {
       return (
         <div className="button-group">
-          <button type="button" className="action-btn approve-btn" disabled>
-            Genehmigen
-          </button>
-          <button type="button" className="action-btn reject-btn" disabled>
-            Ablehnen
-          </button>
-          <button type="button" className="action-btn publish-btn" disabled>
-            Veröffentlichen
-          </button>
+          {!isApproved && (
+            <button type="button" className="action-btn approve-btn" disabled>
+              Genehmigen
+            </button>
+          )}
+          {!isRejected && (
+            <button type="button" className="action-btn reject-btn" disabled>
+              Ablehnen
+            </button>
+          )}
+          {!isPublished && (
+            <button type="button" className="action-btn publish-btn" disabled>
+              Veröffentlichen
+            </button>
+          )}
         </div>
       );
     }
@@ -165,9 +175,15 @@ export default function ApplicationView() {
     if (currentRole === Role.APPLICANT) {
       return (
         <div className="button-group">
-          <button type="button" className="action-btn edit-btn" disabled>
-            Antrag bearbeiten
-          </button>
+          {!(isPublished || isApproved || isRejected) && (
+            <button 
+              type="button" 
+              className="action-btn edit-btn"
+              onClick={() => navigate(`/applicant/application-revise/${formId}/${applicationId}`)}
+            >
+              Antrag bearbeiten
+            </button>
+          )}
           <button type="button" className="action-btn info-btn" disabled>
             Rückfragen stellen
           </button>
@@ -188,7 +204,7 @@ export default function ApplicationView() {
     return (
       <div className="button-group">
         <button type="button" className="action-btn info-btn" disabled>
-          Aktionen folgen in Kürze
+          Keine Aktionen verfügbar
         </button>
       </div>
     );
@@ -326,14 +342,27 @@ export default function ApplicationView() {
               </div>
             ) : (
               <div className="form-data-text">
-                {payloadEntries.map(([key, value]) => (
-                  <p key={key}>
-                    <strong>{key}:</strong>{" "}
-                    {typeof value === "object"
+                {payloadEntries.map(([key, value]) => {
+                  // Extract the actual value from the payload object structure
+                  const displayValue =
+                    typeof value === "object" && value?.value !== undefined
+                      ? value.value
+                      : typeof value === "object"
                       ? JSON.stringify(value, null, 2)
-                      : String(value)}
-                  </p>
-                ))}
+                      : String(value);
+
+                  // Extract the label from the payload object structure, fallback to key
+                  const displayLabel =
+                    typeof value === "object" && value?.label
+                      ? value.label
+                      : key;
+
+                  return (
+                    <p key={key}>
+                      <strong>{displayLabel}:</strong> {displayValue}
+                    </p>
+                  );
+                })}
               </div>
             )}
           </section>

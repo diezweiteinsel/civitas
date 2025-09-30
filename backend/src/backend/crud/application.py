@@ -288,6 +288,7 @@ def insert_application(session:Session, application: Application):
         form_id = application.form_id,
         admin_id = application.admin_id,
         status = application.status,
+        is_public = application.is_public,
         created_at = application.created_at,
         current_snapshot_id = application.currentSnapshotID,
         previous_snapshot_id = application.previousSnapshotID

@@ -82,4 +82,5 @@ def application_to_response_item(application: Application) -> ApplicationRespons
 class ApplicationUpdate(BaseModel):
     form_id: int
     application_id: int
+    application_status: ApplicationStatus
     payload: dict

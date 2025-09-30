@@ -26,6 +26,7 @@ from datetime import date
 from backend.businesslogic.services.mockups import _global_applications_db, _global_users_db, _global_forms_db
 from backend.models.domain.buildingblock import BuildingBlock
 from backend.crud import formCrud, applicationCrud
+from backend.businesslogic.services.applicationService import app_list_to_appResp_list
 from sqlalchemy.orm import Session
 
 from backend.api import deps
@@ -119,88 +120,56 @@ async def list_applications(
         if set(user_roles) & {"ADMIN", "REPORTER"}:
             is_privileged = True
     if is_privileged:
+
+        if status and public is None:
+            status = [s.upper() for s in status]
+            result = []
+            for s in status:
+                result.extend(applicationCrud.get_applications_all_by_status(session, s))
+                
+            return app_list_to_appResp_list(session, result)
+            
         if status and not public:
             status = [s.upper() for s in status]
             result = []
             for s in status:
-                result.extend(applicationCrud.get_applications_by_status(session, s))
-                
-                return [
-            ApplicationResponseItem(
-            id=app.id,
-            form_id=app.form_id,
-            title=formCrud.get_form_by_id(session, app.form_id).form_name,
-            status=app.status,
-            created_at=app.created_at,
-            is_public=app.is_public,
-            currentSnapshotID=app.currentSnapshotID,
-            previousSnapshotID=app.previousSnapshotID,
-            jsonPayload=app.jsonPayload
-            ) for app in result]
+                result.extend(applicationCrud.get_applications_private_by_status(session, s))
+            return app_list_to_appResp_list(session, result)
         
         elif status and public:
             status = [s.upper() for s in status]
             result = []
             for s in status:
-                apps = applicationCrud.get_applications_by_status(session, s)
-                public_apps = [app for app in apps if app.is_public]
-                result.extend(public_apps)
-                return [
-            ApplicationResponseItem(
-            id=app.id,
-            form_id=app.form_id,
-            title=formCrud.get_form_by_id(session, app.form_id).form_name,
-            status=app.status,
-            created_at=app.created_at,
-            is_public=app.is_public,
-            currentSnapshotID=app.currentSnapshotID,
-            previousSnapshotID=app.previousSnapshotID,
-            jsonPayload=app.jsonPayload
-            ) for app in result]
+                result.extend(applicationCrud.get_applications_public_by_status(session, s))
+            return app_list_to_appResp_list(session, result)
         
-        else:
+        elif public is None:
             apps = applicationCrud.get_all_applications(session)
-            return [
-            ApplicationResponseItem(
-            id=app.id,
-            form_id=app.form_id,
-            title=formCrud.get_form_by_id(session, app.form_id).form_name,
-            status=app.status,
-            created_at=app.created_at,
-            is_public=app.is_public,
-            currentSnapshotID=app.currentSnapshotID,
-            previousSnapshotID=app.previousSnapshotID,
-            jsonPayload=app.jsonPayload
-            ) for app in apps]
+            return app_list_to_appResp_list(session, apps)
+        
+        elif public:
+            apps = applicationCrud.get_all_private_applications(session)
+            return app_list_to_appResp_list(session, apps)
+        
+        elif not public:
+            apps = applicationCrud.get_all_private_applications(session)
+            return app_list_to_appResp_list(session, apps)
     else:
-        if public:
+        if status and public:
+            status = [s.upper() for s in status]
+            result = []
+            for s in status:
+                result.extend(applicationCrud.get_applications_public_by_status(session, s))
+            return app_list_to_appResp_list(session, result)
+        
+        elif public:
             applications = applicationCrud.get_all_public_applications(session)
-            return [
-            ApplicationResponseItem(
-            id=app.id,
-            form_id=app.form_id,
-            title=formCrud.get_form_by_id(session, app.form_id).form_name,
-            status=app.status,
-            created_at=app.created_at,
-            is_public=app.is_public,
-            currentSnapshotID=app.currentSnapshotID,
-            previousSnapshotID=app.previousSnapshotID,
-            jsonPayload=app.jsonPayload
-            ) for app in applications]
+            return app_list_to_appResp_list(session, applications)
+        
         elif user_id and user_id == user_id_in_token:
             result = applicationCrud.get_applications_by_user_id(session, user_id)
-            return [
-            ApplicationResponseItem(
-            id=app.id,
-            form_id=app.form_id,
-            title=formCrud.get_form_by_id(session, app.form_id).form_name,
-            status=app.status,
-            created_at=app.created_at,
-            is_public=app.is_public,
-            currentSnapshotID=app.currentSnapshotID,
-            previousSnapshotID=app.previousSnapshotID,
-            jsonPayload=app.jsonPayload
-            ) for app in applications]
+            return app_list_to_appResp_list(session, result)
+        
         elif user_id and user_id != user_id_in_token:
             raise HTTPException(status_code=403, detail="WRONG USER ID. You do not have permission to view applications of other users. These applications are not for you, you nosy parker!")
         else:

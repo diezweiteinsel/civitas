@@ -129,7 +129,7 @@ def get_all_applications(session: Session) -> list[Application]:
     return applications
 
 
-def get_applications_by_status(session: Session, status: str) -> list[Application]:
+def get_applications_all_by_status(session: Session, status: str) -> list[Application]:
     """
     Returns all applications with a specific status across all forms.
 
@@ -150,6 +150,56 @@ def get_applications_by_status(session: Session, status: str) -> list[Applicatio
     for form in all_forms:
         applicationTable = get_application_table_by_id(form.id)
         rows = getRowsByFilter(session, applicationTable, {"status": status})
+        for row in rows:
+            applications.append(rowToApplication(row=row, applicationTable=applicationTable))
+    return applications
+
+def get_applications_public_by_status(session: Session, status: str) -> list[Application]:
+    """
+    Returns all applications with a specific status across all forms.
+
+    Args:
+        session (Session): SQLAlchemy session object.
+        status (str): The status to filter applications by. Must be one of "PENDING", "APPROVED", "REJECTED", or "REVISED".
+
+    Raises:
+        ValueError: If the status is invalid.
+
+    Returns:
+        list[Application]: A list of all "Application" instances with the specified status.
+    """
+    if status not in ["PENDING", "APPROVED", "REJECTED", "REVISED"]:
+        raise ValueError("Invalid status")
+    applications: list[Application] = []
+    all_forms = formCrud.get_all_forms(session)
+    for form in all_forms:
+        applicationTable = get_application_table_by_id(form.id)
+        rows = getRowsByFilter(session, applicationTable, {"status": status, "is_public": True})
+        for row in rows:
+            applications.append(rowToApplication(row=row, applicationTable=applicationTable))
+    return applications
+
+def get_applications_private_by_status(session: Session, status: str) -> list[Application]:
+    """
+    Returns all applications with a specific status across all forms.
+
+    Args:
+        session (Session): SQLAlchemy session object.
+        status (str): The status to filter applications by. Must be one of "PENDING", "APPROVED", "REJECTED", or "REVISED".
+
+    Raises:
+        ValueError: If the status is invalid.
+
+    Returns:
+        list[Application]: A list of all "Application" instances with the specified status.
+    """
+    if status not in ["PENDING", "APPROVED", "REJECTED", "REVISED"]:
+        raise ValueError("Invalid status")
+    applications: list[Application] = []
+    all_forms = formCrud.get_all_forms(session)
+    for form in all_forms:
+        applicationTable = get_application_table_by_id(form.id)
+        rows = getRowsByFilter(session, applicationTable, {"status": status, "is_public": False})
         for row in rows:
             applications.append(rowToApplication(row=row, applicationTable=applicationTable))
     return applications
@@ -196,6 +246,27 @@ def get_all_public_applications(session: Session) -> list[Application]:
         if application.is_public:
             public_applications.append(application)
     return public_applications
+
+def get_all_private_applications(session: Session) -> list[Application]:
+    """
+    Returns all applications that are marked as public.
+    
+    ARGS:
+        session (Session): SQLAlchemy session object.
+    
+    RETURNS:
+        list[Application]: List of public Application objects.
+    """
+    applications: list[Application] = []
+    all_forms = formCrud.get_all_forms(session)
+    for form in all_forms:
+        applications_of_type = get_all_applications_of_type(session, form.id)
+        applications.extend(applications_of_type)
+    private_applications : list[Application] = []
+    for application in applications:
+        if not application.is_public:
+            private_applications.append(application)
+    return private_applications
 
 def insert_application(session:Session, application: Application):
     """

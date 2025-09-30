@@ -30,9 +30,9 @@ export default function ApplicationContainer({
 
   const getIconByFormId = (formId) => {
     const iconMap = {
-      1: <FaDog />,
-      2: <FaFire />,
-      3: <FaInfoCircle />,
+      1: <FaDog data-testid="icon-dog"/>,
+      2: <FaFire data-testid="icon-fire"/>,
+      3: <FaInfoCircle data-testid="icon-circle"/>,
     };
     return iconMap[formId] || <FaInfoCircle />;
   };

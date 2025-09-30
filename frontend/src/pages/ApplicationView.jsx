@@ -176,10 +176,14 @@ export default function ApplicationView() {
       return (
         <div className="button-group">
           {!(isPublished || isApproved || isRejected) && (
-            <button 
-              type="button" 
+            <button
+              type="button"
               className="action-btn edit-btn"
-              onClick={() => navigate(`/applicant/application-revise/${formId}/${applicationId}`)}
+              onClick={() =>
+                navigate(
+                  `/applicant/application-revise/${formId}/${applicationId}`
+                )
+              }
             >
               Antrag bearbeiten
             </button>
@@ -375,13 +379,15 @@ export default function ApplicationView() {
           <section className="revision-section">
             <h2>Historie</h2>
             <div className="revision-info">
-              <p>
-                <FaHistory style={{ marginRight: "8px" }} />
-                Der komplette Änderungsverlauf wird hier künftig angezeigt.
-              </p>
-              <p>
-                Für Rückfragen wenden Sie sich bitte an die zuständige Stelle.
-              </p>
+              <button
+                type="button"
+                className="action-btn info-btn"
+                onClick={() =>
+                  navigate(`/applications/${formId}/${applicationId}/revisions`)
+                }
+              >
+                Zeige Antragshistorie
+              </button>
             </div>
           </section>
         </div>

@@ -235,12 +235,11 @@ def updateApplicationStatus(session: Session, tableClass: type, id: int, newStat
 
 
 def update_application(form_id: int, app_id: int, updateDict: dict, session: Session) -> int:
-    #1 check if user who called is author of app to update
-    #2 get existing application from table
-    # make copy of application
-    #3 update copy of python application object
-    #4 insert updated application object
-    #5 update previous application: currentsnapshotID
+    """
+    TODO 
+    Returns:
+        id of newly created updated application (int)
+    """
 
     updated_app = get_application_by_id(session, form_id, app_id) # Get application to update
 

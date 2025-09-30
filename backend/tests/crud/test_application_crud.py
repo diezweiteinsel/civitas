@@ -126,8 +126,10 @@ def test_insert_application_func():
 
             assert application.id == None
             assert applicationFromOrm.id == 1
+            assert applicationFromOrm.id == applicationFromOrm.currentSnapshotID
             assert application2.id == None
             assert applicationFromOrm2.id == 2
+            assert applicationFromOrm2.id == applicationFromOrm2.currentSnapshotID
 
 def test_update_application():
      with db.get_session() as session:

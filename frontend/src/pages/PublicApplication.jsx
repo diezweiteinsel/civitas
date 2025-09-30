@@ -23,14 +23,18 @@ export default function PublicApplication() {
     if (sourceRole === "applicant")
       return "Bürger-Ansicht – Öffentliche Anträge:";
     if (sourceRole === "reporter")
-      return "Reporter =-Ansicht - öffentliche Anträge"
+      return "Reporter =-Ansicht - öffentliche Anträge";
     return "Öffentliche Anträge:";
   };
 
   return (
     <>
       <Navbar role={currentRole} />
-      <ApplicationContainer applications={[]} title={getTitle()} />
+      <ApplicationContainer
+        statuses={["APPROVED"]}
+        isPublic={true}
+        title={getTitle()}
+      />
     </>
   );
 }

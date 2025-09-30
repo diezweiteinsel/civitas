@@ -255,6 +255,7 @@ def create_demo_applications() -> None:
                 jsonPayload=_with_override(
                     payload, "issue_description", "Approved request"
                 ),
+                is_public=True,
             ),
             Application(
                 user_id=applicant_id,

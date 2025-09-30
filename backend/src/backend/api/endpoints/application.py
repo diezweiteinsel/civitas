@@ -125,7 +125,12 @@ async def list_applications(
             status = [s.upper() for s in status]
             result = []
             for s in status:
-                result.extend(applicationCrud.get_applications_all_by_status(session, s))
+                # The below doesnt work because we need to filter app by app, not just entire lists
+                app_list = applicationCrud.get_applications_all_by_status(session, s)
+                for application_add in app_list:
+                    if check_if_application_is_outdated(application_add, session):
+                        continue # skip outdated applications
+                    result.extend(application_add) # only append non-outdated applications that fit the status
                 
             return app_list_to_appResp_list(session, result)
             
@@ -133,41 +138,78 @@ async def list_applications(
             status = [s.upper() for s in status]
             result = []
             for s in status:
-                result.extend(applicationCrud.get_applications_private_by_status(session, s))
+                app_list = applicationCrud.get_applications_private_by_status(session, s)
+                for application_add in app_list:
+                    if check_if_application_is_outdated(application_add, session):
+                        continue # skip outdated applications
+                    result.extend(application_add) # only append non-outdated applications that fit the status
             return app_list_to_appResp_list(session, result)
         
         elif status and public:
             status = [s.upper() for s in status]
             result = []
             for s in status:
-                result.extend(applicationCrud.get_applications_public_by_status(session, s))
+                app_list = applicationCrud.get_applications_public_by_status(session, s)
+                for application_add in app_list:
+                    if check_if_application_is_outdated(application_add, session):
+                        continue # skip outdated applications
+                    result.extend(application_add) # only append non-outdated applications that fit the status
             return app_list_to_appResp_list(session, result)
         
         elif public is None:
+            result = []
             apps = applicationCrud.get_all_applications(session)
-            return app_list_to_appResp_list(session, apps)
+            for application in apps:
+                if check_if_application_is_outdated(application, session):
+                    continue # skip outdated applications
+                result.append(application)
+            return app_list_to_appResp_list(session, result)
         
         elif public:
+            result = []
             apps = applicationCrud.get_all_public_applications(session)
-            return app_list_to_appResp_list(session, apps)
-        
+            for application in apps:
+                if check_if_application_is_outdated(application, session):
+                    continue # skip outdated applications
+                result.append(application)
+            return app_list_to_appResp_list(session, result)
+
         elif not public:
+            result = []
             apps = applicationCrud.get_all_private_applications(session)
-            return app_list_to_appResp_list(session, apps)
+            for application in apps:
+                if check_if_application_is_outdated(application, session):
+                    continue # skip outdated applications
+                result.append(application)
+            return app_list_to_appResp_list(session, result)
     else:
         if status and public:
             status = [s.upper() for s in status]
             result = []
             for s in status:
-                result.extend(applicationCrud.get_applications_public_by_status(session, s))
+                app_list = applicationCrud.get_applications_public_by_status(session, s)
+                for application_add in app_list:
+                    if check_if_application_is_outdated(application_add, session):
+                        continue # skip outdated applications
+                    result.extend(application_add) # only append non-outdated applications that fit the status
             return app_list_to_appResp_list(session, result)
         
         elif public:
+            result = []
             applications = applicationCrud.get_all_public_applications(session)
-            return app_list_to_appResp_list(session, applications)
-        
+            for application in applications:
+                if check_if_application_is_outdated(application, session):
+                    continue # skip outdated applications
+                result.append(application)
+            return app_list_to_appResp_list(session, result)
+
         else:
-            result = applicationCrud.get_applications_by_user_id(session, user_id_in_token)
+            result = []
+            apps = applicationCrud.get_applications_by_user_id(session, user_id_in_token)
+            for application in apps:
+                if check_if_application_is_outdated(application, session):
+                    continue # skip outdated applications
+                result.append(application)
             return app_list_to_appResp_list(session, result)
         
 
@@ -178,7 +220,6 @@ async def list_applications(
 async def create_application( application_data: ApplicationFillout,
                               session: Session = Depends(db.get_session_dep),
                               payload: Optional[dict] = Depends(deps.get_current_user_payload_optional)
-
                              ):
     """
     Create a new application in the system.
@@ -246,7 +287,7 @@ async def update_application(   application_update: ApplicationUpdate,
     """
 
     user_id = payload.get("userid")
-
+    new_status = application_update.application_status
     form_id = application_update.form_id
     application_id = application_update.application_id
     jsonPayload = application_update.payload # {1: {"label": "bla", "value": "blup"}}
@@ -257,7 +298,7 @@ async def update_application(   application_update: ApplicationUpdate,
         raise HTTPException(status_code=403, detail="Wrong user_id! Only the user who created an application may edit it!")
 
     try:
-        applicationCrud.update_application(form_id, application_id, jsonPayload, session)
+        applicationCrud.update_application(form_id, application_id, new_status, jsonPayload, session)
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error updating application: {e}")
     return CreationStatus(success=True, message="Application updated successfully")
@@ -269,6 +310,22 @@ async def delete_application(application_id: int):
     Delete a specific application by its ID.
     """
     pass
+
+async def check_if_application_is_outdated(application: Application, session: Session) -> bool:
+    """
+    Check if the application is outdated.
+    An application is up to date if its currentSnapshotID is -1.
+    
+    Args:
+        application (Application): The application to check.
+        session (Session): The database session.
+    
+    Returns:
+        bool: True if the application is outdated, False otherwise.
+    """
+    if application.currentSnapshotID == -1:
+        return False
+
 
 
 

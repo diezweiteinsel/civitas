@@ -14,6 +14,8 @@ from backend.crud import formCrud
 
 from backend.crud.dbActions import getRowsByFilter
 
+from backend.models.domain.application import ApplicationStatus
+
 def get_application_table_by_id(id):
     """
     Takes:\n
@@ -306,23 +308,24 @@ def updateApplicationStatus(session: Session, tableClass: type, id: int, newStat
     return dbActions.updateRow(session, tableClass, {"id": id, "status": newStatus})
 
 
-def update_application(form_id: int, app_id: int, updateDict: dict, session: Session) -> int:
+def update_application(form_id: int, app_id: int, new_status: ApplicationStatus, updateDict: dict, session: Session) -> int:
     """
     TODO 
     Returns:
         id of newly created updated application (int)
     """
-
     updated_app = get_application_by_id(session, form_id, app_id) # Get application to update
+    if new_status != updated_app.status:
+        updated_app.status = new_status
+    if updateDict:
+        label_key_dict = {}
 
-    label_key_dict = {}
+        for key, block in updated_app.jsonPayload.items():
+            label_key_dict[block["label"]] = key
 
-    for key, block in updated_app.jsonPayload.items():
-        label_key_dict[block["label"]] = key
-
-    for key, block in updateDict.items():
-        if block["label"] in label_key_dict.keys():
-            updated_app.jsonPayload[label_key_dict[block["label"]]] = block
+        for key, block in updateDict.items():
+            if block["label"] in label_key_dict.keys():
+                updated_app.jsonPayload[label_key_dict[block["label"]]] = block
 
 
     # newJson = {}
@@ -334,7 +337,7 @@ def update_application(form_id: int, app_id: int, updateDict: dict, session: Ses
     # updated_app.jsonPayload = newJson
 
     updated_app.previousSnapshotID = app_id
-
+    #TODO: check if currentSnapshotID is bigger than -1 when displaying
     updated_app_orm = insert_application(session, updated_app)    # Insert updated application as new row
     dbActions.updateRow(    session,                              # Set old applications currentSnapshotID to new application's ID
                             dbActions.get_application_table_by_id(form_id),

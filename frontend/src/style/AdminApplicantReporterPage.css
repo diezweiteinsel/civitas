@@ -123,6 +123,17 @@
   margin: 4px 0;
 }
 
+/* Specific styling for public indicator icons in ApplicationView header */
+.header-text .public-indicator {
+  margin-top: 8px;
+}
+
+.header-text .world-icon,
+.header-text .eye-icon {
+  font-size: 24px;
+  transform: translateY(4px);
+}
+
 .toggle-btn {
   background-color: #007bff;
   border: none;

@@ -59,12 +59,8 @@ export default function ApplicationContainer({
     retry: 1,
   });
 
-  const applications = enableFetch
-    ? fetchedApplications
-    : providedApplications;
-  const isLoading = enableFetch
-    ? applicationsLoading
-    : isLoadingOverride;
+  const applications = enableFetch ? fetchedApplications : providedApplications;
+  const isLoading = enableFetch ? applicationsLoading : isLoadingOverride;
   const error = enableFetch ? applicationsError : errorOverride;
   const retryFn = enableFetch ? refetchApplications : onRetry;
 
@@ -72,10 +68,10 @@ export default function ApplicationContainer({
 
   // Function to route to ApplicationView and to give the redirection context
   const handleViewApplication = (formId, applicationId) => {
-    console.log(
-      "ApplicationContainer - Navigating to form/application IDs:",
-      { formId, applicationId }
-    );
+    console.log("ApplicationContainer - Navigating to form/application IDs:", {
+      formId,
+      applicationId,
+    });
 
     if (!formId || !applicationId) {
       console.error("Missing identifiers for application view", {
@@ -130,9 +126,7 @@ export default function ApplicationContainer({
               margin: "10px 0",
             }}
           >
-            <p>
-              Error loading applications: {error.message || String(error)}
-            </p>
+            <p>Error loading applications: {error.message || String(error)}</p>
             <button
               onClick={() => retryFn && retryFn()}
               style={{
@@ -157,19 +151,15 @@ export default function ApplicationContainer({
             </div>
           ) : (
             safeApplications.map((application) => {
-              const applicationId =
-                application.applicationID || application.id;
+              const applicationId = application.applicationID || application.id;
               const formId =
-                application.formId ||
-                application.formID ||
-                application.form_id;
+                application.formId || application.formID || application.form_id;
               const formName =
                 application.formName ||
                 application.form_name ||
                 (formId ? `Formular #${formId}` : "Unbekanntes Formular");
               const createdRaw =
-                application.createdAt ||
-                application.created_at;
+                application.createdAt || application.created_at;
               let createdLabel = "—";
               if (createdRaw) {
                 const createdDate = new Date(createdRaw);
@@ -178,18 +168,20 @@ export default function ApplicationContainer({
                 }
               }
               const rawStatus = (application.status || "").toString();
-              const statusClass = rawStatus.toLowerCase();
-              const statusDisplay = rawStatus
-                ? rawStatus.charAt(0).toUpperCase() + rawStatus.slice(1).toLowerCase()
+              const statusClass = application.is_public
+                ? "public"
+                : rawStatus.toLowerCase();
+              const statusDisplay = application.is_public
+                ? "Public"
+                : rawStatus
+                ? rawStatus.charAt(0).toUpperCase() +
+                  rawStatus.slice(1).toLowerCase()
                 : "Unbekannt";
 
               return (
-              <div
-                  key={applicationId}
-                className="container-item"
-              >
-                <div className="container-header">
-                  <div className="info">
+                <div key={applicationId} className="container-item">
+                  <div className="container-header">
+                    <div className="info">
                       <div className="form-type">{formName}</div>
                       <div className="container-meta">
                         <span>Erstellt: {createdLabel}</span>
@@ -197,21 +189,18 @@ export default function ApplicationContainer({
                       <div className={`status ${statusClass}`}>
                         {statusDisplay}
                       </div>
+                    </div>
+                    <button
+                      className="toggle-btn"
+                      onClick={() =>
+                        handleViewApplication(formId, applicationId)
+                      }
+                      style={{ marginLeft: "10px" }}
+                    >
+                      Zeige Details
+                    </button>
                   </div>
-                  <button
-                    className="toggle-btn"
-                    onClick={() =>
-                      handleViewApplication(
-                        formId,
-                        applicationId
-                      )
-                    }
-                    style={{ marginLeft: "10px" }}
-                  >
-                    Zeige Details
-                  </button>
                 </div>
-              </div>
               );
             })
           )}

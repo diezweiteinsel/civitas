@@ -208,7 +208,7 @@ export default function ApplicationView() {
   if (isLoading) {
     return (
       <>
-        <Navbar role={currentRole} />
+        <Navbar />
         <div className="application-view">
           <div className="loading">Antrag wird geladen…</div>
         </div>
@@ -219,7 +219,7 @@ export default function ApplicationView() {
   if (error) {
     return (
       <>
-        <Navbar role={currentRole} />
+        <Navbar />
         <div className="application-view">
           <div className="error">
             <h2>Fehler beim Laden</h2>
@@ -241,7 +241,7 @@ export default function ApplicationView() {
   if (!application) {
     return (
       <>
-        <Navbar role={currentRole} />
+        <Navbar />
         <div className="application-view">
           <div className="error">
             <h2>Antrag nicht gefunden</h2>
@@ -261,7 +261,7 @@ export default function ApplicationView() {
 
   return (
     <>
-      <Navbar role={currentRole} />
+      <Navbar />
       <div className="application-view">
         <div className="view-container">
           <header className="view-header">

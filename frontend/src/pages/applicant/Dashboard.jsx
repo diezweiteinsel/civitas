@@ -6,7 +6,7 @@ import { Role } from "../../utils/const";
 export default function ApplicantPage() {
   return (
     <>
-      <Navbar role={Role.APPLICANT} />
+      <Navbar />
       <ApplicationContainer title="Eigene Anträge:" />
     </>
   );

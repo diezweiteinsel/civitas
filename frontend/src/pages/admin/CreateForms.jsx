@@ -89,7 +89,7 @@ export default function CreateForms() {
 
   return (
     <div>
-      <Navbar role={Role.ADMIN} />
+      <Navbar />
       <div className="form-creation-container">
         <div className="form-creation-header">
           <h2>Neues Meldeform erstellen</h2>

@@ -29,7 +29,7 @@ export default function PublicApplication() {
 
   return (
     <>
-      <Navbar role={currentRole} />
+      <Navbar />
       <ApplicationContainer
         statuses={["APPROVED"]}
         isPublic={true}

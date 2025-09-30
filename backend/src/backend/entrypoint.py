@@ -253,18 +253,9 @@ def create_demo_applications() -> None:
                 admin_id=admin_id,
                 status=ApplicationStatus.APPROVED,
                 jsonPayload=_with_override(
-                    payload, "issue_description", "Approved request"
+                    payload, "description", "Approved request"
                 ),
                 is_public=True,
-            ),
-            Application(
-                user_id=applicant_id,
-                form_id=target_form_orm.id,
-                admin_id=admin_id,
-                status=ApplicationStatus.APPROVED,
-                jsonPayload=_with_override(
-                    payload, "issue_description", "Approved request"
-                ),
             ),
             Application(
                 user_id=applicant_id,
@@ -275,6 +266,15 @@ def create_demo_applications() -> None:
                     payload, "issue_description", "Rejected request"
                 ),
             ),
+            Application(
+                user_id=applicant_id,
+                form_id=target_form_orm.id,
+                admin_id=admin_id,
+                status=ApplicationStatus.APPROVED,
+                jsonPayload=_with_override(
+                    payload, "issue_description", "Approved request"
+                ),
+            ),
         ]
 
         table_class = dbActions.get_application_table_by_id(target_form_orm.id)
@@ -282,15 +282,15 @@ def create_demo_applications() -> None:
         for index, application in enumerate(demo_applications, start=1):
             inserted = applicationCrud.insert_application(session, application)
             status = application.status.value
+            # if index == 2:
+            #     dbActions.updateRow(
+            #         session,
+            #         table_class,
+            #         {"id": inserted.id, "is_public": True},
+            #     )
             print(
                 f"Demo application #{index} created with id={inserted.id} (status={status})"
             )
-            if index == 2:
-                dbActions.updateRow(
-                    session,
-                    table_class,
-                    {"id": inserted.id, "is_public": True},
-                )
 
 
 def populate_db_with_demo_data() -> None:

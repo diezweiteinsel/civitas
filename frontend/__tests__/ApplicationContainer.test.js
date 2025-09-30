@@ -1,7 +1,9 @@
 import { render, screen } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import '@testing-library/jest-dom';
 import ApplicationContainer from './ApplicationContainer'; 
 import { FaDog, FaFire, FaInfoCircle } from 'react-icons/fa';
+//"test": "react-scripts test --env=jsdom",
 
 const mockNavigate = jest.fn();
 const mockUseLocation = jest.fn();
@@ -35,10 +37,9 @@ jest.mock('react-icons/fa', () => ({
     mockUseLocation.mockReturnValue({ pathname: '/default' });
   });
   
-  escribe('ApplicationContainer', () => {
-  
+  describe('ApplicationContainer', () => {
 
-    test('1. Renders the custom title correctly', () => {
+    it('1. Renders the custom title correctly', () => {
       mockUseQuery.mockReturnValue({
           data: null,
           isLoading: false,
@@ -52,19 +53,19 @@ jest.mock('react-icons/fa', () => ({
       expect(screen.getByText('Custom Test Title')).toBeInTheDocument();
     });
   
-    test('2. Displays Loading state when query is loading', () => {
+    it('2. Displays Loading state when query is loading', () => {
       mockUseQuery.mockReturnValue({
         data: null,
         isLoading: true,
         error: null,
       });
-  
+      
       renderWithQueryClient(<ApplicationContainer />);
   
       expect(screen.getByText('Loading applications...')).toBeInTheDocument();
     });
   
-    test('3. Displays fetched data when query is successful', () => {
+    it('3. Displays fetched data when query is successful', () => {
       mockUseQuery.mockReturnValue({
         data: mockApplications,
         isLoading: false,
@@ -72,3 +73,7 @@ jest.mock('react-icons/fa', () => ({
       });
     })
 })
+
+
+
+

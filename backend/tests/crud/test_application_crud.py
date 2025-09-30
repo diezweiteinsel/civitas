@@ -58,7 +58,7 @@ def test_get_application_by_id_func():
 
             applicationFromGetFunc = appCrud.get_application_by_id(session,form.id,1)
 
-        assert application.label == applicationFromGetFunc.jsonPayload["label"]
+        assert application.label == applicationFromGetFunc.jsonPayload["1"]["value"]
 
 def test_get_all_app_of_type():
 
@@ -85,8 +85,8 @@ def test_get_all_app_of_type():
 
             applicationsFromGetFunc = appCrud.get_all_applications_of_type(session,form.id)
 
-        assert application.label == applicationsFromGetFunc[0].jsonPayload["label"]
-        assert applicationsFromGetFunc[0].jsonPayload["label"] == applicationsFromGetFunc[1].jsonPayload["label"]
+        assert application.label == applicationsFromGetFunc[0].jsonPayload["1"]["value"]
+        assert applicationsFromGetFunc[0].jsonPayload["1"]["value"] == applicationsFromGetFunc[1].jsonPayload["1"]["value"]
         assert applicationsFromGetFunc[0].form_id == applicationsFromGetFunc[1].form_id
         assert applicationsFromGetFunc[0].user_id == applicationsFromGetFunc[1].user_id
 
@@ -118,18 +118,30 @@ def test_insert_application_func():
 
             assert application.user_id == applicationFromOrm.user_id
             assert application.form_id == applicationFromOrm.form_id
-            assert application.jsonPayload["1"]["value"] == applicationFromOrm.jsonPayload["label"]
+            assert application.jsonPayload["1"]["value"] == applicationFromOrm.jsonPayload["1"]["value"]
 
             assert application2.user_id == applicationFromOrm2.user_id
             assert application2.form_id == applicationFromOrm2.form_id
-            assert application2.jsonPayload["1"]["value"] == applicationFromOrm2.jsonPayload["label"]
+            assert application2.jsonPayload["1"]["value"] == applicationFromOrm2.jsonPayload["1"]["value"]
 
             assert application.id == None
             assert applicationFromOrm.id == 1
+            assert applicationFromOrm.id == applicationFromOrm.currentSnapshotID
             assert application2.id == None
             assert applicationFromOrm2.id == 2
+            assert applicationFromOrm2.id == applicationFromOrm2.currentSnapshotID
 
+def test_update_application():
+     with db.get_session() as session:
+        assert len(appCrud.get_all_applications(session)) == 5
+        assert len(formCrud.get_all_forms(session)) == 3
+        assert len(appCrud.get_all_applications_of_type(session, 3)) == 2
 
+        appCrud.update_application(3, 1, {"1":{"label": "label", "value": "Hohoho"}}, session)
+        newApp = appCrud.get_application_by_id(session, 3, 3)
+        assert newApp.previousSnapshotID == 1
+        assert newApp.jsonPayload["1"]["value"] == "Hohoho"
+        assert appCrud.get_application_by_id(session, 3, 1).currentSnapshotID == 3
         
 
 

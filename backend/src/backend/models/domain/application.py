@@ -61,6 +61,10 @@ class ApplicationResponseItem(BaseModel):
 
 
 def application_to_response_item(application: Application) -> ApplicationResponseItem:
+
+    newJson = {}
+    for key, block in application.jsonPayload.items():
+        newJson[block["label"]] = block["value"]
     
     return ApplicationResponseItem(
         id=application.id,
@@ -71,5 +75,11 @@ def application_to_response_item(application: Application) -> ApplicationRespons
         is_public=application.is_public,
         currentSnapshotID=application.currentSnapshotID,
         previousSnapshotID=application.previousSnapshotID,
-        jsonPayload=application.jsonPayload
+        jsonPayload=newJson
     )
+
+
+class ApplicationUpdate(BaseModel):
+    form_id: int
+    application_id: int
+    payload: dict

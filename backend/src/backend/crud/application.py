@@ -1,6 +1,7 @@
 
 
 
+from copy import deepcopy
 from sqlalchemy import inspect
 from sqlalchemy.orm import Session
 
@@ -44,8 +45,10 @@ def getRowJsonPayload(row):
         if columnName not in standardColumns:
             blockColumns.append(columnName)
     jsonDict = {}
+    count = 1
     for blockColumn in blockColumns:
-        jsonDict[blockColumn] = getattr(row, blockColumn)
+        jsonDict[str(count)] = {"label": blockColumn, "value": getattr(row, blockColumn)}
+        count += 1
     return jsonDict
 
 def rowToApplication(row, applicationTable = None) -> Application:
@@ -220,10 +223,49 @@ def insert_application(session:Session, application: Application):
         )
     for key in application.jsonPayload.keys():
         setattr(application_in_db, application.jsonPayload[key]["label"] , application.jsonPayload[key]["value"])
-    return dbActions.insertRow(session, applicationTable, application_in_db)
+    created_app = dbActions.insertRow(session, applicationTable, application_in_db)
+    updated_app = dbActions.updateRow(session, applicationTable, {"id": created_app.id, "current_snapshot_id": created_app.id})
+    return updated_app
 
 # wrapper for updating application status
 def updateApplicationStatus(session: Session, tableClass: type, id: int, newStatus: str):
     if newStatus not in ["PENDING", "APPROVED", "REJECTED", "REVISED"]:
         raise ValueError("Invalid status")
     return dbActions.updateRow(session, tableClass, {"id": id, "status": newStatus})
+
+
+def update_application(form_id: int, app_id: int, updateDict: dict, session: Session) -> int:
+    """
+    TODO 
+    Returns:
+        id of newly created updated application (int)
+    """
+
+    updated_app = get_application_by_id(session, form_id, app_id) # Get application to update
+
+    label_key_dict = {}
+
+    for key, block in updated_app.jsonPayload.items():
+        label_key_dict[block["label"]] = key
+
+    for key, block in updateDict.items():
+        if block["label"] in label_key_dict.keys():
+            updated_app.jsonPayload[label_key_dict[block["label"]]] = block
+
+
+    # newJson = {}
+    # count = 1
+    # for label, value in updated_app.jsonPayload.items():
+    #     newJson[str(count)] = {"label": label, "value": value}
+    #     count += 1
+
+    # updated_app.jsonPayload = newJson
+
+    updated_app.previousSnapshotID = app_id
+
+    updated_app_orm = insert_application(session, updated_app)    # Insert updated application as new row
+    dbActions.updateRow(    session,                              # Set old applications currentSnapshotID to new application's ID
+                            dbActions.get_application_table_by_id(form_id),
+                            {"id": app_id, "current_snapshot_id": updated_app_orm.id}
+                            )
+    return updated_app_orm.id

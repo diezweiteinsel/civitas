@@ -1,7 +1,7 @@
 import { render, screen, fireEvent } from '@testing-library/react';
 import { MemoryRouter, NavLink } from 'react-router-dom';
 import userEvent from '@testing-library/user-event';
-import Navbar from './Navbar';
+import Navbar from "./../../components/Navbar";
 import { Role } from '../utils/const';
 
 describe('Navbar', () => {

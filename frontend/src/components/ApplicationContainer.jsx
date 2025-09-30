@@ -104,6 +104,15 @@ export default function ApplicationContainer({
     });
   };
 
+  const translateStatus = (status) => {
+    if (!status) return "Unbekannt";
+    const statusUpper = status.toString().toUpperCase();
+    if (statusUpper === "PENDING") return "Ausstehend";
+    if (statusUpper === "APPROVED") return "Genehmigt";
+    if (statusUpper === "REJECTED") return "Abgelehnt";
+    return status;
+  };
+
   return (
     <div className="page-container">
       <div className="containers-card">
@@ -174,8 +183,7 @@ export default function ApplicationContainer({
               const statusDisplay = application.is_public
                 ? "Öffentlich"
                 : rawStatus
-                ? rawStatus.charAt(0).toUpperCase() +
-                  rawStatus.slice(1).toLowerCase()
+                ? translateStatus(rawStatus)
                 : "Unbekannt";
 
               return (

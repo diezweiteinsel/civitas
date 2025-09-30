@@ -14,10 +14,10 @@ export default function Navbar() {
   const navigate = useNavigate();
   const [showDropdown, setShowDropdown] = useState(false);
   const dropdownRef = useRef(null);
-  
+
   // Get role dynamically on every render
   const roles = getUserRoles();
-  const role = roles.length > 0 ? roles[0] : Role.EMPTY;
+  const role = roles && roles.length > 0 ? roles[0] : Role.EMPTY;
 
   // Helper function to get home route based on role
   const getHomeRoute = () => {
@@ -61,7 +61,7 @@ export default function Navbar() {
       <NavLink to={getHomeRoute()} className="navbar-home">
         <div className="navbar-brand">CIVITAS</div>
       </NavLink>
-      
+
       <div
         ref={dropdownRef}
         className={`dropdown ${role === Role.EMPTY ? "hidden" : ""}`}

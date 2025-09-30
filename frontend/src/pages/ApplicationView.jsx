@@ -14,13 +14,14 @@ import "./../style/ApplicationView.css";
 import Navbar from "../components/Navbar";
 import { Role } from "../utils/const";
 import { getApplicationById } from "../utils/api";
+import { getUserRoles } from "../utils/data";
 
 const STATUS_LABELS = {
   PENDING: "Ausstehend",
   APPROVED: "Genehmigt",
   REJECTED: "Abgelehnt",
   REVISION: "Revision",
-  PUBLISHED: "Veröffentlicht",
+  PUBLISHED: "Öffentlich",
   DRAFT: "Entwurf",
 };
 
@@ -38,15 +39,11 @@ export default function ApplicationView() {
 
   const numericFormId = Number.parseInt(formId, 10);
   const numericAppId = Number.parseInt(applicationId, 10);
-  const areIdsValid = Number.isInteger(numericFormId) && Number.isInteger(numericAppId);
+  const areIdsValid =
+    Number.isInteger(numericFormId) && Number.isInteger(numericAppId);
 
-  const currentRole = useMemo(() => {
-    const referrer = location.state?.from || document.referrer;
-    if (referrer?.includes("/admin")) return Role.ADMIN;
-    if (referrer?.includes("/applicant")) return Role.APPLICANT;
-    if (referrer?.includes("/reporter")) return Role.REPORTER;
-    return Role.EMPTY;
-  }, [location.state?.from]);
+  const roles = getUserRoles();
+  const currentRole = roles && roles.length > 0 ? roles[0] : navigate("/login");
 
   const sourceContext = location.state?.fromPage || "unknown";
 
@@ -62,7 +59,11 @@ export default function ApplicationView() {
     retry: 1,
   });
 
-  const statusKey = (application?.status || application?.Status || "").toString().toUpperCase();
+  const statusKey = application?.is_public
+    ? "PUBLISHED"
+    : (application?.status || application?.Status || "")
+        .toString()
+        .toUpperCase();
   const statusLabel = STATUS_LABELS[statusKey] || statusKey || "Unbekannt";
   const statusClass = statusKey.toLowerCase();
 
@@ -103,28 +104,16 @@ export default function ApplicationView() {
     navigate("/");
   };
 
-  const renderContextInfo = () => {
-    if (!sourceContext || sourceContext === "unknown") {
-      return null;
-    }
-
-    const labels = {
-      "admin-dashboard": "Admin-Dashboard",
-      "applicant-dashboard": "Antragsübersicht",
-      "reporter-applications": "Reporter-Ansicht",
-      "public-applications": "Öffentliche Anträge",
-    };
-
-    return (
-      <div className="context-info">
-        Aufgerufen aus: <strong>{labels[sourceContext] || sourceContext}</strong>
-      </div>
-    );
-  };
-
   const renderWorkflow = () => {
     const steps = ["Eingereicht", "In Prüfung", "Entscheidung"];
-    const currentIndex = statusKey === "APPROVED" ? 2 : statusKey === "REJECTED" ? 2 : statusKey === "PENDING" ? 1 : 0;
+    const currentIndex =
+      statusKey === "APPROVED"
+        ? 2
+        : statusKey === "REJECTED"
+        ? 2
+        : statusKey === "PENDING"
+        ? 1
+        : 0;
 
     return (
       <div className="status-flow-info">
@@ -142,15 +131,15 @@ export default function ApplicationView() {
             return (
               <Fragment key={`workflow-${index}`}>
                 <div className={stepClass}>{step}</div>
-                {index < steps.length - 1 && <div className="workflow-arrow">→</div>}
+                {index < steps.length - 1 && (
+                  <div className="workflow-arrow">→</div>
+                )}
               </Fragment>
             );
           })}
         </div>
         {statusKey === "REJECTED" && (
-          <div className="workflow-step rejected">
-            Antrag wurde abgelehnt
-          </div>
+          <div className="workflow-step rejected">Antrag wurde abgelehnt</div>
         )}
       </div>
     );
@@ -224,11 +213,22 @@ export default function ApplicationView() {
           <div className="error">
             <h2>Fehler beim Laden</h2>
             <p>{error.message || "Unbekannter Fehler"}</p>
-            <div className="button-group" style={{ justifyContent: "center", marginTop: "20px" }}>
-              <button type="button" className="action-btn" onClick={handleGoBack}>
+            <div
+              className="button-group"
+              style={{ justifyContent: "center", marginTop: "20px" }}
+            >
+              <button
+                type="button"
+                className="action-btn"
+                onClick={handleGoBack}
+              >
                 Zurück
               </button>
-              <button type="button" className="action-btn" onClick={() => refetch()}>
+              <button
+                type="button"
+                className="action-btn"
+                onClick={() => refetch()}
+              >
                 Erneut versuchen
               </button>
             </div>
@@ -255,8 +255,14 @@ export default function ApplicationView() {
     );
   }
 
-  const applicationTitle = application.title || application.form_name || `Antrag #${application.id}`;
-  const iconForStatus = statusKey === "APPROVED" ? FaDog : statusKey === "REJECTED" ? FaFire : FaInfoCircle;
+  const applicationTitle =
+    application.title || application.form_name || `Antrag #${application.id}`;
+  const iconForStatus =
+    statusKey === "APPROVED"
+      ? FaDog
+      : statusKey === "REJECTED"
+      ? FaFire
+      : FaInfoCircle;
   const IconComponent = iconForStatus;
 
   return (
@@ -268,14 +274,16 @@ export default function ApplicationView() {
             <button type="button" className="back-btn" onClick={handleGoBack}>
               <FaArrowLeft /> Zurück
             </button>
-            {renderContextInfo()}
             <div className="header-info">
               <IconComponent className="icon-large" />
               <div className="header-text">
                 <h1>{applicationTitle}</h1>
-                <div className={`status-badge ${statusClass}`}>{statusLabel}</div>
+                <div className={`status-badge ${statusClass}`}>
+                  {statusLabel}
+                </div>
                 <p style={{ margin: "8px 0 0 0" }}>
-                  Antrag #{application.id} · Formular #{application.form_id || application.formId}
+                  Antrag #{application.id} · Formular #
+                  {application.form_id || application.formId}
                 </p>
               </div>
             </div>
@@ -285,7 +293,8 @@ export default function ApplicationView() {
             <h2>Metadaten</h2>
             <div className="metadata-text">
               <p>
-                <strong>Formular-ID:</strong> {application.form_id || application.formId}
+                <strong>Formular-ID:</strong>{" "}
+                {application.form_id || application.formId}
               </p>
               <p>
                 <strong>Aktueller Status:</strong> {statusLabel}
@@ -294,11 +303,15 @@ export default function ApplicationView() {
                 <strong>Erstellt am:</strong> {createdAtLabel}
               </p>
               <p>
-                <strong>Öffentlich:</strong> {application.is_public ? "Ja" : "Nein"}
+                <strong>Öffentlich:</strong>{" "}
+                {application.is_public ? "Ja" : "Nein"}
               </p>
-              {(application.currentSnapshotID || application.previousSnapshotID) && (
+              {(application.currentSnapshotID ||
+                application.previousSnapshotID) && (
                 <p>
-                  <strong>Snapshots:</strong> aktuelle #{application.currentSnapshotID || "–"}, vorherige #{application.previousSnapshotID || "–"}
+                  <strong>Snapshots:</strong> aktuelle #
+                  {application.currentSnapshotID || "–"}, vorherige #
+                  {application.previousSnapshotID || "–"}
                 </p>
               )}
             </div>
@@ -315,7 +328,10 @@ export default function ApplicationView() {
               <div className="form-data-text">
                 {payloadEntries.map(([key, value]) => (
                   <p key={key}>
-                    <strong>{key}:</strong> {typeof value === "object" ? JSON.stringify(value, null, 2) : String(value)}
+                    <strong>{key}:</strong>{" "}
+                    {typeof value === "object"
+                      ? JSON.stringify(value, null, 2)
+                      : String(value)}
                   </p>
                 ))}
               </div>
@@ -334,7 +350,9 @@ export default function ApplicationView() {
                 <FaHistory style={{ marginRight: "8px" }} />
                 Der komplette Änderungsverlauf wird hier künftig angezeigt.
               </p>
-              <p>Für Rückfragen wenden Sie sich bitte an die zuständige Stelle.</p>
+              <p>
+                Für Rückfragen wenden Sie sich bitte an die zuständige Stelle.
+              </p>
             </div>
           </section>
         </div>

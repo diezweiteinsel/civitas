@@ -102,7 +102,6 @@ async def list_applications(
     session: Session = Depends(db.get_session_dep),
     public: Optional[bool] = None,
     status: Optional[List[ApplicationStatus]] = Query(None, description="Filter by one or more statuses."),
-    user_id: Optional[int] = None,
     payload: Optional[dict] = Depends(deps.get_current_user_payload_optional)):
     """
     Retrieve all applications in the system.
@@ -148,7 +147,7 @@ async def list_applications(
             return app_list_to_appResp_list(session, apps)
         
         elif public:
-            apps = applicationCrud.get_all_private_applications(session)
+            apps = applicationCrud.get_all_public_applications(session)
             return app_list_to_appResp_list(session, apps)
         
         elif not public:
@@ -166,14 +165,9 @@ async def list_applications(
             applications = applicationCrud.get_all_public_applications(session)
             return app_list_to_appResp_list(session, applications)
         
-        elif user_id and user_id == user_id_in_token:
-            result = applicationCrud.get_applications_by_user_id(session, user_id)
-            return app_list_to_appResp_list(session, result)
-        
-        elif user_id and user_id != user_id_in_token:
-            raise HTTPException(status_code=403, detail="WRONG USER ID. You do not have permission to view applications of other users. These applications are not for you, you nosy parker!")
         else:
-            raise HTTPException(status_code=403, detail="WRONG PERMISSIONS. You do not have permission to perform this action. Only public applications are visible to all users.")
+            result = applicationCrud.get_applications_by_user_id(session, user_id_in_token)
+            return app_list_to_appResp_list(session, result)
         
         
         

@@ -261,7 +261,7 @@ async def create_application( application_data: ApplicationFillout,
 
 
 
-@router.get("/{application_id}",
+@router.get("/{form_id}/{application_id}",
             response_model=ApplicationResponseItem,
             tags=["Applications"],
             summary="Get application by ID")
@@ -270,13 +270,17 @@ async def get_application(application_id: int, form_id: int, session: Session = 
     Retrieve a specific application by its ID.
     """
     try:
+        form_id = int(form_id)
+    except ValueError:
+        raise HTTPException(status_code=400, detail="Invalid form ID format")
+    try:
         app_id = int(application_id)
     except ValueError:
         raise HTTPException(status_code=400, detail="Invalid application ID format")
 
     application = applicationCrud.get_application_by_id(session, form_id, app_id)
     if not application:
-        raise HTTPException(status_code=404, detail=f"Application with ID {app_id} not found")
+        raise HTTPException(status_code=404, detail=f"Application with ID {app_id} in form {form_id} not found")
     app = ApplicationResponseItem(
             id=application.id,
             form_id=application.form_id,
@@ -288,7 +292,7 @@ async def get_application(application_id: int, form_id: int, session: Session = 
             previousSnapshotID=application.previousSnapshotID,
             jsonPayload=application.jsonPayload
             )
-    app.title = formCrud.get_form_by_id(session, app.form_id).title
+    app.title = formCrud.get_form_by_id(session, form_id).title 
     
     return app
 

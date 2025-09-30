@@ -273,7 +273,8 @@ async def update_application(   application_update: ApplicationUpdate,
     """
     Update a specific application by its ID.
     """
-    user_id = payload.get("userid") # TODO: get id from jwt and not application
+
+    user_id = payload.get("userid")
 
     form_id = application_update.form_id
     application_id = application_update.application_id

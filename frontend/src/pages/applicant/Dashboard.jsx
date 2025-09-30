@@ -7,7 +7,7 @@ export default function ApplicantPage() {
   return (
     <>
       <Navbar />
-      <ApplicationContainer title="Eigene Anträge:" />
+      <ApplicationContainer is_public={false} title="Eigene Anträge:" />
     </>
   );
 }

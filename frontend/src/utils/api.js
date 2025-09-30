@@ -343,3 +343,39 @@ export const getFormById = async (form_id) => {
   const form = await response.json();
   return form;
 };
+
+export const updateApplication = async (applicationData) => {
+  const accessToken = getToken();
+  const headers = {
+    "Content-Type": "application/json",
+  };
+  if (accessToken) {
+    headers.Authorization = `Bearer ${accessToken}`;
+  }
+
+  // Structure the data to match backend expectations
+  const requestBody = {
+    form_id: applicationData.form_id || 1,
+    application_id: applicationData.id || 1,
+    payload: applicationData.payload || applicationData,
+  };
+
+  const response = await fetch(
+    `${API_BASE_URL}/applications/${applicationData.id}`,
+    {
+      method: "PUT",
+      headers: headers,
+      body: JSON.stringify(requestBody),
+    }
+  );
+
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(
+      errorData.detail || errorData.error || "Failed to change application"
+    );
+  }
+
+  const application = await response.json();
+  return application;
+};

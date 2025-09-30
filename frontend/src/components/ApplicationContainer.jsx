@@ -172,7 +172,7 @@ export default function ApplicationContainer({
                 ? "public"
                 : rawStatus.toLowerCase();
               const statusDisplay = application.is_public
-                ? "Public"
+                ? "Öffentlich"
                 : rawStatus
                 ? rawStatus.charAt(0).toUpperCase() +
                   rawStatus.slice(1).toLowerCase()

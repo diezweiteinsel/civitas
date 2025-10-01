@@ -133,7 +133,7 @@ export default function ApplicationView() {
             if (isCurrent) stepClass += " current";
             if (isCompleted) stepClass += " completed";
             if (statusKey === "APPROVED" && index === 2) {
-              stepClass += " approved";
+              stepClass += " completed";
             }
 
             if (statusKey === "REJECTED" && index === currentIndex) {

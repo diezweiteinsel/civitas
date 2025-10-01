@@ -71,10 +71,11 @@ async def get_revisions(form_id: int,
             is_privileged = True
         elif wanted_app and wanted_app.user_id != user_id_in_token and not is_privileged:
             raise HTTPException(status_code=403, detail="Not authorized to view revisions of this application")
-        else:
-            raise HTTPException(status_code=404, detail="Application not found")
+        
     if is_privileged:
         revisions = get_all_revisions_of_application(session, form_id, application_id)
         response = app_list_to_appResp_list(session, revisions)
         return response
+    else:
+            raise HTTPException(status_code=404, detail="Application not found")
     

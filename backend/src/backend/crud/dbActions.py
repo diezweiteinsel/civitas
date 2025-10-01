@@ -38,7 +38,7 @@ def matchType(blockType: str):
             raise Exception # Why does this exist?
         case "STRING" | "TEXT" | "EMAIL":
             return Column(String, nullable=True)
-        case "INTEGER":
+        case "INTEGER" | "NUMBER":
             return Column(Integer, nullable=True)
         case "DATE":
             return Column(Date, nullable=True)

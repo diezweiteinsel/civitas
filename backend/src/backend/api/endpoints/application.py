@@ -222,8 +222,7 @@ async def get_application(application_id: int, form_id: int, session: Session = 
             status=application.status,
             created_at=application.created_at,
             is_public=application.is_public,
-            currentSnapshotID=application.currentSnapshotID,
-            previousSnapshotID=application.previousSnapshotID,
+            snapshots=application.snapshots,
             jsonPayload=application.jsonPayload
             )
     app.title = formCrud.get_form_by_id(session, form_id).form_name
@@ -235,7 +234,7 @@ class CreationStatus(BaseModel):
     message: str
 
 
-@router.put("/{application_id}", response_model=CreationStatus, tags=["Applications"], summary="Update an application by ID")
+@router.put("/{form_id}/{application_id}", response_model=CreationStatus, tags=["Applications"], summary="Update an application by ID")
 
 async def update_application(   application_update: ApplicationUpdate,
                                 session: Session = Depends(db.get_session_dep),

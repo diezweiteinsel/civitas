@@ -71,7 +71,7 @@ def createFormTable(id: int, xoev: str):
                 "admin_id": Column(Integer, nullable=True),
                 "status": Column(String, server_default=text("'PENDING'"), nullable=False),
                 "created_at": Column(DateTime, server_default=text("CURRENT_TIMESTAMP"), nullable=False),
-                "snapshots": Column(String, server_default=text("'{}'"), nullable=False), # JSON string of {previousSnapshotID: int | None, currentSnapshotID: int, nextSnapshotID: int | None}
+                "snapshots": Column(String, nullable=False), # JSON string of {previousSnapshotID: int | None, currentSnapshotID: int, nextSnapshotID: int | None}
                 "is_public": Column(Boolean, server_default=text("false"), nullable=False)
                 }
     if xoev == "":

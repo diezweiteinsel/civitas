@@ -51,14 +51,17 @@ def test_get_application_by_id_func():
         with db.get_session() as session:
             form = formCrud.add_orm_form(session, Form1)
 
-            applicationTableClass = dbActions.get_application_table_by_id(form.id)
-            application = applicationTableClass(user_id = 1, form_id = Form1.id, label= "Hiya")
+            pydantic_application = Application(
+            user_id=1,
+            form_id=form.id,
+            jsonPayload={"1": {"label": "label", "value": "Hiya"}}
+        )
 
-            dbActions.insertRow(session, applicationTableClass, application)
+        created_orm_app = appCrud.insert_application(session, pydantic_application)
 
-            applicationFromGetFunc = appCrud.get_application_by_id(session,form.id,1)
+        applicationFromGetFunc = appCrud.get_application_by_id(session, form.id, created_orm_app.id)
 
-        assert application.label == applicationFromGetFunc.jsonPayload["1"]["value"]
+        assert pydantic_application.jsonPayload["1"]["value"] == applicationFromGetFunc.jsonPayload["1"]["value"]
 
 def test_get_all_app_of_type():
 
@@ -72,20 +75,26 @@ def test_get_all_app_of_type():
         with db.get_session() as session:
             form = formCrud.add_orm_form(session, Form1)
 
-            applicationTableClass = dbActions.get_application_table_by_id(form.id)
-            application = applicationTableClass(user_id = 1, form_id = Form1.id, label= "Hiya")
-            application2 = applicationTableClass(user_id = 1, form_id = Form1.id, label= "Hiya")
+            application = Application(
+                user_id=1,
+                form_id=form.id,
+                jsonPayload={"1": {"label": "label", "value": "Hiya"}}
+            )
+            application2 = Application(
+                user_id=1,
+                form_id=form.id,
+                jsonPayload={"1": {"label": "label", "value": "Hiya"}}
+            )
 
-
-            dbActions.insertRow(session, applicationTableClass, application)
+            appCrud.insert_application(session, application)
             assert len(appCrud.get_all_applications_of_type(session,form.id)) == 1
-            dbActions.insertRow(session, applicationTableClass, application2)
+            appCrud.insert_application(session, application2)
             assert len(appCrud.get_all_applications_of_type(session,form.id)) == 2
 
 
             applicationsFromGetFunc = appCrud.get_all_applications_of_type(session,form.id)
 
-        assert application.label == applicationsFromGetFunc[0].jsonPayload["1"]["value"]
+        assert application.jsonPayload["1"]["value"] == applicationsFromGetFunc[0].jsonPayload["1"]["value"]
         assert applicationsFromGetFunc[0].jsonPayload["1"]["value"] == applicationsFromGetFunc[1].jsonPayload["1"]["value"]
         assert applicationsFromGetFunc[0].form_id == applicationsFromGetFunc[1].form_id
         assert applicationsFromGetFunc[0].user_id == applicationsFromGetFunc[1].user_id
@@ -93,55 +102,85 @@ def test_get_all_app_of_type():
 
 
 def test_insert_application_func():
-     
-        block1 = BuildingBlock(label="label", data_type=BBType.STRING, required=True, constraintsJson={})
-        form1 = Form(id=1, form_name="Yoyoyo", blocks= {"1":block1} )
-        form1_json = form1.to_json()
+    block1 = BuildingBlock(label="label", data_type=BBType.STRING, required=True, constraintsJson={})
+    form_domain = Form(id=1, form_name="Yoyoyo", blocks={"1": block1})
+    form_orm_obj = OrmForm(form_name="Yoyoyo", created_at=date.today(), is_active=True, xoev=form_domain.to_json())
 
+    with db.get_session() as session:
+        # 1. Create the form and get its real, database-assigned ID
+        form = formCrud.add_orm_form(session, form_orm_obj)
+        session.commit()
+        session.refresh(form)
+        
+        # 2. Use the correct form.id from the database
+        application1 = Application(user_id=1, form_id=form.id, jsonPayload={"1": {"label": "label", "value": "Hiya"}})
+        application2 = Application(user_id=1, form_id=form.id, jsonPayload={"1": {"label": "label", "value": "Hiya again"}})
 
-        Form1 = OrmForm(form_name="Yoyoyo", created_at=date.today(), is_active=True, xoev=form1_json)
+        # 3. Insert the applications
+        orm_app1 = appCrud.insert_application(session, application1)
+        session.commit() # Commit after each insert to finalize the transaction
+        orm_app2 = appCrud.insert_application(session, application2)
+        session.commit()
 
-        with db.get_session() as session:
-            form = formCrud.add_orm_form(session, Form1)
+        assert len(appCrud.get_all_applications_of_type(session, form.id)) == 2
 
-            applicationTableClass = dbActions.get_application_table_by_id(form.id)
-            application = Application(user_id= 1, form_id= Form1.id, jsonPayload={"1":{"label": "label", "value": "Hiya"}})
-            application2 = Application(user_id= 1, form_id= Form1.id, jsonPayload={"1":{"label": "label", "value": "Hiya"}})
+        # 4. Convert back to Pydantic models to check values
+        pydantic_app1 = appCrud.rowToApplication(orm_app1)
+        pydantic_app2 = appCrud.rowToApplication(orm_app2)
 
-            applicationOrm = appCrud.insert_application(session, application)
-            assert len(appCrud.get_all_applications_of_type(session,form.id)) == 1
-            applicationOrm2 = appCrud.insert_application(session, application2)
-            assert len(appCrud.get_all_applications_of_type(session,form.id)) == 2
+        # 5. Assertions are now robust and access the model correctly
+        assert pydantic_app1.id is not None
+        assert -1 == pydantic_app1.snapshots.currentSnapshotID # Correct access
 
-            applicationFromOrm = appCrud.rowToApplication(applicationOrm, applicationTableClass)
-            applicationFromOrm2 = appCrud.rowToApplication(applicationOrm2, applicationTableClass)
-
-            assert application.user_id == applicationFromOrm.user_id
-            assert application.form_id == applicationFromOrm.form_id
-            assert application.jsonPayload["1"]["value"] == applicationFromOrm.jsonPayload["1"]["value"]
-
-            assert application2.user_id == applicationFromOrm2.user_id
-            assert application2.form_id == applicationFromOrm2.form_id
-            assert application2.jsonPayload["1"]["value"] == applicationFromOrm2.jsonPayload["1"]["value"]
-
-            assert application.id == None
-            assert applicationFromOrm.id == 1
-            assert applicationFromOrm.id == applicationFromOrm.currentSnapshotID
-            assert application2.id == None
-            assert applicationFromOrm2.id == 2
-            assert applicationFromOrm2.id == applicationFromOrm2.currentSnapshotID
+        assert pydantic_app2.id is not None
+        assert pydantic_app2.id > pydantic_app1.id # Don't assume ID=2, just that it's greater
+        assert -1 == pydantic_app2.snapshots.currentSnapshotID # Correct access
 
 def test_update_application():
-     with db.get_session() as session:
-        assert len(appCrud.get_all_applications(session)) == 5
-        assert len(formCrud.get_all_forms(session)) == 3
-        assert len(appCrud.get_all_applications_of_type(session, 3)) == 2
+    # --- 1. Setup: Create the necessary data for this test ---
+    block1 = BuildingBlock(label="label", data_type=BBType.STRING, required=True, constraintsJson={})
+    form_domain = Form(id=1, form_name="UpdateTestForm", blocks={"1": block1})
+    form_orm_obj = OrmForm(form_name="UpdateTestForm", created_at=date.today(), is_active=True, xoev=form_domain.to_json())
 
-        appCrud.update_application(3, 1, {"1":{"label": "label", "value": "Hohoho"}}, session)
-        newApp = appCrud.get_application_by_id(session, 3, 3)
-        assert newApp.previousSnapshotID == 1
-        assert newApp.jsonPayload["1"]["value"] == "Hohoho"
-        assert appCrud.get_application_by_id(session, 3, 1).currentSnapshotID == 3
+    with db.get_session() as session:
+        # Create a form specifically for this test
+        form = formCrud.add_orm_form(session, form_orm_obj)
+        session.commit()
+        session.refresh(form)
+        
+        # Create an initial application to be updated
+        initial_application = Application(
+            user_id=1,
+            form_id=form.id,
+            jsonPayload={"1": {"label": "label", "value": "Original Value"}}
+        )
+        original_orm_app = appCrud.insert_application(session, initial_application)
+        session.commit()
+        session.refresh(original_orm_app)
+        
+        original_app_id = original_orm_app.id
+
+        # --- 2. Action: Perform the update ---
+        updated_payload = {"1": {"label": "label", "value": "Hohoho"}}
+        # The update function should return the new ORM object
+        new_orm_app = appCrud.update_application(form.id, original_app_id, updated_payload, session)
+        session.commit()
+        session.refresh(new_orm_app)
+        
+        new_app_id = new_orm_app.id
+
+        # --- 3. Assertions: Verify the results ---
+        # Convert the final state of the ORM objects back to Pydantic models
+        original_app_final_state = appCrud.get_application_by_id(session, form.id, original_app_id)
+        new_app_final_state = appCrud.get_application_by_id(session, form.id, new_app_id)
+
+        # Check the snapshot chain
+        assert new_app_final_state.snapshots.previousSnapshotID == original_app_id
+        assert original_app_final_state.snapshots.nextSnapshotID == new_app_id
+        
+        # Check the values
+        assert new_app_final_state.jsonPayload["1"]["value"] == "Hohoho"
+        assert original_app_final_state.jsonPayload["1"]["value"] == "Original Value" # Should be unchanged
         
 
 

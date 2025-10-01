@@ -239,7 +239,7 @@ class CreationStatus(BaseModel):
 async def update_application(   application_id: int, 
                                 form_id: int,
                                 application_update: Optional[ApplicationUpdate] = None,
-                                status: Optional[ApplicationStatus] = None,
+                                status: Optional[str] | Optional[ApplicationStatus] = None,
                                 session: Session = Depends(db.get_session_dep),
                                 payload: Optional[dict] = Depends(deps.get_current_user_payload_optional)
                                 ):
@@ -272,8 +272,13 @@ async def update_application(   application_id: int,
                     adminRejectApplication(application_id, form_id, session)
                 except Exception as e:
                     raise HTTPException(status_code=500, detail=f"Error rejecting application: {e}")
+            elif status == "PUBLIC" or status == "PUBLISHED":
+                try:
+                    applicationCrud.publish_application(session, form_id, application_id)
+                except Exception as e:
+                    raise HTTPException(status_code=500, detail=f"Error publishing application: {e}")
             else:
-                raise HTTPException(status_code=400, detail="Invalid status update. Admins can only set status to APPROVED or REJECTED.")
+                raise HTTPException(status_code=400, detail="Invalid status update. Admins can only set status to APPROVED, REJECTED or PUBLIC.")
         except Exception as e:
             raise HTTPException(status_code=500, detail=f"Error updating application status: {e}")
         return CreationStatus(success=True, message=f"Application status updated to {status}")

@@ -16,8 +16,18 @@ const toDateOrNull = (value) => {
 
 const formatStatusOption = (status) => {
   if (!status) return "Unbekannt";
-  const lower = status.toLowerCase();
-  return lower.charAt(0).toUpperCase() + lower.slice(1);
+  
+  const statusTranslations = {
+    PENDING: "Ausstehend",
+    APPROVED: "Genehmigt", 
+    REJECTED: "Abgelehnt",
+    REVISION: "Revision",
+    PUBLISHED: "Öffentlich",
+    DRAFT: "Entwurf",
+  };
+  
+  const upperStatus = status.toUpperCase();
+  return statusTranslations[upperStatus] || status;
 };
 
 export default function ReporterPage() {

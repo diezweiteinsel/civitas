@@ -272,7 +272,7 @@ async def update_application(   application_id: int,
                     adminRejectApplication(application_id, form_id, session)
                 except Exception as e:
                     raise HTTPException(status_code=500, detail=f"Error rejecting application: {e}")
-            elif status == "PUBLIC":
+            elif status == "PUBLIC" or status == "PUBLISHED":
                 try:
                     applicationCrud.publish_application(session, form_id, application_id)
                 except Exception as e:

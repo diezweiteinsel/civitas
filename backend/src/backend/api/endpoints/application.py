@@ -12,7 +12,7 @@ from backend.api.deps import   RoleChecker, get_current_user_payload, get_curren
 from backend.core import roleAuth
 from backend.crud import userCrud
 from backend.models.orm import roletable
-from backend.businesslogic.services.applicationService import createApplication, getApplication, editApplication
+from backend.businesslogic.services.applicationService import createApplication, getApplication
 from backend.businesslogic.services.adminService import adminApproveApplication, adminRejectApplication
 from backend.models.domain.application import Application, ApplicationStatus, ApplicationID, ApplicationFillout, ApplicationUpdate
 from backend.crud import userCrud

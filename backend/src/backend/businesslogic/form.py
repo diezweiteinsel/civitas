@@ -4,6 +4,7 @@ from backend.models import Form
 # from backend.models.buildingblock import BuildingBlockDataType
 from sqlalchemy import Column, Integer, String
 from backend.crud import dbActions
+from backend.models.domain.buildingblock import BBType as BuildingBlockDataType
 
 
 
@@ -12,7 +13,7 @@ def convertType(blockType: BuildingBlockDataType):
 
     if blockType == BuildingBlockDataType.STRING:
         return String
-    elif blockType == BuildingBlockDataType.INT:
+    elif blockType == BuildingBlockDataType.INTEGER:
         return Integer
 
 

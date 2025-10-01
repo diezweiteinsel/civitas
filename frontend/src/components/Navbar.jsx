@@ -70,6 +70,7 @@ export default function Navbar() {
           className="dropdown-toggle"
           onClick={() => setShowDropdown((prev) => !prev)}
           aria-expanded={showDropdown}
+          aria-haspopup="true"
         >
           <GiHamburgerMenu className="burger-icon" />
         </button>
@@ -183,7 +184,7 @@ export default function Navbar() {
                     to="/reporter/public"
                     onClick={() => setShowDropdown(false)}
                   >
-                    Offentliche Anträge
+                    Öffentliche Anträge
                   </NavLink>
                 </div>
                 <div className="dropdown-item">

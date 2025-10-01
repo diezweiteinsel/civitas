@@ -70,16 +70,7 @@ export default function ApplicationContainer({
 
   // Function to route to ApplicationView and to give the redirection context
   const handleViewApplication = (formId, applicationId) => {
-    console.log("ApplicationContainer - Navigating to form/application IDs:", {
-      formId,
-      applicationId,
-    });
-
     if (!formId || !applicationId) {
-      console.error("Missing identifiers for application view", {
-        formId,
-        applicationId,
-      });
       return;
     }
 
@@ -118,14 +109,15 @@ export default function ApplicationContainer({
   return (
     <div className="page-container">
       <div className="containers-card">
-        <h2 data-testid="card-title" className="card-title">{title}</h2> // TODO:
+        <h2 data-testid="card-title" className="card-title">
+          {title}
+        </h2>
 
         {isLoading && (
           <div style={{ textAlign: "center", padding: "20px" }}>
             <p>Loading applications...</p>
           </div>
         )}
-
         {error && (
           <div
             style={{
@@ -154,7 +146,6 @@ export default function ApplicationContainer({
             </button>
           </div>
         )}
-
         <div className="container-list">
           {!isLoading && safeApplications && safeApplications.length === 0 ? (
             <div className="no-applications">

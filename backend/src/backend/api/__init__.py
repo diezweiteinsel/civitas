@@ -19,8 +19,9 @@ Functions:
 """
 
 from fastapi import APIRouter
-from backend.api.endpoints import form, user, application, auth
+from backend.api.endpoints import form, user, application, auth, revision
 from backend.api.deps import get_current_user_payload, RoleChecker
+from backend.api.health import router as health_router
 
 api_router = APIRouter()
 
@@ -31,10 +32,14 @@ async def api_root():
     """
     return {"message": "Welcome to Civitas API v1"}
 
+
+
 api_router.include_router(user.router)
 api_router.include_router(form.router)
 api_router.include_router(application.router)
 api_router.include_router(auth.router)
+api_router.include_router(revision.router)
+api_router.include_router(health_router)
 
 
 # expose deps for testing

@@ -38,7 +38,6 @@ export default function RegistrationContainer({
       setError("");
       alert("Registration successful!");
       setSuccess("Registration successful!");
-      console.log("User created successfully:", data);
 
       resetForm();
 
@@ -65,7 +64,6 @@ export default function RegistrationContainer({
     onError: (error) => {
       setSuccess("");
       setError(error.message || "Registration failed. Please try again.");
-      console.error("Registration error:", error);
     },
   });
 

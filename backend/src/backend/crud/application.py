@@ -15,6 +15,8 @@ from backend.crud import formCrud
 
 from backend.crud.dbActions import getRowsByFilter
 
+from backend.models.domain.application import ApplicationStatus
+
 def get_application_table_by_id(id):
     """
     Takes:\n
@@ -445,10 +447,30 @@ def insert_application(session: Session, application: Application):
     return created_app
 
 # wrapper for updating application status
-def updateApplicationStatus(session: Session, tableClass: type, id: int, newStatus: str):
-    if newStatus not in ["PENDING", "APPROVED", "REJECTED", "REVISED"]:
+def updateApplicationStatus(session: Session, form_id: int, app_id: int, newStatus: ApplicationStatus):
+    if newStatus not in [ApplicationStatus.PENDING, ApplicationStatus.APPROVED, ApplicationStatus.REJECTED, ApplicationStatus.REVISED]:
         raise ValueError("Invalid status")
-    return dbActions.updateRow(session, tableClass, {"id": id, "status": newStatus})
+    tableClass = get_application_table_by_id(form_id)
+    return dbActions.updateRow(session, tableClass, {"id": app_id, "status": newStatus})
+
+
+def publish_application(session: Session, form_id: int, app_id: int):
+    """
+    Marks an application as public by setting its is_public attribute to True.
+    
+    Args:
+        session (Session): SQLAlchemy session object.
+        form_id (int): The ID of the form to which the application belongs.
+        app_id (int): The ID of the application to be marked as public.
+    
+    Raises:
+        ValueError: If the application does not exist.
+    """
+    tableClass = get_application_table_by_id(form_id)
+    application = dbActions.getRowById(session, tableClass, app_id)
+    if not application:
+        raise ValueError("Application not found")
+    dbActions.updateRow(session, tableClass, {"id": app_id, "is_public": True})
 
 
 def update_application(form_id: int, app_id: int, updateDict: dict, session: Session) -> int:

@@ -2,9 +2,9 @@ import { Fragment, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import {
-  FaDog,
-  FaFire,
-  FaInfoCircle,
+  FaCheckCircle,
+  FaTimesCircle,
+  FaClock,
   FaArrowLeft,
   FaHistory,
 } from "react-icons/fa";
@@ -15,6 +15,8 @@ import Navbar from "../components/Navbar";
 import { Role } from "../utils/const";
 import { getApplicationById } from "../utils/api";
 import { getUserRoles } from "../utils/data";
+import { BiWorld } from "react-icons/bi";
+import { FaEye } from "react-icons/fa";
 
 const STATUS_LABELS = {
   PENDING: "Ausstehend",
@@ -59,15 +61,9 @@ export default function ApplicationView() {
     retry: 1,
   });
 
-  const handleStatusChange = (newStatus) => {
-    // TODO: Implement status change logic
-  };
-
-  const statusKey = application?.is_public
-    ? "PUBLISHED"
-    : (application?.status || application?.Status || "")
-        .toString()
-        .toUpperCase();
+  const statusKey = (application?.status || application?.Status || "")
+    .toString()
+    .toUpperCase();
   const statusLabel = STATUS_LABELS[statusKey] || statusKey || "Unbekannt";
   const statusClass = statusKey.toLowerCase();
 
@@ -295,10 +291,10 @@ export default function ApplicationView() {
     application.title || application.form_name || `Antrag #${application.id}`;
   const iconForStatus =
     statusKey === "APPROVED"
-      ? FaDog
+      ? FaCheckCircle
       : statusKey === "REJECTED"
-      ? FaFire
-      : FaInfoCircle;
+      ? FaTimesCircle
+      : FaClock;
   const IconComponent = iconForStatus;
 
   return (
@@ -317,6 +313,12 @@ export default function ApplicationView() {
                 <div className={`status-badge ${statusClass}`}>
                   {statusLabel}
                 </div>
+                {application.is_public && (
+                  <div className="public-indicator" title="Öffentlich sichtbar">
+                    <BiWorld className="world-icon" />
+                    <FaEye className="eye-icon" />
+                  </div>
+                )}
                 <p style={{ margin: "8px 0 0 0" }}>
                   Antrag #{application.id} · Formular #
                   {application.form_id || application.formId}
@@ -324,7 +326,6 @@ export default function ApplicationView() {
               </div>
             </div>
           </header>
-
           <section className="metadata-section">
             <h2>Metadaten</h2>
             <div className="metadata-text">

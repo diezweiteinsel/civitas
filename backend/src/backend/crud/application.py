@@ -39,7 +39,7 @@ def getRowJsonPayload(row):
     """
     applicationTable = get_application_table_by_id(row.form_id)
     columnNames = [c.key for c in inspect(applicationTable).columns]
-    standardColumns = ["id", "user_id", "form_id", "admin_id","status", "created_at", "current_snapshot_id", "previous_snapshot_id", "is_public"]
+    standardColumns = ["id", "user_id", "form_id", "admin_id","status", "created_at", "snapshots", "is_public"]
     blockColumns = []
     for columnName in columnNames:
         if columnName not in standardColumns:

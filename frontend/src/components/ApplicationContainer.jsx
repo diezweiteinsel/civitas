@@ -1,17 +1,51 @@
-import { useEffect, useState } from "react";
+import "./../style/AdminApplicantReporterPage.css";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import "./../style/AdminApplicantReporterPage.css";
-import { FaDog, FaFire, FaInfoCircle } from "react-icons/fa";
-import { getAllApplications } from "../utils/api";
+import {
+  getAllApplications,
+  getApplicationsByStatus,
+  getPublicApplications,
+  getPublicApplicationsByStatus,
+} from "../utils/api";
 
 export default function ApplicationContainer({
-  applications: propsApplications = [],
+  applications: providedApplications = [],
+  statuses = [],
+  isPublic = false,
   title = "Applications",
+  enableFetch = true,
+  isLoadingOverride = false,
+  errorOverride = null,
+  onRetry = () => {},
 }) {
-  const [expandedIds, setExpandedIds] = useState([]);
   const navigate = useNavigate();
   const location = useLocation();
+
+  // Fetch applications based on isPublic prop
+  const normalizedStatuses = Array.isArray(statuses)
+    ? statuses.filter(Boolean)
+    : [];
+
+  const queryKey = [
+    "applications",
+    isPublic ? "public" : "private",
+    normalizedStatuses.length ? normalizedStatuses.join(",") : "all",
+  ];
+
+  const queryFn = () => {
+    if (isPublic) {
+      if (normalizedStatuses.length) {
+        return getPublicApplicationsByStatus(normalizedStatuses);
+      }
+      return getPublicApplications();
+    }
+
+    if (normalizedStatuses.length) {
+      return getApplicationsByStatus(normalizedStatuses);
+    }
+
+    return getAllApplications();
+  };
 
   const {
     data: fetchedApplications,
@@ -19,38 +53,33 @@ export default function ApplicationContainer({
     error: applicationsError,
     refetch: refetchApplications,
   } = useQuery({
-    queryKey: ["AllApplications"],
-    queryFn: getAllApplications,
-    enabled: true, // Enable automatic fetching
+    queryKey,
+    queryFn,
+    enabled: enableFetch,
     retry: 1,
   });
 
-  // Use fetched applications if available, otherwise use props
-  const applications = fetchedApplications || propsApplications;
+  const applications = enableFetch ? fetchedApplications : providedApplications;
+  const isLoading = enableFetch ? applicationsLoading : isLoadingOverride;
+  const error = enableFetch ? applicationsError : errorOverride;
+  const retryFn = enableFetch ? refetchApplications : onRetry;
 
-  const getIconByFormId = (formId) => {
-    const iconMap = {
-      1: <FaDog data-testid="icon-dog"/>,
-      2: <FaFire data-testid="icon-fire"/>,
-      3: <FaInfoCircle data-testid="icon-circle"/>,
-    };
-    return iconMap[formId] || <FaInfoCircle />;
-  };
+  const safeApplications = Array.isArray(applications) ? applications : [];
 
-  const getFormTypeByFormId = (formId) => {
-    const typeMap = {
-      1: "Dog License Application",
-      2: "Fire Permit Application",
-      3: "Information Request",
-    };
-    return typeMap[formId] || "Unknown Application";
-  };
+  // Function to route to ApplicationView and to give the redirection context
+  const handleViewApplication = (formId, applicationId) => {
+    console.log("ApplicationContainer - Navigating to form/application IDs:", {
+      formId,
+      applicationId,
+    });
 
-  const handleViewApplication = (applicationId) => {
-    console.log(
-      "ApplicationContainer - Navigating to application ID:",
-      applicationId
-    );
+    if (!formId || !applicationId) {
+      console.error("Missing identifiers for application view", {
+        formId,
+        applicationId,
+      });
+      return;
+    }
 
     // Determine the source page context
     const currentPath = location.pathname;
@@ -62,16 +91,12 @@ export default function ApplicationContainer({
       fromPage = "applicant-dashboard";
     } else if (currentPath.includes("/public")) {
       fromPage = "public-applications";
-    } else if (currentPath.includes("/pending")) {
-      fromPage = "pending-applications";
-    } else if (currentPath.includes("/approved")) {
-      fromPage = "approved-applications";
-    } else if (currentPath.includes("/rejected")) {
-      fromPage = "rejected-applications";
+    } else if (currentPath.includes("/reporter")) {
+      fromPage = "reporter-applications";
     }
 
     // Navigate with state to provide context to ApplicationView
-    navigate(`/application/${applicationId}`, {
+    navigate(`/applications/${formId}/${applicationId}`, {
       state: {
         fromPage: fromPage,
         from: currentPath,
@@ -79,18 +104,27 @@ export default function ApplicationContainer({
     });
   };
 
+  const translateStatus = (status) => {
+    if (!status) return "Unbekannt";
+    const statusUpper = status.toString().toUpperCase();
+    if (statusUpper === "PENDING") return "Ausstehend";
+    if (statusUpper === "APPROVED") return "Genehmigt";
+    if (statusUpper === "REJECTED") return "Abgelehnt";
+    return status;
+  };
+
   return (
     <div className="page-container">
       <div className="containers-card">
         <h2 data-testid="card-title" className="card-title">{title}</h2> // TODO:
 
-        {applicationsLoading && (
+        {isLoading && (
           <div style={{ textAlign: "center", padding: "20px" }}>
             <p>Loading applications...</p>
           </div>
         )}
 
-        {applicationsError && (
+        {error && (
           <div
             style={{
               textAlign: "center",
@@ -101,9 +135,9 @@ export default function ApplicationContainer({
               margin: "10px 0",
             }}
           >
-            <p>Error loading applications: {applicationsError.message}</p>
+            <p>Error loading applications: {error.message || String(error)}</p>
             <button
-              onClick={() => refetchApplications()}
+              onClick={() => retryFn && retryFn()}
               style={{
                 marginTop: "10px",
                 padding: "5px 10px",
@@ -120,48 +154,63 @@ export default function ApplicationContainer({
         )}
 
         <div className="container-list">
-          {!applicationsLoading && applications && applications.length === 0 ? (
+          {!isLoading && safeApplications && safeApplications.length === 0 ? (
             <div className="no-applications">
               <p>No applications found.</p>
             </div>
           ) : (
-            applications &&
-            applications.map((application) => (
-              <div
-                key={application.applicationID || application.id}
-                className="container-item"
-              >
-                <div className="container-header">
-                  <div className="icon">
-                    {getIconByFormId(application.formID || application.formId)}
-                  </div>
-                  <div className="info">
-                    <div className="form-type">
-                      {getFormTypeByFormId(
-                        application.formID || application.formId
-                      )}
+            safeApplications.map((application) => {
+              const applicationId = application.applicationID || application.id;
+              const formId =
+                application.formId || application.formID || application.form_id;
+              const formName =
+                application.formName ||
+                application.form_name ||
+                (formId ? `Formular #${formId}` : "Unbekanntes Formular");
+              const createdRaw =
+                application.createdAt || application.created_at;
+              let createdLabel = "—";
+              if (createdRaw) {
+                const createdDate = new Date(createdRaw);
+                if (!Number.isNaN(createdDate.getTime())) {
+                  createdLabel = createdDate.toLocaleString("de-DE");
+                }
+              }
+              const rawStatus = (application.status || "").toString();
+              const statusClass = application.is_public
+                ? "public"
+                : rawStatus.toLowerCase();
+              const statusDisplay = application.is_public
+                ? "Öffentlich"
+                : rawStatus
+                ? translateStatus(rawStatus)
+                : "Unbekannt";
+
+              return (
+                <div key={applicationId} className="container-item">
+                  <div className="container-header">
+                    <div className="info">
+                      <div className="form-type">{formName}</div>
+                      <div className="container-meta">
+                        <span>Erstellt: {createdLabel}</span>
+                      </div>
+                      <div className={`status ${statusClass}`}>
+                        {statusDisplay}
+                      </div>
                     </div>
-                    <div
-                      className={`status ${application.status.toLowerCase()}`}
+                    <button
+                      className="toggle-btn"
+                      onClick={() =>
+                        handleViewApplication(formId, applicationId)
+                      }
+                      style={{ marginLeft: "10px" }}
                     >
-                      {application.status.charAt(0).toUpperCase() +
-                        application.status.slice(1)}
-                    </div>
+                      Zeige Details
+                    </button>
                   </div>
-                  <button
-                    className="toggle-btn"
-                    onClick={() =>
-                      handleViewApplication(
-                        application.applicationID || application.id
-                      )
-                    }
-                    style={{ marginLeft: "10px" }}
-                  >
-                    Zeige Details
-                  </button>
                 </div>
-              </div>
-            ))
+              );
+            })
           )}
         </div>
       </div>

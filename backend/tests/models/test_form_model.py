@@ -1,7 +1,8 @@
 from datetime import date
 import os
 from importlib import reload # for reloading modules
-
+import xmltodict
+import re
 
 
 from backend.models.orm.formtable import OrmForm
@@ -57,7 +58,22 @@ def test_form_json_conversion():
 
     assert form1 == form1_from_json
 
+def test_form_xlm_conversion():
+	blocks = {
+		1: BuildingBlock(label="helpme", data_type=BBType.STRING, required=True, constraintsJson={}),
+		2: BuildingBlock(label="helpme1", data_type=BBType.INTEGER, required=True, constraintsJson={}),
+		3: BuildingBlock(label="helpme2", data_type=BBType.DATE, required=True, constraintsJson={}),
+	}
+	example_form = Form(form_name="example", blocks=blocks, version="6.9")
+	xml: str = example_form.to_xml()
 
+	#match = re.search(r'(<formDefinition (.*?)</formDefinition>)', xml, re.DOTALL)
+	#print(xml)
+	#print(xmltodict.parse(xml))
+	#print(match)
+	#print("XML TESTING: " + str(xmltodict.parse(match[0])))
+
+	assert(xml == Form.from_xml(xml).to_xml())
 
 
 def test_form_to_orm():
@@ -123,3 +139,5 @@ if __name__ == "__main__":
     form1_json = form1.to_json()
 
     print(form1_json)
+
+    test_form_xlm_conversion()

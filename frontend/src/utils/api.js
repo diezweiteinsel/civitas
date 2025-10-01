@@ -106,8 +106,7 @@ export const getAllApplications = async () => {
   return applications;
 };
 
-// WORKS
-export const getApplicationById = async (application_id) => {
+export const getPublicApplications = async () => {
   const accessToken = getToken();
   const headers = {
     "Content-Type": "application/json",
@@ -116,8 +115,108 @@ export const getApplicationById = async (application_id) => {
     headers.Authorization = `Bearer ${accessToken}`;
   }
 
+  const response = await fetch(`${API_BASE_URL}/applications?public=true`, {
+    method: "GET",
+    headers: headers,
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(
+      errorData.detail ||
+        errorData.error ||
+        "Failed to fetch public applications"
+    );
+  }
+
+  const applications = await response.json();
+  return applications;
+};
+
+export const getApplicationsByStatus = async (statuses) => {
+  const accessToken = getToken();
+  const headers = {
+    "Content-Type": "application/json",
+  };
+  if (accessToken) {
+    headers.Authorization = `Bearer ${accessToken}`;
+  }
+
+  // Create a new URLSearchParams object
+  const params = new URLSearchParams();
+  // Append each status to the params with the same key
+  statuses.forEach((status) => params.append("status", status));
+
+  // Use the generated query string
   const response = await fetch(
-    `${API_BASE_URL}/applications/${application_id}`,
+    `${API_BASE_URL}/applications?public=false&${params.toString()}`,
+    {
+      method: "GET",
+      headers: headers,
+    }
+  );
+
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(
+      errorData.detail ||
+        errorData.error ||
+        "Failed to fetch applications by status"
+    );
+  }
+
+  const applications = await response.json();
+  return applications;
+};
+
+export const getPublicApplicationsByStatus = async (statuses) => {
+  const accessToken = getToken();
+  const headers = {
+    "Content-Type": "application/json",
+  };
+  if (accessToken) {
+    headers.Authorization = `Bearer ${accessToken}`;
+  }
+
+  // Create a new URLSearchParams object
+  const params = new URLSearchParams();
+  // Append each status to the params with the same key
+  statuses.forEach((status) => params.append("status", status));
+
+  // Use the generated query string
+  const response = await fetch(
+    `${API_BASE_URL}/applications?public=true&${params.toString()}`,
+    {
+      method: "GET",
+      headers: headers,
+    }
+  );
+
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(
+      errorData.detail ||
+        errorData.error ||
+        "Failed to fetch public applications by status"
+    );
+  }
+
+  const applications = await response.json();
+  return applications;
+};
+
+export const getApplicationById = async (form_id, application_id) => {
+  const accessToken = getToken();
+  const headers = {
+    "Content-Type": "application/json",
+  };
+  if (accessToken) {
+    headers.Authorization = `Bearer ${accessToken}`;
+  }
+
+  // Changed URL structure
+  const response = await fetch(
+    `${API_BASE_URL}/applications/${form_id}/${application_id}`,
     {
       method: "GET",
       headers: headers,
@@ -146,10 +245,9 @@ export const createApplication = async (applicationData) => {
   }
 
   // Structure the data to match backend expectations
-  const requestBody = {
-    user_id: applicationData.user_id || 1, // Default to user 1 if not provided
-    form_id: applicationData.form_id || 1, // Default to form 1 if not provided
-    payload: applicationData.payload || applicationData, // Use payload if provided, otherwise use the entire data
+   const requestBody = {
+    form_id: applicationData.form_id,
+    payload: applicationData.payload,
   };
 
   const response = await fetch(`${API_BASE_URL}/applications`, {
@@ -194,6 +292,7 @@ export const createForm = async (formData) => {
   return response.json();
 };
 
+// WORKS
 export const getAllForms = async () => {
   const accessToken = getToken();
   const headers = {
@@ -217,4 +316,65 @@ export const getAllForms = async () => {
 
   const forms = await response.json();
   return forms;
+};
+
+export const getFormById = async (form_id) => {
+  const accessToken = getToken();
+  const headers = {
+    "Content-Type": "application/json",
+  };
+  if (accessToken) {
+    headers.Authorization = `Bearer ${accessToken}`;
+  }
+
+  const response = await fetch(`${API_BASE_URL}/forms/${form_id}`, {
+    method: "GET",
+    headers: headers,
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(
+      errorData.detail || errorData.error || "Failed to fetch form by ID"
+    );
+  }
+
+  const form = await response.json();
+  return form;
+};
+
+export const updateApplication = async (applicationData) => {
+  const accessToken = getToken();
+  const headers = {
+    "Content-Type": "application/json",
+  };
+  if (accessToken) {
+    headers.Authorization = `Bearer ${accessToken}`;
+  }
+
+  // Structure the data to match backend expectations
+  const requestBody = {
+    form_id: applicationData.form_id || 1,
+    application_id: applicationData.id || 1,
+    payload: applicationData.payload || applicationData,
+  };
+
+  const response = await fetch(
+    `${API_BASE_URL}/applications/${applicationData.id}`,
+    {
+      method: "PUT",
+      headers: headers,
+      body: JSON.stringify(requestBody),
+    }
+  );
+
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(
+      errorData.detail || errorData.error || "Failed to change application"
+    );
+  }
+
+  const application = await response.json();
+  return application;
 };

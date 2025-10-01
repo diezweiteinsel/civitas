@@ -16,20 +16,27 @@ export default function PublicApplication() {
       ? Role.REPORTER
       :sourceRole === "reporter"
       ? Role.APPLICANT
+      : Role.REPORTER
+      ? sourceRole === "reporter"
       : Role.EMPTY;
 
   const getTitle = () => {
     if (sourceRole === "admin") return "Admin-Ansicht – Öffentliche Anträge:";
     if (sourceRole === "applicant")
       return "Bürger-Ansicht – Öffentliche Anträge:";
-    if (sourceRole === "reporter") return "Reporter-Ansicht - öffentliche Anträge:"
+    if (sourceRole === "reporter")
+      return "Reporter =-Ansicht - öffentliche Anträge";
     return "Öffentliche Anträge:";
   };
 
   return (
     <>
-      <Navbar role={currentRole} />
-      <ApplicationContainer applications={[]} title={getTitle()} />
+      <Navbar />
+      <ApplicationContainer
+        statuses={["APPROVED"]}
+        isPublic={true}
+        title={getTitle()}
+      />
     </>
   );
 }

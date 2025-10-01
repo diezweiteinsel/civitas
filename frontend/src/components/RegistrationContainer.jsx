@@ -5,7 +5,9 @@ import { Role } from "../utils/const";
 import { createUser } from "../utils/api";
 import "./../style/RegisterPage.css";
 
-export default function RegistrationContainer({ role = Role.APPLICANT }) {
+export default function RegistrationContainer({
+  roleToRegister = Role.APPLICANT,
+}) {
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -13,13 +15,12 @@ export default function RegistrationContainer({ role = Role.APPLICANT }) {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const navigate = useNavigate();
-
   const title =
     {
       [Role.ADMIN]: "Admin ",
       [Role.REPORTER]: "Reporter ",
       [Role.APPLICANT]: "Bürger/-innen ",
-    }[role] || "Bürger/-innen ";
+    }[roleToRegister] || "Bürger/-innen ";
 
   // Function to reset form fields
   const resetForm = () => {
@@ -30,6 +31,7 @@ export default function RegistrationContainer({ role = Role.APPLICANT }) {
     setError("");
   };
 
+  // Mutation for creating a user
   const createUserMutation = useMutation({
     mutationFn: createUser,
     onSuccess: (data) => {
@@ -44,7 +46,7 @@ export default function RegistrationContainer({ role = Role.APPLICANT }) {
         setSuccess("");
       }, 3000);
 
-      switch (role) {
+      switch (roleToRegister) {
         case Role.ADMIN:
           break;
         case Role.REPORTER:
@@ -67,6 +69,7 @@ export default function RegistrationContainer({ role = Role.APPLICANT }) {
     },
   });
 
+  // Handle form submission
   const handleSubmit = (e) => {
     e.preventDefault();
 
@@ -86,7 +89,7 @@ export default function RegistrationContainer({ role = Role.APPLICANT }) {
       username,
       email,
       password,
-      role: role,
+      role: roleToRegister,
     });
   };
 
@@ -148,7 +151,7 @@ export default function RegistrationContainer({ role = Role.APPLICANT }) {
               ? "Account erstellen..."
               : "Registrieren"}
           </button>
-          {role === Role.APPLICANT && (
+          {roleToRegister === Role.APPLICANT && (
             <p className="signup-text">
               Sie haben bereits einen Account?{" "}
               <NavLink to="/">Anmelden</NavLink>

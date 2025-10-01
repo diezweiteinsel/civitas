@@ -1,11 +1,13 @@
 from typing import Type
 
+from backend.models.orm import usertable
 from sqlalchemy import Column, Date, Enum, Integer, String
 from sqlalchemy.orm import Session
 
 from backend.core.ormUtil import SchemaBase
 from backend.crud import dbActions
 from backend.models.domain.user import RoleAssignment as DomainRoleAssignment, UserType
+
 
 # A user has roleAssignments, each roleAssignment has a role
 
@@ -39,8 +41,18 @@ def to_domain_model(orm_role_assignment: OrmRoleAssignment) -> DomainRoleAssignm
     )
 
 
-def get_user_roles(orm_user: Type, session: Session) -> list[DomainRoleAssignment]:
+
+def get_user_roles(orm_user: usertable.OrmUser, session: Session) -> list[OrmRoleAssignment]:
     integerthing = orm_user.id
+    role_assignments = dbActions.getRowsByFilter(
+        session, OrmRoleAssignment, {"user_id": integerthing}
+    )
+
+    return role_assignments
+
+
+def get_user_roles_by_id(user_id: int, session:Session) -> list[OrmRoleAssignment]:
+    integerthing = user_id
     role_assignments = dbActions.getRowsByFilter(
         session, OrmRoleAssignment, {"user_id": integerthing}
     )

@@ -1,33 +1,44 @@
+import "./../style/AdminApplicantReporterPage.css";
 import Navbar from "../components/Navbar";
 import ApplicationContainer from "../components/ApplicationContainer";
 import { useSearchParams } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
 import { Role } from "../utils/const";
+import { getApplicationsByStatus } from "../utils/api";
 
 export default function PendingApplication() {
-  const [pendingApplications, setPendingApplications] = useState([]);
+  const [searchParams] = useSearchParams();
   const sourceRole = searchParams.get("from");
 
   const currentRole =
-    sourceRole === "admin"
-      ? Role.ADMIN
-      : sourceRole === "applicant"
+    sourceRole === "reporter"
       ? Role.REPORTER
-      :sourceRole === "reporter"
-      ? Role.APPLICANT
       : Role.EMPTY;
 
-  const getTitle = () => {
-    if (sourceRole === "admin") return "Admin-Ansicht – Ausstehende Anträge:";
-    if (sourceRole === "applicant")
-      return "Bürger-Ansicht – Ausstehende Anträge:";
-    if (sourceRole === "reporter") return "Reporter-Ansicht - Ausstehende Anträge:"
-    return "Öffentliche Anträge:";
-  };
+  const {
+    data: applications = [],
+    isLoading,
+    error,
+    refetch,
+  } = useQuery({
+    queryKey: ["applications", "status", "PENDING"],
+    queryFn: () => getApplicationsByStatus(["PENDING"]),
+    retry: 1,
+  });
+
+
 
   return (
     <>
-      <Navbar role={currentRole} />
-      <ApplicationContainer applications={[]} title={getTitle()} />
+      <Navbar />
+      <ApplicationContainer
+        applications={applications}
+        title="Ausstehende Anträge:"
+        enableFetch={false}
+        isLoadingOverride={isLoading}
+        errorOverride={error}
+        onRetry={refetch}
+      />
     </>
   );
 }

@@ -97,7 +97,7 @@ deploy-to-vm:
       "DB_NAME=$POSTGRES_DB" "DB_USERNAME=$POSTGRES_USER" "DB_PASSWORD=$POSTGRES_PASSWORD" \
       "POSTGRES_DB=$POSTGRES_DB" "POSTGRES_USER=$POSTGRES_USER" "POSTGRES_PASSWORD=$POSTGRES_PASSWORD" \
       "SECRET_KEY=$SECRET_KEY" "ALGORITHM=$ALGORITHM" \
-      'DEV_SQLITE=0' 'SKIP_CREATE_ALL=0' 'ECHO_SQL=0' \
+      'DEV_SQLITE=0' 'SKIP_CREATE_ALL=0' 'ECHO_SQL=0' 'SEED_DEMO_DATA=1' \
       "ALLOWED_ORIGINS=$ALLOWED_ORIGINS" 'PYTHONPATH=/app' > backend.env 
 
       # derive pubkey + show fingerprint (no secret)
@@ -135,24 +135,47 @@ deploy-to-vm:
     name: production
     url: http://$SSH_SERVER_IP:1203
 
-cleanup_runner:
+reset_deployment:
   stage: maintenance
-  # This job must run on the runner you want to clean.
-  # Ensure your runner has a unique tag, like 'sopro-runner'.
-  tags:
-    - sopro-runner 
-  
-  # Use the official Docker image to get access to the `docker` CLI
-  image: docker:24.0
-
-  # This is the critical part: it gives the job's container access
-  # to the HOST's Docker daemon.
-  variables:
-    DOCKER_HOST: "unix:///var/run/docker.sock"
-
-  # The job will only run when you click the "play" button for it in the GitLab pipeline view.
+  image: alpine:latest
+  needs: ["deploy-to-vm"]
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
   when: manual
 
+  before_script:
+    - apk add --no-cache git openssh-client docker-cli-compose
+    - eval $(ssh-agent -s)
+    - test -f "$SSH_PRIVATE_KEY" || { echo "SSH_PRIVATE_KEY must be a File variable"; exit 1; }
+    - tr -d '\r' < "$SSH_PRIVATE_KEY" > id_reset
+    - chmod 600 id_reset
+    - grep -q "^-----BEGIN OPENSSH PRIVATE KEY-----" id_reset || { echo "Not an OpenSSH private key"; exit 1; }
+    - ssh-keygen -y -f id_reset >/dev/null || { echo "Invalid or passphrase-protected key"; exit 1; }
+    - ssh-add id_reset
+    - mkdir -p ~/.ssh && chmod 700 ~/.ssh
+    - printf "Host *\n\tStrictHostKeyChecking no\n\tPort %s\n" "$SSH_PORT" > ~/.ssh/config
+
+  script:
+    - |
+      ssh -p "$SSH_PORT" "$SSH_USER@$SSH_SERVER_IP" "
+        set -e
+        cd '$VM_DEPLOY_PATH'
+        export DOCKER_CONFIG=$VM_DEPLOY_PATH/.docker
+        mkdir -p \$DOCKER_CONFIG
+        docker compose -f docker-compose.prod.yml down -v
+        docker compose -f docker-compose.prod.yml pull
+        docker compose -f docker-compose.prod.yml up -d --remove-orphans
+        docker compose ps
+      "
+cleanup:
+  stage: maintenance
+  tags:
+    - sopro-runner 
+  image: docker:24.0
+
+  variables:
+    DOCKER_HOST: "unix:///var/run/docker.sock"
+  when: manual
   script:
     - echo "Starting cleanup of Docker resources on the runner host. Current disk usage:"
     - df -h

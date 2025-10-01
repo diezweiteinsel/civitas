@@ -1,6 +1,6 @@
-import { useState, useEffect } from "react";
+import { Fragment, useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
-import { useMutation } from "@tanstack/react-query";
 import {
   FaDog,
   FaFire,
@@ -14,206 +14,228 @@ import "./../style/ApplicationView.css";
 import Navbar from "../components/Navbar";
 import { Role } from "../utils/const";
 import { getApplicationById } from "../utils/api";
+import { getUserRoles } from "../utils/data";
+
+const STATUS_LABELS = {
+  PENDING: "Ausstehend",
+  APPROVED: "Genehmigt",
+  REJECTED: "Abgelehnt",
+  REVISION: "Revision",
+  PUBLISHED: "Öffentlich",
+  DRAFT: "Entwurf",
+};
+
+const CONTEXT_FALLBACKS = {
+  "admin-dashboard": "/admin",
+  "applicant-dashboard": "/applicant",
+  "reporter-applications": "/reporter",
+  "public-applications": "/applicant/public",
+};
 
 export default function ApplicationView() {
-  const { id } = useParams();
   const navigate = useNavigate();
   const location = useLocation();
-  const [application, setApplication] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
+  const { formId, applicationId } = useParams();
 
-  // Simplified helper functions
-  const currentRole = (() => {
-    const referrer = location.state?.from || document.referrer;
-    if (referrer?.includes("/admin")) return Role.ADMIN;
-    if (referrer?.includes("/applicant")) return Role.APPLICANT;
-    return Role.EMPTY;
-  })();
+  const numericFormId = Number.parseInt(formId, 10);
+  const numericAppId = Number.parseInt(applicationId, 10);
+  const areIdsValid =
+    Number.isInteger(numericFormId) && Number.isInteger(numericAppId);
+
+  const roles = getUserRoles();
+  const currentRole = roles && roles.length > 0 ? roles[0] : navigate("/login");
 
   const sourceContext = location.state?.fromPage || "unknown";
 
-  const getApplicationMutation = useMutation({
-    mutationFn: getApplicationById,
-    onSuccess: (data) => {
-      setError("");
-      setApplication(data);
-      setLoading(false);
-    },
-    onError: (error) => {
-      setError(error.message || "Failed to fetch application.");
-      setLoading(false);
-    },
+  const {
+    data: application,
+    error,
+    isLoading,
+    refetch,
+  } = useQuery({
+    queryKey: ["application", numericFormId, numericAppId],
+    queryFn: () => getApplicationById(numericFormId, numericAppId),
+    enabled: areIdsValid,
+    retry: 1,
   });
 
-  useEffect(() => {
-    if (id && id !== "undefined") {
-      setLoading(true);
-      setError("");
-      const numericId = parseInt(id, 10);
-      if (isNaN(numericId)) {
-        setError("Invalid application ID");
-        setLoading(false);
-        return;
-      }
-      getApplicationMutation.mutate(numericId);
-    } else {
-      setError("No application ID provided");
-      setLoading(false);
+  const handleStatusChange = (newStatus) => {
+    // TODO: Implement status change logic
+  };
+
+  const statusKey = application?.is_public
+    ? "PUBLISHED"
+    : (application?.status || application?.Status || "")
+        .toString()
+        .toUpperCase();
+  const statusLabel = STATUS_LABELS[statusKey] || statusKey || "Unbekannt";
+  const statusClass = statusKey.toLowerCase();
+
+  const createdAtLabel = useMemo(() => {
+    const rawCreated = application?.created_at || application?.createdAt;
+    if (!rawCreated) return "—";
+    const createdDate = new Date(rawCreated);
+    if (Number.isNaN(createdDate.getTime())) return String(rawCreated);
+    return createdDate.toLocaleString("de-DE");
+  }, [application?.created_at, application?.createdAt]);
+
+  const payloadEntries = useMemo(() => {
+    const rawPayload = application?.jsonPayload || application?.payload || {};
+    if (!rawPayload || typeof rawPayload !== "object") {
+      return [];
     }
-  }, [id]);
-
-  // Form configuration
-  const FORM_CONFIG = {
-    1: { icon: <FaDog />, type: "Hundelizenzantrag" },
-    2: { icon: <FaFire />, type: "Biike-Feuerantrag" },
-    3: { icon: <FaInfoCircle />, type: "Informationsanfrage" },
-  };
-
-  // Status translation
-  const getGermanStatus = (status) => {
-    const statusMap = {
-      PENDING: "Ausstehend",
-      APPROVED: "Genehmigt",
-      REJECTED: "Abgelehnt",
-      PUBLISHED: "Veröffentlicht",
-    };
-    return statusMap[status] || status;
-  };
-
-  const getIconByFormId = (formId) =>
-    FORM_CONFIG[formId]?.icon || <FaInfoCircle />;
-  const getFormTypeByFormId = (formId) =>
-    FORM_CONFIG[formId]?.type || "Unbekannter Antrag";
-
-  // Helper to get application properties with fallbacks
-  const getAppProperty = (primary, secondary) =>
-    application?.[primary] || application?.[secondary];
-
-  const handleStatusUpdate = (newStatus) => {
-    if (application) {
-      alert(`Antrag ${newStatus} erfolgreich!`);
-    }
-  };
+    return Object.entries(rawPayload);
+  }, [application?.jsonPayload, application?.payload]);
 
   const handleGoBack = () => {
-    if (currentRole === Role.ADMIN) {
-      navigate("/admin");
-    } else if (currentRole === Role.APPLICANT) {
-      navigate("/applicant");
-    } else if (currentRole === Role.REPORTER) {
-      navigate("/reporter")
-    } else {
-      navigate(-1);
+    const fromPath = location.state?.from;
+    if (fromPath) {
+      navigate(fromPath, { replace: false });
+      return;
     }
+
+    if (window.history.length > 1) {
+      navigate(-1);
+      return;
+    }
+
+    const fallbackPath = CONTEXT_FALLBACKS[sourceContext];
+    if (fallbackPath) {
+      navigate(fallbackPath, { replace: false });
+      return;
+    }
+
+    navigate("/");
   };
 
-  const renderPageContext = () => {
-    if (currentRole !== Role.ADMIN) return null;
-
-    const contextMap = {
-      "admin-dashboard": "Anzeigen über die Admin-Startseite",
-      "public-applications": "Anzeigen über die öffentlichen Anwendungen",
-      "applicant-dashboard": "Anzeigen über das Bewerber-Dashboard",
-      unknown: "Direkter Zugriff",
-    };
+  const renderWorkflow = () => {
+    const steps = ["Eingereicht", "In Prüfung", "Entscheidung"];
+    const currentIndex =
+      statusKey === "APPROVED"
+        ? 2
+        : statusKey === "REJECTED"
+        ? 2
+        : statusKey === "PENDING"
+        ? 1
+        : 0;
 
     return (
-      <div className="context-info">
-        <small>
-          <FaHistory /> {contextMap[sourceContext] || "Unbekannter Kontext"}
-        </small>
+      <div className="status-flow-info">
+        <h4>Bearbeitungsstatus</h4>
+        <div className="workflow-steps">
+          {steps.map((step, index) => {
+            const isCurrent = index === currentIndex;
+            const isCompleted = index < currentIndex;
+            let stepClass = "workflow-step";
+            if (isCurrent) stepClass += " current";
+            if (isCompleted) stepClass += " completed";
+            if (statusKey === "REJECTED" && index === currentIndex) {
+              stepClass += " rejected";
+            }
+            return (
+              <Fragment key={`workflow-${index}`}>
+                <div className={stepClass}>{step}</div>
+                {index < steps.length - 1 && (
+                  <div className="workflow-arrow">→</div>
+                )}
+              </Fragment>
+            );
+          })}
+        </div>
+        {statusKey === "REJECTED" && (
+          <div className="workflow-step rejected">Antrag wurde abgelehnt</div>
+        )}
       </div>
     );
   };
 
-  const renderActionButtons = () => {
-    if (currentRole !== Role.ADMIN) return null;
+  const renderRoleSpecificActions = () => {
+    const isApproved = statusKey === "APPROVED";
+    const isRejected = statusKey === "REJECTED";
+    const isPublished = application?.is_public;
 
-    const { status } = application;
-
-    return (
-      <div className="action-buttons">
-        <h3>Admin-Aktionen:</h3>
-        {renderPageContext()}
-
+    if (currentRole === Role.ADMIN) {
+      return (
         <div className="button-group">
-          {status?.toLowerCase() === "pending" && (
-            <>
-              <button
-                className="action-btn approve-btn"
-                onClick={() => handleStatusUpdate("approved")}
-              >
-                Antrag genehmigen
-              </button>
-              <button
-                className="action-btn reject-btn"
-                onClick={() => handleStatusUpdate("rejected")}
-              >
-                Antrag ablehnen
-              </button>
-            </>
-          )}
-
-          {status?.toLowerCase() === "approved" && (
+          {!isApproved && (
             <button
-              className="action-btn publish-btn"
-              onClick={() => handleStatusUpdate("published")}
+              type="button"
+              className="action-btn approve-btn"
+              onClick={() => handleStatusChange("APPROVED")}
             >
-              Antrag veröffentlichen
+              Genehmigen
+            </button>
+          )}
+          {!isRejected && (
+            <button
+              type="button"
+              className="action-btn reject-btn"
+              onClick={() => handleStatusChange("REJECTED")}
+            >
+              Ablehnen
+            </button>
+          )}
+          {!isPublished && (
+            <button
+              type="button"
+              className="action-btn publish-btn"
+              onClick={() => handleStatusChange("PUBLISHED")}
+            >
+              Veröffentlichen
             </button>
           )}
         </div>
-      </div>
-    );
-  };
+      );
+    }
 
-  const renderApplicantActions = () => {
-    if (currentRole !== Role.APPLICANT) return null;
-
-    return (
-      <div className="applicant-actions">
-        <h3>Antragsoptionen:</h3>
+    if (currentRole === Role.APPLICANT) {
+      return (
         <div className="button-group">
-          {application.status?.toLowerCase() === "pending" && (
+          {!(isPublished || isApproved || isRejected) && (
             <button
+              type="button"
               className="action-btn edit-btn"
-              onClick={() => navigate(`/applicant/edit/${application.id}`)}
+              onClick={() =>
+                navigate(
+                  `/applicant/application-revise/${formId}/${applicationId}`
+                )
+              }
             >
               Antrag bearbeiten
             </button>
           )}
-
-          <button
-            className="action-btn info-btn"
-            onClick={() => {
-              const statusMessages = {
-                pending:
-                  "Ihr Antrag wird derzeit von unserem Verwaltungsteam geprüft.",
-                approved: "Herzlichen Glückwunsch! Ihr Antrag wurde genehmigt.",
-                rejected:
-                  "Leider wurde Ihr Antrag nicht genehmigt. Bitte kontaktieren Sie die Verwaltung für weitere Informationen.",
-                published:
-                  "Ihr Antrag wurde genehmigt und ist jetzt öffentlich sichtbar.",
-              };
-              alert(
-                statusMessages[application.status] || "Antragsstatus unbekannt."
-              );
-            }}
-          >
-            Status-Informationen
+          <button type="button" className="action-btn info-btn" disabled>
+            Rückfragen stellen
           </button>
         </div>
+      );
+    }
+
+    if (currentRole === Role.REPORTER) {
+      return (
+        <div className="button-group">
+          <button type="button" className="action-btn info-btn" disabled>
+            Verlauf exportieren
+          </button>
+        </div>
+      );
+    }
+
+    return (
+      <div className="button-group">
+        <button type="button" className="action-btn info-btn" disabled>
+          Keine Aktionen verfügbar
+        </button>
       </div>
     );
   };
 
-  if (loading) {
+  if (isLoading) {
     return (
       <>
-        <Navbar role={currentRole} />
+        <Navbar />
         <div className="application-view">
-          <div className="loading">Antrag wird geladen...</div>
+          <div className="loading">Antrag wird geladen…</div>
         </div>
       </>
     );
@@ -222,28 +244,30 @@ export default function ApplicationView() {
   if (error) {
     return (
       <>
-        <Navbar role={currentRole} />
+        <Navbar />
         <div className="application-view">
           <div className="error">
-            <h2>Fehler</h2>
-            <p>{error}</p>
-            <button className="action-btn" onClick={handleGoBack}>
-              Zurück
-            </button>
-            <button
-              className="action-btn"
-              onClick={() => {
-                const numericId = parseInt(id, 10);
-                if (!isNaN(numericId)) {
-                  setLoading(true);
-                  setError("");
-                  getApplicationMutation.mutate(numericId);
-                }
-              }}
-              style={{ marginLeft: "10px" }}
+            <h2>Fehler beim Laden</h2>
+            <p>{error.message || "Unbekannter Fehler"}</p>
+            <div
+              className="button-group"
+              style={{ justifyContent: "center", marginTop: "20px" }}
             >
-              Erneut versuchen
-            </button>
+              <button
+                type="button"
+                className="action-btn"
+                onClick={handleGoBack}
+              >
+                Zurück
+              </button>
+              <button
+                type="button"
+                className="action-btn"
+                onClick={() => refetch()}
+              >
+                Erneut versuchen
+              </button>
+            </div>
           </div>
         </div>
       </>
@@ -253,122 +277,133 @@ export default function ApplicationView() {
   if (!application) {
     return (
       <>
-        <Navbar role={currentRole} />
+        <Navbar />
         <div className="application-view">
-          <div className="error">Antrag nicht gefunden</div>
-          <button className="action-btn" onClick={handleGoBack}>
-            Zurück
-          </button>
+          <div className="error">
+            <h2>Antrag nicht gefunden</h2>
+            <p>Der angeforderte Antrag konnte nicht gefunden werden.</p>
+            <button type="button" className="action-btn" onClick={handleGoBack}>
+              Zurück
+            </button>
+          </div>
         </div>
       </>
     );
   }
 
+  const applicationTitle =
+    application.title || application.form_name || `Antrag #${application.id}`;
+  const iconForStatus =
+    statusKey === "APPROVED"
+      ? FaDog
+      : statusKey === "REJECTED"
+      ? FaFire
+      : FaInfoCircle;
+  const IconComponent = iconForStatus;
+
   return (
     <>
-      <Navbar role={currentRole} />
+      <Navbar />
       <div className="application-view">
         <div className="view-container">
-          {/* Header */}
-          <div className="view-header">
-            <button className="back-btn" onClick={handleGoBack}>
-              <FaArrowLeft /> Zurück zum Dashboard
+          <header className="view-header">
+            <button type="button" className="back-btn" onClick={handleGoBack}>
+              <FaArrowLeft /> Zurück
             </button>
             <div className="header-info">
-              <div className="icon-large">
-                {getIconByFormId(getAppProperty("formID", "formId"))}
-              </div>
+              <IconComponent className="icon-large" />
               <div className="header-text">
-                <h1>
-                  {getFormTypeByFormId(getAppProperty("formID", "formId"))}
-                </h1>
-                <div
-                  className={`status-badge ${(
-                    application.status || "pending"
-                  ).toLowerCase()}`}
-                >
-                  {getGermanStatus(application.status || "PENDING")}
+                <h1>{applicationTitle}</h1>
+                <div className={`status-badge ${statusClass}`}>
+                  {statusLabel}
                 </div>
+                <p style={{ margin: "8px 0 0 0" }}>
+                  Antrag #{application.id} · Formular #
+                  {application.form_id || application.formId}
+                </p>
               </div>
             </div>
-          </div>
+          </header>
 
-          {/* Application Metadata */}
-          <div className="metadata-section">
-            <h2>Antragsinformationen</h2>
+          <section className="metadata-section">
+            <h2>Metadaten</h2>
             <div className="metadata-text">
-              <p>Antrags-ID: {getAppProperty("applicationID", "id")}</p>
-              <p>Formular-ID: {getAppProperty("formID", "formId")}</p>
-              <p>Benutzer-ID: {getAppProperty("userID", "applicantId")}</p>
-              {application.adminId && <p>Admin-ID: {application.adminId}</p>}
-              <p>Status: {getGermanStatus(application.status)}</p>
               <p>
-                Erstellt:{" "}
-                {application.createdAt
-                  ? new Date(application.createdAt).toLocaleString("de-DE")
-                  : "Nicht verfügbar"}
+                <strong>Formular-ID:</strong>{" "}
+                {application.form_id || application.formId}
               </p>
-              {getAppProperty("currentSnapshotID", "currentSnapshotId") && (
+              <p>
+                <strong>Aktueller Status:</strong> {statusLabel}
+              </p>
+              <p>
+                <strong>Erstellt am:</strong> {createdAtLabel}
+              </p>
+              <p>
+                <strong>Öffentlich:</strong>{" "}
+                {application.is_public ? "Ja" : "Nein"}
+              </p>
+              {(application.currentSnapshotID ||
+                application.previousSnapshotID) && (
                 <p>
-                  Aktuelle Snapshot-ID:{" "}
-                  {getAppProperty("currentSnapshotID", "currentSnapshotId")}
-                </p>
-              )}
-              {getAppProperty("previousSnapshotID", "previousSnapshotId") && (
-                <p>
-                  Vorherige Snapshot-ID:{" "}
-                  {getAppProperty("previousSnapshotID", "previousSnapshotId")}
+                  <strong>Snapshots:</strong> aktuelle #
+                  {application.currentSnapshotID || "–"}, vorherige #
+                  {application.previousSnapshotID || "–"}
                 </p>
               )}
             </div>
-          </div>
+            {renderWorkflow()}
+          </section>
 
-          {/* Form Data */}
-          <div className="form-data-section">
-            <h2>Antragsdetails</h2>
-            <div className="form-data-content">
-              {Object.entries(application.jsonPayload || {}).map(
-                ([key, value]) => (
-                  <div key={key} className="form-field">
-                    <label>
-                      {key.charAt(0).toUpperCase() +
-                        key.slice(1).replace(/([A-Z])/g, " $1")}
-                      :
-                    </label>
-                    <span>
-                      {typeof value === "object"
-                        ? JSON.stringify(value, null, 2)
-                        : String(value)}
-                    </span>
-                  </div>
-                )
-              )}
-            </div>
-          </div>
-
-          {/* Role-based Action Buttons */}
-          {renderActionButtons()}
-          {renderApplicantActions()}
-
-          {/* Revision History for Admins */}
-          {currentRole === Role.ADMIN && (
-            <div className="revision-section">
-              <h2>Revisionsgeschichte</h2>
-              <div className="revision-info">
-                <p>
-                  <strong>Aktuelle Snapshot-ID:</strong>{" "}
-                  {getAppProperty("currentSnapshotID", "currentSnapshotId") ||
-                    "N/A"}
-                </p>
-                {getAppProperty("previousSnapshotID", "previousSnapshotId") && (
-                  <p>
-                    <strong>Vorherige Snapshot-ID:</strong>{" "}
-                    {getAppProperty("previousSnapshotID", "previousSnapshotId")}
-                  </p>
-                )}
+          <section className="form-data-section">
+            <h2>Formulardaten</h2>
+            {payloadEntries.length === 0 ? (
+              <div className="form-data-text">
+                <p>Keine Formulardaten vorhanden.</p>
               </div>
+            ) : (
+              <div className="form-data-text">
+                {payloadEntries.map(([key, value]) => {
+                  // Extract the actual value from the payload object structure
+                  const displayValue =
+                    typeof value === "object" && value?.value !== undefined
+                      ? value.value
+                      : typeof value === "object"
+                      ? JSON.stringify(value, null, 2)
+                      : String(value);
+
+                  // Extract the label from the payload object structure, fallback to key
+                  const displayLabel =
+                    typeof value === "object" && value?.label
+                      ? value.label
+                      : key;
+
+                  return (
+                    <p key={key}>
+                      <strong>{displayLabel}:</strong> {displayValue}
+                    </p>
+                  );
+                })}
+              </div>
+            )}
+          </section>
+
+          <section className="action-buttons">
+            <h3>Verfügbare Aktionen</h3>
+            {renderRoleSpecificActions()}
+          </section>
+
+          <section className="revision-section">
+            <h2>Historie</h2>
+            <div className="revision-info">
+              <p>
+                <FaHistory style={{ marginRight: "8px" }} />
+                Der komplette Änderungsverlauf wird hier künftig angezeigt.
+              </p>
+              <p>
+                Für Rückfragen wenden Sie sich bitte an die zuständige Stelle.
+              </p>
             </div>
-          )}
+          </section>
         </div>
       </div>
     </>

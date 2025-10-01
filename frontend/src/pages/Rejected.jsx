@@ -1,33 +1,44 @@
+import "./../style/AdminApplicantReporterPage.css";
 import Navbar from "../components/Navbar";
 import ApplicationContainer from "../components/ApplicationContainer";
 import { useSearchParams } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
 import { Role } from "../utils/const";
+import { getApplicationsByStatus } from "../utils/api";
 
 export default function RejectedApplication() {
-  const [rejectedApplications, setRejectedApplications] = useState([]);
+  const [searchParams] = useSearchParams();
   const sourceRole = searchParams.get("from");
 
   const currentRole =
-    sourceRole === "admin"
-      ? Role.ADMIN
-      : sourceRole === "applicant"
+    sourceRole === "reporter"
       ? Role.REPORTER
-      :sourceRole === "reporter"
-      ? Role.APPLICANT
       : Role.EMPTY;
 
-  const getTitle = () => {
-    if (sourceRole === "admin") return "Admin-Ansicht – Abgelehnte Anträge:";
-    if (sourceRole === "applicant")
-      return "Bürger-Ansicht – Abgelehnte Anträge:";
-    if (sourceRole === "reporter") return "Reporter-Ansicht - Abgelehnte Anträge:"
-    return "Öffentliche Anträge:";
-  };
+  const {
+    data: applications = [],
+    isLoading,
+    error,
+    refetch,
+  } = useQuery({
+    queryKey: ["applications", "status", "REJECTED"],
+    queryFn: () => getApplicationsByStatus(["REJECTED"]),
+    retry: 1,
+  });
+
+
 
   return (
     <>
-      <Navbar role={currentRole} />
-      <ApplicationContainer applications={[]} title={getTitle()} />
+      <Navbar />
+      <ApplicationContainer
+        applications={applications}
+        title="Abgelehnte Anträge"
+        enableFetch={false}
+        isLoadingOverride={isLoading}
+        errorOverride={error}
+        onRetry={refetch}
+      />
     </>
   );
 }

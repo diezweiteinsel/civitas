@@ -1,19 +1,35 @@
 import "./../style/Navbar.css";
 import logo from "./../img/civitas.png";
 import { GiHamburgerMenu } from "react-icons/gi";
-import Dropdown from "react-bootstrap/Dropdown";
 import { NavLink, useNavigate } from "react-router-dom";
 import { useRef, useState, useEffect } from "react";
 import { Role } from "../utils/const";
+import { getUserRoles } from "../utils/data";
 
 function Logo() {
   return <img src={logo} alt="Logo" className="navbar-img" />;
 }
 
-export default function Navbar({ role = Role.EMPTY }) {
+export default function Navbar() {
   const navigate = useNavigate();
   const [showDropdown, setShowDropdown] = useState(false);
   const dropdownRef = useRef(null);
+
+  // Get role dynamically on every render
+  const roles = getUserRoles();
+  const role = roles && roles.length > 0 ? roles[0] : Role.EMPTY;
+
+  // Helper function to get home route based on role
+  const getHomeRoute = () => {
+    switch (role) {
+      case Role.ADMIN:
+        return "/admin";
+      case Role.REPORTER:
+        return "/reporter";
+      default:
+        return "/applicant";
+    }
+  };
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -30,33 +46,22 @@ export default function Navbar({ role = Role.EMPTY }) {
     };
   }, [showDropdown]);
 
+  const handleLogout = () => {
+    setShowDropdown(false);
+    // Clear user data from localStorage
+    localStorage.clear();
+  };
+
   return (
     <nav className="navbar">
-      <NavLink
-        to={
-          role === Role.ADMIN
-            ? "/admin"
-            : role === Role.REPORTER
-            ? "/reporter"
-            : "/applicant"
-        }
-        className="navbar-logo"
-      >
+      <NavLink to={getHomeRoute()} className="navbar-logo">
         <Logo />
       </NavLink>
 
-      <NavLink
-        to={
-          role === Role.ADMIN
-            ? "/admin"
-            : role === Role.REPORTER
-            ? "/reporter"
-            : "/applicant"
-        }
-        className="navbar-home"
-      >
+      <NavLink to={getHomeRoute()} className="navbar-home">
         <div className="navbar-brand">CIVITAS</div>
       </NavLink>
+
       <div
         ref={dropdownRef}
         className={`dropdown ${role === Role.EMPTY ? "hidden" : ""}`}
@@ -166,10 +171,19 @@ export default function Navbar({ role = Role.EMPTY }) {
                 <div className="dropdown-item">
                   <NavLink
                     className="nav-link"
+                    to="/reporter/public"
+                    onClick={() => setShowDropdown(false)}
+                  >
+                    Offentliche Anträge
+                  </NavLink>
+                </div>
+                <div className="dropdown-item">
+                  <NavLink
+                    className="nav-link"
                     to="/reporter/pending"
                     onClick={() => setShowDropdown(false)}
                   >
-                    Ausstehende Anträge 
+                    Ausstehende Anträge
                   </NavLink>
                 </div>
                 <div className="dropdown-item">
@@ -192,13 +206,14 @@ export default function Navbar({ role = Role.EMPTY }) {
                 </div>
               </>
             )}
+
             <div className="dropdown-divider" />
             <div className="dropdown-item">
               <NavLink
                 className="nav-link"
                 style={{ color: "red" }}
                 to="/"
-                onClick={() => setShowDropdown(false)}
+                onClick={() => handleLogout()}
               >
                 Abmelden
               </NavLink>

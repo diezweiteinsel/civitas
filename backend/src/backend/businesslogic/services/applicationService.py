@@ -1,7 +1,10 @@
 from datetime import datetime
 
 from backend.businesslogic.services.formService import createForm
+from backend.core import roleAuth
+from backend.models.domain.application import ApplicationResponseItem
 from backend.models.domain.user import UserType
+from fastapi import HTTPException
 from requests import session
 from backend.businesslogic.user import assign_role, ensure_admin, ensure_applicant, ensure_reporter
 from backend.businesslogic.services.mockups import _global_applications_db 
@@ -15,27 +18,25 @@ from backend.models import (
 	ApplicationStatus,
 
 )
-from backend.crud import dbActions, application as applicationCrud
+from backend.crud import dbActions, application as applicationCrud, formCrud
 
 
 
-def createApplication(user: User, form: Form, payload: dict, session: Session) -> Application:
-	if not ensure_applicant(user):
-		raise PermissionError("Only applicants can create applications.")
+def createApplication(user_id: int, form_id: int, payload: dict, session: Session) -> Application:
 	""" Creates a new application for a user."""
-	# get the needed id for the application from the application table has to be done
-	#applicationId = dbActions.getNextId(session, Application). Something like this when the db is set up
-	# Generate a unique application ID
-	application_id = len(_global_applications_db) + 1
-	
-	newApplication = Application(
-
-	#	applicationID=1,  # Placeholder, should be set by the database
-		user_id=user.id,
-		form_id=form.id,
+	# Ensure the user specified in the application has the applicant role
+	if not roleAuth.check_role(session, user_id=user_id, role="APPLICANT"): #TODO
+		raise HTTPException(status_code=404, detail="User from application not found or is not applicant")
+	# generate application from ApplicationFillout
+	try:
+		newApplication = Application(
+		user_id=user_id,
+		form_id=form_id,
 		jsonPayload=payload
-	) # Still missing : importing formfields into application, snapshots and filling them with data from payload
-	# Logic to save the new application into the db is not defined yet
+	) 
+	except:
+		raise HTTPException(status_code=420, detail="TODO") # TODO
+	# insert application into db and return updated application (with id etc.)
 	appFromTable = applicationCrud.insert_application(session, newApplication)
 	newApplication=applicationCrud.rowToApplication(appFromTable)
 	return newApplication
@@ -130,3 +131,18 @@ def listAllPublicApplications(user: User):
 	return [app for app in allApplications if app.status == ApplicationStatus.PUBLIC]
 
 
+def app_list_to_appResp_list(session, appList: list[Application]):
+	resultList = []
+	for app in appList:
+		resultList.append(ApplicationResponseItem(
+				id=app.id,
+				form_id=app.form_id,
+				title=formCrud.get_form_by_id(session, app.form_id).form_name,
+				status=app.status,
+				created_at=app.created_at,
+				is_public=app.is_public,
+				currentSnapshotID=app.currentSnapshotID,
+				previousSnapshotID=app.previousSnapshotID,
+				jsonPayload=app.jsonPayload
+				))
+	return resultList

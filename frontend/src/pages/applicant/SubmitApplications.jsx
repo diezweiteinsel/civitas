@@ -1,4 +1,3 @@
-import { useState } from "react";
 import "./../../style/AdminApplicantReporterPage.css";
 import Navbar from "../../components/Navbar";
 import { FaDog, FaFire, FaInfoCircle } from "react-icons/fa";
@@ -12,10 +11,13 @@ export default function SubmitApplications() {
 
   // Icon mapping for different form types
   const getIconForFormType = (formName) => {
-    const lowerFormName = formName?.toLowerCase() || '';
-    if (lowerFormName.includes('hund') || lowerFormName.includes('dog')) {
+    const lowerFormName = formName?.toLowerCase() || "";
+    if (lowerFormName.includes("hund") || lowerFormName.includes("dog")) {
       return <FaDog />;
-    } else if (lowerFormName.includes('feuer') || lowerFormName.includes('fire')) {
+    } else if (
+      lowerFormName.includes("feuer") ||
+      lowerFormName.includes("fire")
+    ) {
       return <FaFire />;
     } else {
       return <FaInfoCircle />;
@@ -34,9 +36,15 @@ export default function SubmitApplications() {
     retry: 1,
   });
 
+  const handleEditApplication = (formId) => {
+    alert(`ApplicationContainer - Navigating to form ID: ${formId}`);
+
+    navigate(`/applicant/application-edit/${formId}`);
+  };
+
   return (
     <>
-      <Navbar role={Role.APPLICANT} />
+      <Navbar />
       <div className="page-container">
         <div className="containers-card">
           <h2 className="card-title">Antrag einreichen</h2>
@@ -64,16 +72,20 @@ export default function SubmitApplications() {
               {formsData.map((form) => (
                 <div key={form.id} className="container-item">
                   <div className="container-header">
-                    <div className="icon">{getIconForFormType(form.form_name)}</div>
+                    <div className="icon">
+                      {getIconForFormType(form.form_name)}
+                    </div>
                     <div className="info">
                       <div className="form-type">{form.form_name}</div>
                       {form.description && (
-                        <div className="form-description">{form.description}</div>
+                        <div className="form-description">
+                          {form.description}
+                        </div>
                       )}
                     </div>
                     <button
                       className="toggle-btn"
-                      onClick={() => navigate(`/applicant/application-edit?formId=${form.id}`)}
+                      onClick={() => handleEditApplication(form.id)}
                     >
                       Ausfüllen
                     </button>

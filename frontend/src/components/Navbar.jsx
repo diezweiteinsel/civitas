@@ -108,6 +108,15 @@ export default function Navbar() {
                 <div className="dropdown-item">
                   <NavLink
                     className="nav-link"
+                    to="/admin/view-forms"
+                    onClick={() => setShowDropdown(false)}
+                  >
+                    Formulare ansehen
+                  </NavLink>
+                </div>
+                <div className="dropdown-item">
+                  <NavLink
+                    className="nav-link"
                     to="/admin/admin-registration"
                     onClick={() => setShowDropdown(false)}
                   >

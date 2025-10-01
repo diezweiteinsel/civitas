@@ -5,6 +5,7 @@ devenv.nix
 devenv.lock
 .envrc
 .devenv.flake.nix
+devenv.yaml
 # direnv
 .direnv
 

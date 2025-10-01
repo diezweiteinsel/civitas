@@ -1,0 +1,117 @@
+
+.form-view-container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 20px;
+  background: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.form-view-header {
+  text-align: center;
+  margin-bottom: 30px;
+  padding-bottom: 15px;
+  border-bottom: 2px solid #e9ecef;
+}
+
+/* Fields container */
+.forms-container {
+  background: #f8f9fa;
+  border-radius: 10px;
+  padding: 20px;
+  margin-bottom: 25px;
+  border: 2px dashed #dee2e6;
+  min-height: 200px;
+}
+
+.forms-row {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  padding: 15px;
+  background: white;
+  border-radius: 8px;
+  margin-bottom: 15px;
+  border: 1px solid #e9ecef;
+}
+
+
+
+/* Save button styling */
+.create-new-form-button {
+  width: 100%;
+  padding: 16px 24px;
+  background: linear-gradient(135deg, #17a2b8, #138496);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  cursor: pointer;
+  margin-top: 20px;
+}
+
+.create-new-form-button:hover:not(:disabled) {
+  background: linear-gradient(135deg, #138496, #117a8b);
+}
+
+.create-new-form-button:disabled {
+  background: #6c757d;
+  cursor: not-allowed;
+}
+
+.end-box {
+  display: flex;
+  justify-content:flex-end;
+}
+.export-button {
+  align-items: end;
+  width: 10%;
+  padding: 8px 16px;
+  background: linear-gradient(135deg, #17a2b8, #138496);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  cursor: pointer;
+  margin-top: 10px;
+  margin-left: auto;
+}
+
+.export-button:hover:not(:disabled) {
+  background: linear-gradient(135deg, #138496, #117a8b);
+}
+
+.export-button:disabled {
+  background: #6c757d;
+  cursor: not-allowed;
+}
+
+/* Error message styling */
+.error-message {
+  color: #721c24;
+  background: linear-gradient(135deg, #f8d7da, #f5c6cb);
+  border: 1px solid #f5c6cb;
+  padding: 15px 20px;
+  border-radius: 8px;
+  margin: 15px 0;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.error-message::before {
+  content: "!";
+  font-weight: bold;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background-color: #f5c6cb;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}

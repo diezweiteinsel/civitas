@@ -13,6 +13,8 @@ export default function PublicApplication() {
     sourceRole === "admin"
       ? Role.ADMIN
       : sourceRole === "applicant"
+      ? Role.REPORTER
+      :sourceRole === "reporter"
       ? Role.APPLICANT
       : Role.REPORTER
       ? sourceRole === "reporter"

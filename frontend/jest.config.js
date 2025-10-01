@@ -10,4 +10,16 @@ module.exports = {
   testEnvironmentOptions: {
     url: "http://localhost",
   },
+  // Add these lines
+  coverageReporters: ["text", "cobertura"], // Add 'cobertura' for GitLab
+  reporters: [
+    "default",
+    [
+      "jest-junit",
+      {
+        outputDirectory: "reports",
+        outputName: "junit.xml",
+      },
+    ],
+  ],
 };

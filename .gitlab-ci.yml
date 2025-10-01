@@ -63,6 +63,24 @@ test-backend:
         coverage_format: cobertura
         path: coverage.xml
 
+test-frontend:
+  stage: test
+  image: node:20-alpine # Use a lightweight node image
+  before_script:
+    - cd frontend
+    - npm ci # 'ci' is faster and stricter than 'install' for CI environments
+  script:
+    # Run tests once, generate coverage, and use the configured reporters
+    - npm test -- --watchAll=false --coverage
+  artifacts:
+    when: always # Ensure artifacts are saved even if the job fails
+    reports:
+      junit: frontend/reports/junit.xml # Path from jest-junit config
+      coverage_report:
+        coverage_format: cobertura
+        path: frontend/coverage/cobertura-coverage.xml # Default path
+  coverage: '/All files\s*\|\s*([\d\.]+)/' # Regex to parse coverage summary
+
 # ---- DEPLOY (scp repo → build/run on VM) ----
 deploy-to-vm:
   stage: deploy

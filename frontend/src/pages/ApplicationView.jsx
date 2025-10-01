@@ -213,7 +213,7 @@ export default function ApplicationView() {
     if (currentRole === Role.ADMIN) {
       return (
         <div className="button-group">
-          {!isApproved && (
+          {!isRejected && !isApproved && (
             <button
               type="button"
               className="action-btn approve-btn"
@@ -223,7 +223,7 @@ export default function ApplicationView() {
               {isUpdating ? "Wird aktualisiert..." : "Genehmigen"}
             </button>
           )}
-          {!isRejected && (
+          {!isPublished && !isRejected && (
             <button
               type="button"
               className="action-btn reject-btn"
@@ -237,7 +237,7 @@ export default function ApplicationView() {
             <button
               type="button"
               className="action-btn publish-btn"
-              onClick={() => handleStatusChange("PUBLISHED")}
+              onClick={() => handleStatusChange("PUBLIC")}
               disabled={isUpdating}
             >
               {isUpdating ? "Wird aktualisiert..." : "Veröffentlichen"}
@@ -265,16 +265,6 @@ export default function ApplicationView() {
           )}
           <button type="button" className="action-btn info-btn" disabled>
             Rückfragen stellen
-          </button>
-        </div>
-      );
-    }
-
-    if (currentRole === Role.REPORTER) {
-      return (
-        <div className="button-group">
-          <button type="button" className="action-btn info-btn" disabled>
-            Verlauf exportieren
           </button>
         </div>
       );

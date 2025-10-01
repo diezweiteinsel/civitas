@@ -155,7 +155,7 @@ export default function CreateForms() {
           id: getNextId(),
           name: fieldName,
           type: mappedType,
-          required: isRequired, // Store required info (though not used in current UI)
+          required: isRequired,
         });
       }
     }
@@ -182,7 +182,6 @@ export default function CreateForms() {
       FLOAT: "Float",
       LONG: "Number",
       BOOLEAN: "Boolean",
-      // Handle lowercase variants too
       string: "String",
       text: "String",
       email: "String",
@@ -194,7 +193,7 @@ export default function CreateForms() {
       boolean: "Boolean",
     };
 
-    return typeMapping[backendType] || "String"; // Default to String if unknown type
+    return typeMapping[backendType] || "String";
   };
 
   const generateXMLFromCurrentForm = () => {

@@ -15,6 +15,8 @@ from backend.crud import formCrud
 
 from backend.crud.dbActions import getRowsByFilter
 
+from backend.models.domain.application import ApplicationStatus
+
 def get_application_table_by_id(id):
     """
     Takes:\n
@@ -445,10 +447,11 @@ def insert_application(session: Session, application: Application):
     return created_app
 
 # wrapper for updating application status
-def updateApplicationStatus(session: Session, tableClass: type, id: int, newStatus: str):
-    if newStatus not in ["PENDING", "APPROVED", "REJECTED", "REVISED"]:
+def updateApplicationStatus(session: Session, form_id: int, app_id: int, newStatus: ApplicationStatus):
+    if newStatus not in [ApplicationStatus.PENDING, ApplicationStatus.APPROVED, ApplicationStatus.REJECTED, ApplicationStatus.REVISED]:
         raise ValueError("Invalid status")
-    return dbActions.updateRow(session, tableClass, {"id": id, "status": newStatus})
+    tableClass = get_application_table_by_id(form_id)
+    return dbActions.updateRow(session, tableClass, {"id": app_id, "status": newStatus})
 
 
 def update_application(form_id: int, app_id: int, updateDict: dict, session: Session) -> int:

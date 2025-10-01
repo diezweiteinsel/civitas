@@ -8,12 +8,12 @@ from backend.crud import dbActions
 
 
 # Helper function to convert python types to SQLAlchemy types
-# def convertType(blockType: BuildingBlockDataType):
+def convertType(blockType: BuildingBlockDataType):
 
-#     if blockType == BuildingBlockDataType.STRING:
-#         return String
-#     elif blockType == BuildingBlockDataType.INT:
-#         return Integer
+    if blockType == BuildingBlockDataType.STRING:
+        return String
+    elif blockType == BuildingBlockDataType.INT:
+        return Integer
 
 
 # Converts a form to a SQLAlchemy table class

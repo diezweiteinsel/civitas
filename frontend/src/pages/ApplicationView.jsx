@@ -163,6 +163,22 @@ export default function ApplicationView() {
     const isApproved = statusKey === "APPROVED";
     const isRejected = statusKey === "REJECTED";
     const isPublished = application?.is_public;
+    const isHistoricalSnapshot =
+      (application?.snapshots?.currentSnapshotID !== -1 &&
+        application?.snapshots?.currentSnapshotID !== undefined) ||
+      (application?.currentSnapshotID !== -1 &&
+        application?.currentSnapshotID !== undefined);
+
+    // If viewing a historical snapshot, show disabled message
+    if (isHistoricalSnapshot) {
+      return (
+        <div className="button-group">
+          <button type="button" className="action-btn info-btn" disabled>
+            Aktionen nicht verfügbar für historische Versionen
+          </button>
+        </div>
+      );
+    }
 
     if (currentRole === Role.ADMIN) {
       return (
@@ -359,15 +375,48 @@ export default function ApplicationView() {
                 <strong>Öffentlich:</strong>{" "}
                 {application.is_public ? "Ja" : "Nein"}
               </p>
-              {(application.currentSnapshotID ||
-                application.previousSnapshotID) &&
-                application.previousSnapshotID !== -1 && (
+              {(application.snapshots ||
+                application.currentSnapshotID !== undefined ||
+                application.previousSnapshotID !== undefined) && (
+                <div>
                   <p>
-                    <strong>Snapshots:</strong> aktuelle #
-                    {application.currentSnapshotID || "–"}, vorherige #
-                    {application.previousSnapshotID || "–"}
+                    <strong>Snapshot-Informationen:</strong>
                   </p>
-                )}
+                  <p style={{ marginLeft: "20px" }}>
+                    <strong>Vorherige Snapshot-ID:</strong>{" "}
+                    {application.snapshots?.previousSnapshotID ??
+                      application.previousSnapshotID ??
+                      "–"}
+                  </p>
+                  {application.snapshots?.currentSnapshotID !== -1 && (
+                    <p style={{ marginLeft: "20px" }}>
+                      <strong>Aktuelle Snapshot-ID:</strong>{" "}
+                      {application.snapshots?.currentSnapshotID ??
+                        application.currentSnapshotID ??
+                        "–"}
+                    </p>
+                  )}
+                  {application.snapshots?.currentSnapshotID !== -1 && (
+                    <p style={{ marginLeft: "20px" }}>
+                      <strong>Nächste Snapshot-ID:</strong>{" "}
+                      {application.snapshots?.nextSnapshotID ??
+                        application.nextSnapshotID ??
+                        "–"}
+                    </p>
+                  )}
+                  {application.snapshots?.currentSnapshotID !== -1 && (
+                    <p
+                      style={{
+                        marginLeft: "20px",
+                        color: "#ff6b35",
+                        fontWeight: "bold",
+                      }}
+                    >
+                      Sie betrachten eine historische Version des Antrags
+                    </p>
+                  )}
+                </div>
+              )}
             </div>
             {renderWorkflow()}
           </section>
@@ -410,27 +459,30 @@ export default function ApplicationView() {
             {renderRoleSpecificActions()}
           </section>
 
-          {(currentRole === Role.ADMIN || currentRole === Role.REPORTER) && (
-            <section className="revision-section">
-              <h2>Historie</h2>
-              <div className="revision-info">
-                <p>
-                  <FaHistory style={{ marginRight: "8px" }} />
-                  Hier können Sie den kompletten Änderungsverlauf einsehen.
-                </p>
-                <button
-                  type="button"
-                  className="action-btn info-btn"
-                  onClick={() =>
-                    navigate(`/applications/${formId}/${applicationId}/revisions`)
-                  }
-                >
-                  <FaHistory style={{ marginRight: "8px" }} />
-                  Antragshistorie ansehen
-                </button>
-              </div>
-            </section>
-          )}
+          {(currentRole === Role.ADMIN || currentRole === Role.REPORTER) &&
+            application?.snapshots?.currentSnapshotID === -1 && (
+              <section className="revision-section">
+                <h2>Historie</h2>
+                <div className="revision-info">
+                  <p>
+                    <FaHistory style={{ marginRight: "8px" }} />
+                    Hier können Sie den kompletten Änderungsverlauf einsehen.
+                  </p>
+                  <button
+                    type="button"
+                    className="action-btn info-btn"
+                    onClick={() =>
+                      navigate(
+                        `/applications/${formId}/${applicationId}/revisions`
+                      )
+                    }
+                  >
+                    <FaHistory style={{ marginRight: "8px" }} />
+                    Antragshistorie ansehen
+                  </button>
+                </div>
+              </section>
+            )}
         </div>
       </div>
     </>

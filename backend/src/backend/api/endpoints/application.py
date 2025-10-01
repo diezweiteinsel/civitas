@@ -222,8 +222,7 @@ async def get_application(application_id: int, form_id: int, session: Session = 
             status=application.status,
             created_at=application.created_at,
             is_public=application.is_public,
-            currentSnapshotID=application.currentSnapshotID,
-            previousSnapshotID=application.previousSnapshotID,
+            snapshots=application.snapshots,
             jsonPayload=application.jsonPayload
             )
     app.title = formCrud.get_form_by_id(session, form_id).form_name
@@ -235,32 +234,83 @@ class CreationStatus(BaseModel):
     message: str
 
 
-@router.put("/{application_id}", response_model=CreationStatus, tags=["Applications"], summary="Update an application by ID")
+@router.put("/{form_id}/{application_id}", response_model=CreationStatus, tags=["Applications"], summary="Update an application by ID")
 
-async def update_application(   application_update: ApplicationUpdate,
+async def update_application(   application_id: int, 
+                                form_id: int,
+                                application_update: Optional[ApplicationUpdate] = None,
+                                status: Optional[str] | Optional[ApplicationStatus] = None,
                                 session: Session = Depends(db.get_session_dep),
                                 payload: Optional[dict] = Depends(deps.get_current_user_payload_optional)
-                                  ):
+                                ):
     """
     Update a specific application by its ID.
     """
-
+    if application_update is None and status is None:
+        raise HTTPException(status_code=400, detail="No update data provided, cannot update application with nada. Nothing.")
+    
+    # Two major cases: Either an Admin is updating a status, or an Applicant is updating their application data.
+    # An Admin can only update the status, an Applicant can only update the application data.
+    
+    if payload is None:
+        raise HTTPException(status_code=401, detail="Missing or invalid authentication credentials")
     user_id = payload.get("userid")
+    user_roles = payload.get("roles", [])
+    is_admin = "ADMIN" in user_roles
+    is_applicant = "APPLICANT" in user_roles
+    
+    # -- ADMIN is updating status --
+    if is_admin and status is not None:
+        try:
+            if status == ApplicationStatus.APPROVED:
+                try:
+                    adminApproveApplication(application_id, form_id, session)
+                except Exception as e:
+                    raise HTTPException(status_code=500, detail=f"Error approving application: {e}")
+            elif status == ApplicationStatus.REJECTED:
+                try:
+                    adminRejectApplication(application_id, form_id, session)
+                except Exception as e:
+                    raise HTTPException(status_code=500, detail=f"Error rejecting application: {e}")
+            elif status == "PUBLIC" or status == "PUBLISHED":
+                try:
+                    applicationCrud.publish_application(session, form_id, application_id)
+                except Exception as e:
+                    raise HTTPException(status_code=500, detail=f"Error publishing application: {e}")
+            else:
+                raise HTTPException(status_code=400, detail="Invalid status update. Admins can only set status to APPROVED, REJECTED or PUBLIC.")
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=f"Error updating application status: {e}")
+        return CreationStatus(success=True, message=f"Application status updated to {status}")
+    
+    # -- APPLICANT is updating application data --
+    elif is_applicant and application_update is not None:
+        jsonPayload = application_update.payload # {1: {"label": "bla", "value": "blup"}}
 
-    form_id = application_update.form_id
-    application_id = application_update.application_id
-    jsonPayload = application_update.payload # {1: {"label": "bla", "value": "blup"}}
+        application = applicationCrud.get_application_by_id(session, form_id, application_id)
 
-    application = applicationCrud.get_application_by_id(session, form_id, application_id)
+        if application.user_id != user_id:
+            raise HTTPException(status_code=403, detail="Wrong user_id! Only the user who created an application may edit it!")
 
-    if application.user_id != user_id:
-        raise HTTPException(status_code=403, detail="Wrong user_id! Only the user who created an application may edit it!")
-
-    try:
-        applicationCrud.update_application(form_id, application_id, jsonPayload, session)
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error updating application: {e}")
-    return CreationStatus(success=True, message="Application updated successfully")
+        try:
+            applicationCrud.update_application(form_id, application_id, jsonPayload, session)
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=f"Error updating application: {e}")
+        return CreationStatus(success=True, message="Application updated successfully")
+    
+    # -- INVALID COMBINATIONS --
+    elif is_admin and application_update is not None:
+        raise HTTPException(status_code=403, detail="Admins can only update status, not application data.")
+    elif is_applicant and status is not None:
+        raise HTTPException(status_code=403, detail="Insufficient permissions to update status. Only admins can update application status.")
+    
+    
+    #TODO: implement robust logic for multi-role users
+    
+    
+    # form_id = application_update.form_id
+    # application_id = application_update.application_id
+    
 
 
 @router.delete("/{application_id}", tags=["Applications"], summary="Delete an application by ID")

@@ -245,7 +245,7 @@ export const createApplication = async (applicationData) => {
   }
 
   // Structure the data to match backend expectations
-   const requestBody = {
+  const requestBody = {
     form_id: applicationData.form_id,
     payload: applicationData.payload,
   };
@@ -352,15 +352,14 @@ export const updateApplication = async (applicationData) => {
     headers.Authorization = `Bearer ${accessToken}`;
   }
 
-  // Structure the data to match backend expectations
   const requestBody = {
-    form_id: applicationData.form_id || 1,
-    application_id: applicationData.id || 1,
-    payload: applicationData.payload || applicationData,
+    form_id: applicationData.form_id,
+    application_id: applicationData.application_id,
+    payload: applicationData.payload,
   };
 
   const response = await fetch(
-    `${API_BASE_URL}/applications/${applicationData.id}`,
+    `${API_BASE_URL}/applications/${applicationData.form_id}/${applicationData.application_id}`,
     {
       method: "PUT",
       headers: headers,
@@ -377,4 +376,66 @@ export const updateApplication = async (applicationData) => {
 
   const application = await response.json();
   return application;
+};
+
+export const updateApplicationStatus = async (
+  form_id,
+  application_id,
+  status
+) => {
+  const accessToken = getToken();
+  const headers = {
+    "Content-Type": "application/json",
+  };
+  if (accessToken) {
+    headers.Authorization = `Bearer ${accessToken}`;
+  }
+
+  const response = await fetch(
+    `${API_BASE_URL}/applications/${form_id}/${application_id}?status=${status}`,
+    {
+      method: "PUT",
+      headers: headers,
+    }
+  );
+
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(
+      errorData.detail ||
+        errorData.error ||
+        "Failed to change application status"
+    );
+  }
+
+  const application = await response.json();
+  return application;
+};
+
+export const getAllRevisionsOfApplication = async (form_id, application_id) => {
+  const accessToken = getToken();
+  const headers = {
+    "Content-Type": "application/json",
+  };
+  if (accessToken) {
+    headers.Authorization = `Bearer ${accessToken}`;
+  }
+
+  const response = await fetch(
+    `${API_BASE_URL}/revisions/${form_id}/${application_id}`,
+    {
+      method: "GET",
+      headers: headers,
+    }
+  );
+
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(
+      errorData.detail || errorData.error || "Failed to fetch revision history"
+    );
+  }
+
+  const revisions = await response.json();
+  return revisions;
 };

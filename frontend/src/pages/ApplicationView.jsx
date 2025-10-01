@@ -1,5 +1,5 @@
 import { Fragment, useMemo } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import {
   FaCheckCircle,
@@ -9,14 +9,15 @@ import {
   FaHistory,
 } from "react-icons/fa";
 
+import { BiWorld } from "react-icons/bi";
+import { FaEye } from "react-icons/fa";
+
 import "./../style/AdminApplicantReporterPage.css";
 import "./../style/ApplicationView.css";
 import Navbar from "../components/Navbar";
 import { Role } from "../utils/const";
-import { getApplicationById } from "../utils/api";
+import { getApplicationById, updateApplicationStatus } from "../utils/api";
 import { getUserRoles } from "../utils/data";
-import { BiWorld } from "react-icons/bi";
-import { FaEye } from "react-icons/fa";
 
 const STATUS_LABELS = {
   PENDING: "Ausstehend",
@@ -38,6 +39,7 @@ export default function ApplicationView() {
   const navigate = useNavigate();
   const location = useLocation();
   const { formId, applicationId } = useParams();
+  const queryClient = useQueryClient();
 
   const numericFormId = Number.parseInt(formId, 10);
   const numericAppId = Number.parseInt(applicationId, 10);
@@ -61,9 +63,42 @@ export default function ApplicationView() {
     retry: 1,
   });
 
+  const statusMutation = useMutation({
+    mutationFn: (newStatus) =>
+      updateApplicationStatus(numericFormId, numericAppId, newStatus),
+    onSuccess: (updatedApplication) => {
+      // Update the cached application data
+      queryClient.setQueryData(
+        ["application", numericFormId, numericAppId],
+        updatedApplication
+      );
+      // Also invalidate to ensure fresh data
+      queryClient.invalidateQueries({
+        queryKey: ["application", numericFormId, numericAppId],
+      });
+    },
+    onError: (error) => {
+      console.error("Failed to update status:", error);
+      alert(`Fehler beim Aktualisieren des Status: ${error.message}`);
+    },
+  });
+
+  const handleStatusChange = (newStatus) => {
+    if (
+      window.confirm(
+        `Möchten Sie den Status wirklich auf "${
+          STATUS_LABELS[newStatus] || newStatus
+        }" ändern?`
+      )
+    ) {
+      statusMutation.mutate(newStatus);
+    }
+  };
+
   const statusKey = (application?.status || application?.Status || "")
     .toString()
     .toUpperCase();
+
   const statusLabel = STATUS_LABELS[statusKey] || statusKey || "Unbekannt";
   const statusClass = statusKey.toLowerCase();
 
@@ -106,6 +141,7 @@ export default function ApplicationView() {
 
   const renderWorkflow = () => {
     const steps = ["Eingereicht", "In Prüfung", "Entscheidung"];
+
     const currentIndex =
       statusKey === "APPROVED"
         ? 2
@@ -125,6 +161,10 @@ export default function ApplicationView() {
             let stepClass = "workflow-step";
             if (isCurrent) stepClass += " current";
             if (isCompleted) stepClass += " completed";
+            if (statusKey === "APPROVED" && index === 2) {
+              stepClass += " completed";
+            }
+
             if (statusKey === "REJECTED" && index === currentIndex) {
               stepClass += " rejected";
             }
@@ -138,6 +178,9 @@ export default function ApplicationView() {
             );
           })}
         </div>
+        {statusKey === "APPROVED" && (
+          <div className="workflow-step completed">Antrag wurde genehmigt</div>
+        )}
         {statusKey === "REJECTED" && (
           <div className="workflow-step rejected">Antrag wurde abgelehnt</div>
         )}
@@ -149,35 +192,55 @@ export default function ApplicationView() {
     const isApproved = statusKey === "APPROVED";
     const isRejected = statusKey === "REJECTED";
     const isPublished = application?.is_public;
+    const isHistoricalSnapshot =
+      (application?.snapshots?.currentSnapshotID !== -1 &&
+        application?.snapshots?.currentSnapshotID !== undefined) ||
+      (application?.currentSnapshotID !== -1 &&
+        application?.currentSnapshotID !== undefined);
+    const isUpdating = statusMutation.isPending;
+
+    // If viewing a historical snapshot, show disabled message
+    if (isHistoricalSnapshot) {
+      return (
+        <div className="button-group">
+          <button type="button" className="action-btn info-btn" disabled>
+            Aktionen nicht verfügbar für historische Versionen
+          </button>
+        </div>
+      );
+    }
 
     if (currentRole === Role.ADMIN) {
       return (
         <div className="button-group">
-          {!isApproved && (
+          {!isRejected && !isApproved && (
             <button
               type="button"
               className="action-btn approve-btn"
               onClick={() => handleStatusChange("APPROVED")}
+              disabled={isUpdating}
             >
-              Genehmigen
+              {isUpdating ? "Wird aktualisiert..." : "Genehmigen"}
             </button>
           )}
-          {!isRejected && (
+          {!isPublished && !isRejected && (
             <button
               type="button"
               className="action-btn reject-btn"
               onClick={() => handleStatusChange("REJECTED")}
+              disabled={isUpdating}
             >
-              Ablehnen
+              {isUpdating ? "Wird aktualisiert..." : "Ablehnen"}
             </button>
           )}
-          {!isPublished && (
+          {!isPublished && isApproved && (
             <button
               type="button"
               className="action-btn publish-btn"
-              onClick={() => handleStatusChange("PUBLISHED")}
+              onClick={() => handleStatusChange("PUBLIC")}
+              disabled={isUpdating}
             >
-              Veröffentlichen
+              {isUpdating ? "Wird aktualisiert..." : "Veröffentlichen"}
             </button>
           )}
         </div>
@@ -202,16 +265,6 @@ export default function ApplicationView() {
           )}
           <button type="button" className="action-btn info-btn" disabled>
             Rückfragen stellen
-          </button>
-        </div>
-      );
-    }
-
-    if (currentRole === Role.REPORTER) {
-      return (
-        <div className="button-group">
-          <button type="button" className="action-btn info-btn" disabled>
-            Verlauf exportieren
           </button>
         </div>
       );
@@ -295,6 +348,7 @@ export default function ApplicationView() {
       : statusKey === "REJECTED"
       ? FaTimesCircle
       : FaClock;
+
   const IconComponent = iconForStatus;
 
   return (
@@ -326,6 +380,7 @@ export default function ApplicationView() {
               </div>
             </div>
           </header>
+
           <section className="metadata-section">
             <h2>Metadaten</h2>
             <div className="metadata-text">
@@ -343,13 +398,47 @@ export default function ApplicationView() {
                 <strong>Öffentlich:</strong>{" "}
                 {application.is_public ? "Ja" : "Nein"}
               </p>
-              {(application.currentSnapshotID ||
-                application.previousSnapshotID) && (
-                <p>
-                  <strong>Snapshots:</strong> aktuelle #
-                  {application.currentSnapshotID || "–"}, vorherige #
-                  {application.previousSnapshotID || "–"}
-                </p>
+              {(application.snapshots ||
+                application.currentSnapshotID !== undefined ||
+                application.previousSnapshotID !== undefined) && (
+                <div>
+                  <p>
+                    <strong>Snapshot-Informationen:</strong>
+                  </p>
+                  <p style={{ marginLeft: "20px" }}>
+                    <strong>Vorherige Snapshot-ID:</strong>{" "}
+                    {application.snapshots?.previousSnapshotID ??
+                      application.previousSnapshotID ??
+                      "–"}
+                  </p>
+                  {application.snapshots?.currentSnapshotID !== -1 && (
+                    <p style={{ marginLeft: "20px" }}>
+                      <strong>Aktuelle Snapshot-ID:</strong>{" "}
+                      {application.snapshots?.currentSnapshotID ??
+                        application.currentSnapshotID ??
+                        "–"}
+                    </p>
+                  )}
+                  {application.snapshots?.currentSnapshotID !== -1 && (
+                    <p style={{ marginLeft: "20px" }}>
+                      <strong>Nächste Snapshot-ID:</strong>{" "}
+                      {application.snapshots?.nextSnapshotID ??
+                        application.nextSnapshotID ??
+                        "–"}
+                    </p>
+                  )}
+                  {application.snapshots?.currentSnapshotID !== -1 && (
+                    <p
+                      style={{
+                        marginLeft: "20px",
+                        color: "#ff6b35",
+                        fontWeight: "bold",
+                      }}
+                    >
+                      Sie betrachten eine historische Version des Antrags
+                    </p>
+                  )}
+                </div>
               )}
             </div>
             {renderWorkflow()}
@@ -393,18 +482,30 @@ export default function ApplicationView() {
             {renderRoleSpecificActions()}
           </section>
 
-          <section className="revision-section">
-            <h2>Historie</h2>
-            <div className="revision-info">
-              <p>
-                <FaHistory style={{ marginRight: "8px" }} />
-                Der komplette Änderungsverlauf wird hier künftig angezeigt.
-              </p>
-              <p>
-                Für Rückfragen wenden Sie sich bitte an die zuständige Stelle.
-              </p>
-            </div>
-          </section>
+          {(currentRole === Role.ADMIN || currentRole === Role.REPORTER) &&
+            application?.snapshots?.currentSnapshotID === -1 && (
+              <section className="revision-section">
+                <h2>Historie</h2>
+                <div className="revision-info">
+                  <p>
+                    <FaHistory style={{ marginRight: "8px" }} />
+                    Hier können Sie den kompletten Änderungsverlauf einsehen.
+                  </p>
+                  <button
+                    type="button"
+                    className="action-btn info-btn"
+                    onClick={() =>
+                      navigate(
+                        `/applications/${formId}/${applicationId}/revisions`
+                      )
+                    }
+                  >
+                    <FaHistory style={{ marginRight: "8px" }} />
+                    Antragshistorie ansehen
+                  </button>
+                </div>
+              </section>
+            )}
         </div>
       </div>
     </>

@@ -1,5 +1,5 @@
 import re
-
+import xmltodict
 from datetime import datetime
 from pydantic import BaseModel, ConfigDict
 from backend.models.domain.buildingblock import BuildingBlock, BBType
@@ -57,21 +57,21 @@ class Form(BaseModel):
 	def from_xml(cls, xml: str) -> "Form":
 		form = Form()
 
-		version_match = re.search(r'version="([^"]+)"', xml)
-		form.version = str(version_match.group(1)) if version_match else "1.0"
+		match = re.search(r'(<formDefinition (.*?)</formDefinition>)', xml, re.DOTALL)
+		dictionary: dict = xmltodict.parse(match[0])["formDefinition"]
 
-		name_match = re.search(r'name="([^"]+)"', xml)
-		form.form_name = str(name_match.group(1)) if name_match else "UnknownForm"
-
-		all_blocks_match = re.findall(r'<attribute name="(?P<name>[^"]+)" type="(?P<type>[^"]+)" required="(?P<required>[^"]+)"/>', xml)
+		form.form_name = dictionary["@name"] if "@name" in dictionary.keys() else "UnknownForm"
 		counter: int = 1
-		for match in all_blocks_match:
+		for b in dictionary["attributes"]["attribute"]:
 			block = BuildingBlock()
-			block.label = match[0]
-			block.data_type = str(match[1]).upper()
-			block.required = bool(match[2])
+			block.label = b["@name"]
+			block.data_type = b["@type"].upper()
+			block.required = bool(b["@required"])
 			form.blocks[counter] = block
 			counter += 1
+
+		version_match = re.search(r'version="([^"]+)"', xml)
+		form.version = str(version_match.group(1)) if version_match else "1.0"
 
 		return form
 

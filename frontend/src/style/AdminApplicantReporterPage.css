@@ -88,6 +88,52 @@
   background-color: rgb(83, 235, 255);
 }
 
+/* Public indicator styling */
+.public-indicator {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-left: 8px;
+  opacity: 0.8;
+}
+
+.world-icon,
+.eye-icon {
+  font-size: 28px;
+  color: #000000;
+  transition: color 0.2s ease;
+}
+
+.container-item:hover .world-icon,
+.container-item:hover .eye-icon {
+  color: #363636;
+}
+
+/* Ensure status and public indicator are on the same line */
+.info {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.status-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 4px 0;
+}
+
+/* Specific styling for public indicator icons in ApplicationView header */
+.header-text .public-indicator {
+  margin-top: 8px;
+}
+
+.header-text .world-icon,
+.header-text .eye-icon {
+  font-size: 24px;
+  transform: translateY(4px);
+}
+
 .toggle-btn {
   background-color: #007bff;
   border: none;

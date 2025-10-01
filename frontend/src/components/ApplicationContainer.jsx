@@ -1,6 +1,8 @@
 import "./../style/AdminApplicantReporterPage.css";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
+import { BiWorld } from "react-icons/bi";
+import { FaEye } from "react-icons/fa";
 import {
   getAllApplications,
   getApplicationsByStatus,
@@ -163,10 +165,7 @@ export default function ApplicationContainer({
               const applicationId = application.applicationID || application.id;
               const formId =
                 application.formId || application.formID || application.form_id;
-              const formName =
-                application.formName ||
-                application.form_name ||
-                (formId ? `Formular #${formId}` : "Unbekanntes Formular");
+              const formName = application.title;
               const createdRaw =
                 application.createdAt || application.created_at;
               let createdLabel = "—";
@@ -177,12 +176,8 @@ export default function ApplicationContainer({
                 }
               }
               const rawStatus = (application.status || "").toString();
-              const statusClass = application.is_public
-                ? "public"
-                : rawStatus.toLowerCase();
-              const statusDisplay = application.is_public
-                ? "Öffentlich"
-                : rawStatus
+              const statusClass = rawStatus.toLowerCase();
+              const statusDisplay = rawStatus
                 ? translateStatus(rawStatus)
                 : "Unbekannt";
 
@@ -194,8 +189,19 @@ export default function ApplicationContainer({
                       <div className="container-meta">
                         <span>Erstellt: {createdLabel}</span>
                       </div>
-                      <div className={`status ${statusClass}`}>
-                        {statusDisplay}
+                      <div className="status-row">
+                        <div className={`status ${statusClass}`}>
+                          {statusDisplay}
+                        </div>
+                        {application.is_public && (
+                          <div
+                            className="public-indicator"
+                            title="Öffentlich sichtbar"
+                          >
+                            <BiWorld className="world-icon" />
+                            <FaEye className="eye-icon" />
+                          </div>
+                        )}
                       </div>
                     </div>
                     <button

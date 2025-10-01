@@ -410,18 +410,27 @@ export default function ApplicationView() {
             {renderRoleSpecificActions()}
           </section>
 
-          <section className="revision-section">
-            <h2>Historie</h2>
-            <div className="revision-info">
-              <p>
-                <FaHistory style={{ marginRight: "8px" }} />
-                Der komplette Änderungsverlauf wird hier künftig angezeigt.
-              </p>
-              <p>
-                Für Rückfragen wenden Sie sich bitte an die zuständige Stelle.
-              </p>
-            </div>
-          </section>
+          {(currentRole === Role.ADMIN || currentRole === Role.REPORTER) && (
+            <section className="revision-section">
+              <h2>Historie</h2>
+              <div className="revision-info">
+                <p>
+                  <FaHistory style={{ marginRight: "8px" }} />
+                  Hier können Sie den kompletten Änderungsverlauf einsehen.
+                </p>
+                <button
+                  type="button"
+                  className="action-btn info-btn"
+                  onClick={() =>
+                    navigate(`/applications/${formId}/${applicationId}/revisions`)
+                  }
+                >
+                  <FaHistory style={{ marginRight: "8px" }} />
+                  Antragshistorie ansehen
+                </button>
+              </div>
+            </section>
+          )}
         </div>
       </div>
     </>

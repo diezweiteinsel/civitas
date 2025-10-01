@@ -377,3 +377,31 @@ export const updateApplication = async (applicationData) => {
   const application = await response.json();
   return application;
 };
+
+export const getAllRevisionsOfApplication = async (form_id, application_id) => {
+  const accessToken = getToken();
+  const headers = {
+    "Content-Type": "application/json",
+  };
+  if (accessToken) {
+    headers.Authorization = `Bearer ${accessToken}`;
+  }
+
+  const response = await fetch(
+    `${API_BASE_URL}/revisions/${form_id}/${application_id}`,
+    {
+      method: "GET",
+      headers: headers,
+    }
+  );
+
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(
+      errorData.detail || errorData.error || "Failed to fetch revisions"
+    );
+  }
+
+  const revisions = await response.json();
+  return revisions;
+};

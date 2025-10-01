@@ -30,7 +30,6 @@ export default function LoginPage() {
     mutationFn: loginUser,
     onSuccess: (data) => {
       setError("");
-      console.log("Anmeldung erfolgreich:", data);
 
       saveToken(data);
 
@@ -55,7 +54,6 @@ export default function LoginPage() {
         error.message ||
           "Anmeldung fehlgeschlagen. Bitte versuchen Sie es erneut."
       );
-      console.error("Login error:", error);
     },
   });
 

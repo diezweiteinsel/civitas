@@ -12,6 +12,7 @@ import ApplicationRevise from "./pages/applicant/ApplicationRevise";
 import AdminRegistration from "./pages/admin/AdminRegistration";
 import ReporterRegistration from "./pages/admin/ReporterRegistration";
 import ApplicationView from "./pages/ApplicationView";
+import ViewForms from "./pages/admin/ViewForms";
 import CreateForms from "./pages/admin/CreateForms";
 import ReporterDashboard from "./pages/reporter/Dashboard";
 import RejectedApplication from "./pages/Rejected";
@@ -47,6 +48,7 @@ const App = () => {
           path="/admin/reporter-registration"
           element={<ReporterRegistration />}
         />
+        <Route path="/admin/view-forms" element={<ViewForms />} />
         <Route path="/admin/create-forms" element={<CreateForms />} />
         <Route
           path="/applications/:formId/:applicationId"

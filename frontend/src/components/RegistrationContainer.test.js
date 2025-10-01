@@ -21,8 +21,8 @@ jest.mock("../utils/api", () => ({
 // Mock react-router-dom
 const mockNavigate = jest.fn();
 jest.mock("react-router-dom", () => ({
-  ...jest.requireActual("react-router-dom"),
   useNavigate: () => mockNavigate,
+  MemoryRouter: ({ children }) => children,
 }));
 
 // Helper function to render with providers
@@ -36,9 +36,7 @@ const renderWithProviders = (
   })
 ) => {
   return render(
-    <QueryClientProvider client={queryClient}>
-      <MemoryRouter>{component}</MemoryRouter>
-    </QueryClientProvider>
+    <QueryClientProvider client={queryClient}>{component}</QueryClientProvider>
   );
 };
 

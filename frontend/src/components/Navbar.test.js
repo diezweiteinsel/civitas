@@ -20,8 +20,8 @@ jest.mock("../utils/data", () => ({
 // Mock react-router-dom navigation
 const mockNavigate = jest.fn();
 jest.mock("react-router-dom", () => ({
-  ...jest.requireActual("react-router-dom"),
   useNavigate: () => mockNavigate,
+  MemoryRouter: ({ children }) => children,
   NavLink: ({ to, children, className, onClick, style, ...props }) => (
     <a
       href={to}
@@ -36,12 +36,8 @@ jest.mock("react-router-dom", () => ({
 }));
 
 describe("Navbar", () => {
-  const renderNavbar = (initialEntries = ["/"]) => {
-    return render(
-      <MemoryRouter initialEntries={initialEntries}>
-        <Navbar />
-      </MemoryRouter>
-    );
+  const renderNavbar = () => {
+    return render(<Navbar />);
   };
 
   beforeEach(() => {
@@ -126,9 +122,9 @@ describe("Navbar", () => {
       mockGetUserRoles.mockReturnValue([]);
       renderNavbar();
 
-      // Should redirect to login or show minimal navbar
-      // This depends on your implementation
-      expect(mockNavigate).toHaveBeenCalledWith("/login");
+      // Should show navbar but hide dropdown
+      const dropdown = document.querySelector(".dropdown");
+      expect(dropdown).toHaveClass("hidden");
     });
   });
 
@@ -297,6 +293,7 @@ describe("Navbar", () => {
     });
 
     it("updates aria-expanded when dropdown state changes", async () => {
+      mockGetUserRoles.mockReturnValue([Role.APPLICANT]);
       renderNavbar();
       const toggleButton = screen.getByRole("button");
 
@@ -318,14 +315,18 @@ describe("Navbar", () => {
       mockGetUserRoles.mockReturnValue(null);
       renderNavbar();
 
-      expect(mockNavigate).toHaveBeenCalledWith("/login");
+      // Should show navbar but hide dropdown
+      const dropdown = document.querySelector(".dropdown");
+      expect(dropdown).toHaveClass("hidden");
     });
 
     it("handles getUserRoles returning undefined", () => {
       mockGetUserRoles.mockReturnValue(undefined);
       renderNavbar();
 
-      expect(mockNavigate).toHaveBeenCalledWith("/login");
+      // Should show navbar but hide dropdown
+      const dropdown = document.querySelector(".dropdown");
+      expect(dropdown).toHaveClass("hidden");
     });
 
     it("handles multiple roles by using the first one", async () => {

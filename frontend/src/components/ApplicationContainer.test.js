@@ -16,9 +16,9 @@ const mockNavigate = jest.fn();
 const mockUseLocation = jest.fn();
 
 jest.mock("react-router-dom", () => ({
-  ...jest.requireActual("react-router-dom"),
   useNavigate: () => mockNavigate,
   useLocation: () => mockUseLocation(),
+  MemoryRouter: ({ children }) => children,
 }));
 
 // Mock the API functions that the component uses
@@ -86,9 +86,7 @@ const renderWithQueryClient = (
   })
 ) => {
   return render(
-    <QueryClientProvider client={queryClient}>
-      <MemoryRouter>{component}</MemoryRouter>
-    </QueryClientProvider>
+    <QueryClientProvider client={queryClient}>{component}</QueryClientProvider>
   );
 };
 

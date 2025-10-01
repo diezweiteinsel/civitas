@@ -8,7 +8,7 @@ from sqlalchemy.orm import Session
 
 from backend.core import db
 from backend.crud import dbActions
-from backend.models.domain.application import Application
+from backend.models.domain.application import Application, Snapshots
 
 from backend.crud import formCrud
 
@@ -70,8 +70,7 @@ def rowToApplication(row, applicationTable = None) -> Application:
         admin_id = row.admin_id,
         status= row.status,
         created_at = row.created_at,
-        currentSnapshotID= row.current_snapshot_id,
-        previousSnapshotID= row.previous_snapshot_id,
+        snapshots= row.snapshots,
         jsonPayload= jsonPayload,
         is_public= row.is_public
     )
@@ -93,6 +92,70 @@ def get_application_by_id(session: Session, form_id:int, app_id: int):
     return rowToApplication(applicationTable = applicationTable, row = applicationRow)
 
 
+def get_all_global_revisions_of_type(session: Session, form_id: int) -> list[Application]:
+    """
+    Takes:\n
+    A session\n
+    A "form_id", specifying of which form to retrieve all global revisions\n
+
+    Returns:\n
+    A list of all "Application" instances of the form which's id was given, which are global revisions (nextSnapshotID != null)
+    """
+    applicationTable = get_application_table_by_id(form_id)
+    applications: list[Application] = []
+    
+            
+
+    allRows = dbActions.getRows(session, applicationTable)
+    for row in allRows:
+        applications.append(rowToApplication(row=row, applicationTable=applicationTable))
+    
+    return applications
+
+def get_all_revisions_of_application(session: Session, form_id: int, app_id: int) -> list[Application]:
+    """
+    Takes a requestapp with form_id and an app_id, returns that exact match plus all revisions,
+    meaning those applications with matching form_id where currentSnapshotID == requestapp.app_id
+    
+    Takes:\n
+    A session\n
+    A "form_id", specifying of which form to retrieve all revisions\n
+    An "app_id", specifying of which application to retrieve all revisions
+
+    Returns:\n
+    A list of all "Application" instances of the form which's id was given, which are revisions of the application which's id was given (nextSnapshotID != null)
+    """
+    applicationTable = get_application_table_by_id(form_id)
+    applications: list[Application] = []
+
+    allRows = dbActions.getRows(session, applicationTable)
+    for row in allRows:
+        if row.id == app_id or row.snapshots.currentSnapshotID == app_id:
+            applications.append(rowToApplication(row=row, applicationTable=applicationTable))
+    
+    return applications
+
+def get_all_sibling_revisions_of_application(session: Session, form_id: int, app_id: int) -> list[Application]:
+    """
+    Takes a revision, inputs the current snapshot id into get_all_revisions_of_application
+    to get all sibling revisions of the same application.
+    
+    Parameters:
+        session (Session): SQLAlchemy session object.
+        form_id (int): The ID of the form to which the application belongs.
+        app_id (int): The ID of the revision to retrieve the sibling revisions for.
+    
+    Returns:
+        list[Application]: A list of all "Application" instances that are sibling revisions of the specified application.
+    """
+    
+    
+    revision = get_application_by_id(session, form_id, app_id) # check if application exists
+    
+    applications = get_all_revisions_of_application(session, form_id, revision.snapshots.currentSnapshotID)
+        
+    return applications
+
 def get_all_applications_of_type(session: Session, form_id: int) -> list[Application]:
     """
     Takes:\n
@@ -104,10 +167,13 @@ def get_all_applications_of_type(session: Session, form_id: int) -> list[Applica
     """
     applicationTable = get_application_table_by_id(form_id)
     applications: list[Application] = []
+    
+            
 
     allRows = dbActions.getRows(session, applicationTable)
-
     for row in allRows:
+        if row.snapshots.currentSnapshotID >= 0:
+            continue
         applications.append(rowToApplication(row=row, applicationTable=applicationTable))
     
     return applications
@@ -128,6 +194,24 @@ def get_all_applications(session: Session) -> list[Application]:
     for form in all_forms:
         applications_of_type = get_all_applications_of_type(session, form.id)
         applications.extend(applications_of_type)
+
+    return applications
+
+def get_global_revisions(session: Session) -> list[Application]:
+    """
+    Returns all global revisions across all forms. Should be rejected by the API if the requesting user does not have admin/reporting privileges.
+    
+    Args:
+        session (Session): SQLAlchemy session object.
+    
+    Returns:
+        list[Application]: A list of all "Application" instances across all forms which are global revisions (nextSnapshotID != null).
+    """
+    applications: list[Application] = []
+    all_forms = formCrud.get_all_forms(session)
+    for form in all_forms:
+        global_revisions_of_type = get_all_global_revisions_of_type(session, form.id)
+        applications.extend(global_revisions_of_type)
 
     return applications
 
@@ -154,6 +238,8 @@ def get_applications_all_by_status(session: Session, status: str) -> list[Applic
         applicationTable = get_application_table_by_id(form.id)
         rows = getRowsByFilter(session, applicationTable, {"status": status})
         for row in rows:
+            if row.snapshots.currentSnapshotID >= 0:
+                continue
             applications.append(rowToApplication(row=row, applicationTable=applicationTable))
     return applications
 
@@ -179,6 +265,8 @@ def get_applications_public_by_status(session: Session, status: str) -> list[App
         applicationTable = get_application_table_by_id(form.id)
         rows = getRowsByFilter(session, applicationTable, {"status": status, "is_public": True})
         for row in rows:
+            if row.snapshots.currentSnapshotID >= 0:
+                continue
             applications.append(rowToApplication(row=row, applicationTable=applicationTable))
     return applications
 
@@ -204,6 +292,8 @@ def get_applications_private_by_status(session: Session, status: str) -> list[Ap
         applicationTable = get_application_table_by_id(form.id)
         rows = getRowsByFilter(session, applicationTable, {"status": status, "is_public": False})
         for row in rows:
+            if row.snapshots.currentSnapshotID >= 0:
+                continue
             applications.append(rowToApplication(row=row, applicationTable=applicationTable))
     return applications
 
@@ -226,50 +316,73 @@ def get_applications_by_user_id(session: Session, user_id: int) -> list[Applicat
         applicationTable = get_application_table_by_id(form.id)
         rows = getRowsByFilter(session, applicationTable, {"user_id": user_id})
         for row in rows:
+            if row.snapshots.currentSnapshotID >= 0:
+                continue
             applications.append(rowToApplication(row=row, applicationTable=applicationTable))
     return applications
 
-def get_all_public_applications(session: Session) -> list[Application]:
+def get_applications_by_user_id_with_revisions(session: Session, user_id: int) -> list[Application]:
     """
-    Returns all applications that are marked as public.
+    Returns all applications submitted by a specific user across all forms, including their revisions.
+    Should be rejected by the API if the requesting user does not match the user_id or does not have admin/reporting privileges.
     
     ARGS:
         session (Session): SQLAlchemy session object.
+        user_id (int): The ID of the user whose applications are to be retrieved.
     
     RETURNS:
-        list[Application]: List of public Application objects.
+        list[Application]: List of Application objects submitted by the specified user, including revisions.
     """
     applications: list[Application] = []
     all_forms = formCrud.get_all_forms(session)
     for form in all_forms:
-        applications_of_type = get_all_applications_of_type(session, form.id)
-        applications.extend(applications_of_type)
-    public_applications : list[Application] = []
-    for application in applications:
-        if application.is_public:
-            public_applications.append(application)
-    return public_applications
+        applicationTable = get_application_table_by_id(form.id)
+        rows = getRowsByFilter(session, applicationTable, {"user_id": user_id})
+        for row in rows:
+            applications.append(rowToApplication(row=row, applicationTable=applicationTable))
+    return applications
 
-def get_all_private_applications(session: Session) -> list[Application]:
-    """
-    Returns all applications that are marked as public.
+# def get_all_public_applications(session: Session) -> list[Application]:
+#     """
+#     Returns all applications that are marked as public.
     
-    ARGS:
-        session (Session): SQLAlchemy session object.
+#     ARGS:
+#         session (Session): SQLAlchemy session object.
     
-    RETURNS:
-        list[Application]: List of public Application objects.
-    """
-    applications: list[Application] = []
-    all_forms = formCrud.get_all_forms(session)
-    for form in all_forms:
-        applications_of_type = get_all_applications_of_type(session, form.id)
-        applications.extend(applications_of_type)
-    private_applications : list[Application] = []
-    for application in applications:
-        if not application.is_public:
-            private_applications.append(application)
-    return private_applications
+#     RETURNS:
+#         list[Application]: List of public Application objects.
+#     """
+#     applications: list[Application] = []
+#     all_forms = formCrud.get_all_forms(session)
+#     for form in all_forms:
+#         applications_of_type = get_all_applications_of_type(session, form.id)
+#         applications.extend(applications_of_type)
+#     public_applications : list[Application] = []
+#     for application in applications:
+#         if application.is_public:
+#             public_applications.append(application)
+#     return public_applications
+
+# def get_all_private_applications(session: Session) -> list[Application]:
+#     """
+#     Returns all applications that are marked as public.
+    
+#     ARGS:
+#         session (Session): SQLAlchemy session object.
+    
+#     RETURNS:
+#         list[Application]: List of public Application objects.
+#     """
+#     applications: list[Application] = []
+#     all_forms = formCrud.get_all_forms(session)
+#     for form in all_forms:
+#         applications_of_type = get_all_applications_of_type(session, form.id)
+#         applications.extend(applications_of_type)
+#     private_applications : list[Application] = []
+#     for application in applications:
+#         if not application.is_public:
+#             private_applications.append(application)
+#     return private_applications
 
 def insert_application(session:Session, application: Application):
     """
@@ -290,8 +403,7 @@ def insert_application(session:Session, application: Application):
         status = application.status,
         is_public = application.is_public,
         created_at = application.created_at,
-        current_snapshot_id = application.currentSnapshotID,
-        previous_snapshot_id = application.previousSnapshotID
+        snapshots = application.snapshots
         )
     for key in application.jsonPayload.keys():
         setattr(application_in_db, application.jsonPayload[key]["label"] , application.jsonPayload[key]["value"])

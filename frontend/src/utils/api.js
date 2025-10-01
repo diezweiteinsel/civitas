@@ -378,6 +378,40 @@ export const updateApplication = async (applicationData) => {
   return application;
 };
 
+export const updateApplicationStatus = async (
+  form_id,
+  application_id,
+  status
+) => {
+  const accessToken = getToken();
+  const headers = {
+    "Content-Type": "application/json",
+  };
+  if (accessToken) {
+    headers.Authorization = `Bearer ${accessToken}`;
+  }
+
+  const response = await fetch(
+    `${API_BASE_URL}/applications/${form_id}/${application_id}?status=${status}`,
+    {
+      method: "PUT",
+      headers: headers,
+    }
+  );
+
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(
+      errorData.detail ||
+        errorData.error ||
+        "Failed to change application status"
+    );
+  }
+
+  const application = await response.json();
+  return application;
+};
+
 export const getAllRevisionsOfApplication = async (form_id, application_id) => {
   const accessToken = getToken();
   const headers = {
@@ -398,7 +432,7 @@ export const getAllRevisionsOfApplication = async (form_id, application_id) => {
   if (!response.ok) {
     const errorData = await response.json();
     throw new Error(
-      errorData.detail || errorData.error || "Failed to fetch revisions"
+      errorData.detail || errorData.error || "Failed to fetch revision history"
     );
   }
 

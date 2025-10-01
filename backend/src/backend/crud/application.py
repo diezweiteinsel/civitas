@@ -454,6 +454,25 @@ def updateApplicationStatus(session: Session, form_id: int, app_id: int, newStat
     return dbActions.updateRow(session, tableClass, {"id": app_id, "status": newStatus})
 
 
+def publish_application(session: Session, form_id: int, app_id: int):
+    """
+    Marks an application as public by setting its is_public attribute to True.
+    
+    Args:
+        session (Session): SQLAlchemy session object.
+        form_id (int): The ID of the form to which the application belongs.
+        app_id (int): The ID of the application to be marked as public.
+    
+    Raises:
+        ValueError: If the application does not exist.
+    """
+    tableClass = get_application_table_by_id(form_id)
+    application = dbActions.getRowById(session, tableClass, app_id)
+    if not application:
+        raise ValueError("Application not found")
+    dbActions.updateRow(session, tableClass, {"id": app_id, "is_public": True})
+
+
 def update_application(form_id: int, app_id: int, updateDict: dict, session: Session) -> int:
     """
     TODO 

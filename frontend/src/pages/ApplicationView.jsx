@@ -2,12 +2,15 @@ import { Fragment, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import {
-  FaDog,
-  FaFire,
-  FaInfoCircle,
+  FaCheckCircle,
+  FaTimesCircle,
+  FaClock,
   FaArrowLeft,
   FaHistory,
 } from "react-icons/fa";
+
+import { BiWorld } from "react-icons/bi";
+import { FaEye } from "react-icons/fa";
 
 import "./../style/AdminApplicantReporterPage.css";
 import "./../style/ApplicationView.css";
@@ -63,11 +66,10 @@ export default function ApplicationView() {
     // TODO: Implement status change logic
   };
 
-  const statusKey = application?.is_public
-    ? "PUBLISHED"
-    : (application?.status || application?.Status || "")
-        .toString()
-        .toUpperCase();
+  const statusKey = (application?.status || application?.Status || "")
+    .toString()
+    .toUpperCase();
+
   const statusLabel = STATUS_LABELS[statusKey] || statusKey || "Unbekannt";
   const statusClass = statusKey.toLowerCase();
 
@@ -110,6 +112,7 @@ export default function ApplicationView() {
 
   const renderWorkflow = () => {
     const steps = ["Eingereicht", "In Prüfung", "Entscheidung"];
+
     const currentIndex =
       statusKey === "APPROVED"
         ? 2
@@ -129,6 +132,10 @@ export default function ApplicationView() {
             let stepClass = "workflow-step";
             if (isCurrent) stepClass += " current";
             if (isCompleted) stepClass += " completed";
+            if (statusKey === "APPROVED" && index === 2) {
+              stepClass += " approved";
+            }
+
             if (statusKey === "REJECTED" && index === currentIndex) {
               stepClass += " rejected";
             }
@@ -142,6 +149,9 @@ export default function ApplicationView() {
             );
           })}
         </div>
+        {statusKey === "APPROVED" && (
+          <div className="workflow-step completed">Antrag wurde genehmigt</div>
+        )}
         {statusKey === "REJECTED" && (
           <div className="workflow-step rejected">Antrag wurde abgelehnt</div>
         )}
@@ -295,10 +305,11 @@ export default function ApplicationView() {
     application.title || application.form_name || `Antrag #${application.id}`;
   const iconForStatus =
     statusKey === "APPROVED"
-      ? FaDog
+      ? FaCheckCircle
       : statusKey === "REJECTED"
-      ? FaFire
-      : FaInfoCircle;
+      ? FaTimesCircle
+      : FaClock;
+
   const IconComponent = iconForStatus;
 
   return (
@@ -317,6 +328,12 @@ export default function ApplicationView() {
                 <div className={`status-badge ${statusClass}`}>
                   {statusLabel}
                 </div>
+                {application.is_public && (
+                  <div className="public-indicator" title="Öffentlich sichtbar">
+                    <BiWorld className="world-icon" />
+                    <FaEye className="eye-icon" />
+                  </div>
+                )}
                 <p style={{ margin: "8px 0 0 0" }}>
                   Antrag #{application.id} · Formular #
                   {application.form_id || application.formId}

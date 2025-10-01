@@ -13,6 +13,17 @@ class ApplicationStatus(StrEnum):
     REJECTED = "REJECTED"
     REVISED = "REVISED"
 
+class Snapshots(BaseModel):
+    previousSnapshotID: int | None = None
+    currentSnapshotID: int = -1
+    nextSnapshotID: int | None = None
+
+    def to_json(self) -> str:
+        return self.model_dump_json(indent=2)
+
+    @classmethod
+    def from_json(cls, json_str: str) -> "Snapshots":
+        return cls.model_validate_json(json_str)
 
 
 class Application(BaseModel):
@@ -31,10 +42,10 @@ class Application(BaseModel):
     admin_id: int | None = None
     status: ApplicationStatus = ApplicationStatus.PENDING
     created_at: datetime = Field(default_factory=datetime.now)
-    currentSnapshotID: int = -1  # Points to the latest snapshot of the application
-    previousSnapshotID: int = -1  # Points to the previous snapshot of the application
+    snapshots: Snapshots = Field(default_factory=Snapshots)
     jsonPayload: dict = {}  # The actual data of the application
     is_public: bool = False  # Indicates if the application is public
+
 
 
 class ApplicationID(BaseModel):
@@ -54,8 +65,7 @@ class ApplicationResponseItem(BaseModel):
     status: ApplicationStatus
     created_at: datetime
     is_public: bool
-    currentSnapshotID: int
-    previousSnapshotID: int
+    snapshots: Snapshots
     jsonPayload: dict
     
 
@@ -73,8 +83,7 @@ def application_to_response_item(application: Application) -> ApplicationRespons
         status=application.status,
         created_at=application.created_at,
         is_public=application.is_public,
-        currentSnapshotID=application.currentSnapshotID,
-        previousSnapshotID=application.previousSnapshotID,
+        snapshots=application.snapshots,
         jsonPayload=newJson
     )
 

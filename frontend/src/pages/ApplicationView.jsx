@@ -9,14 +9,15 @@ import {
   FaHistory,
 } from "react-icons/fa";
 
+import { BiWorld } from "react-icons/bi";
+import { FaEye } from "react-icons/fa";
+
 import "./../style/AdminApplicantReporterPage.css";
 import "./../style/ApplicationView.css";
 import Navbar from "../components/Navbar";
 import { Role } from "../utils/const";
 import { getApplicationById } from "../utils/api";
 import { getUserRoles } from "../utils/data";
-import { BiWorld } from "react-icons/bi";
-import { FaEye } from "react-icons/fa";
 
 const STATUS_LABELS = {
   PENDING: "Ausstehend",
@@ -61,9 +62,14 @@ export default function ApplicationView() {
     retry: 1,
   });
 
+  const handleStatusChange = (newStatus) => {
+    // TODO: Implement status change logic
+  };
+
   const statusKey = (application?.status || application?.Status || "")
     .toString()
     .toUpperCase();
+
   const statusLabel = STATUS_LABELS[statusKey] || statusKey || "Unbekannt";
   const statusClass = statusKey.toLowerCase();
 
@@ -106,6 +112,7 @@ export default function ApplicationView() {
 
   const renderWorkflow = () => {
     const steps = ["Eingereicht", "In Prüfung", "Entscheidung"];
+
     const currentIndex =
       statusKey === "APPROVED"
         ? 2
@@ -125,6 +132,10 @@ export default function ApplicationView() {
             let stepClass = "workflow-step";
             if (isCurrent) stepClass += " current";
             if (isCompleted) stepClass += " completed";
+            if (statusKey === "APPROVED" && index === 2) {
+              stepClass += " approved";
+            }
+
             if (statusKey === "REJECTED" && index === currentIndex) {
               stepClass += " rejected";
             }
@@ -138,6 +149,9 @@ export default function ApplicationView() {
             );
           })}
         </div>
+        {statusKey === "APPROVED" && (
+          <div className="workflow-step completed">Antrag wurde genehmigt</div>
+        )}
         {statusKey === "REJECTED" && (
           <div className="workflow-step rejected">Antrag wurde abgelehnt</div>
         )}
@@ -171,7 +185,7 @@ export default function ApplicationView() {
               Ablehnen
             </button>
           )}
-          {!isPublished && (
+          {!isPublished && isApproved && (
             <button
               type="button"
               className="action-btn publish-btn"
@@ -295,6 +309,7 @@ export default function ApplicationView() {
       : statusKey === "REJECTED"
       ? FaTimesCircle
       : FaClock;
+
   const IconComponent = iconForStatus;
 
   return (
@@ -326,6 +341,7 @@ export default function ApplicationView() {
               </div>
             </div>
           </header>
+
           <section className="metadata-section">
             <h2>Metadaten</h2>
             <div className="metadata-text">
@@ -344,13 +360,14 @@ export default function ApplicationView() {
                 {application.is_public ? "Ja" : "Nein"}
               </p>
               {(application.currentSnapshotID ||
-                application.previousSnapshotID) && (
-                <p>
-                  <strong>Snapshots:</strong> aktuelle #
-                  {application.currentSnapshotID || "–"}, vorherige #
-                  {application.previousSnapshotID || "–"}
-                </p>
-              )}
+                application.previousSnapshotID) &&
+                application.previousSnapshotID !== -1 && (
+                  <p>
+                    <strong>Snapshots:</strong> aktuelle #
+                    {application.currentSnapshotID || "–"}, vorherige #
+                    {application.previousSnapshotID || "–"}
+                  </p>
+                )}
             </div>
             {renderWorkflow()}
           </section>

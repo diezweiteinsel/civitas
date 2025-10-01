@@ -253,7 +253,7 @@ def create_demo_applications() -> None:
                 admin_id=admin_id,
                 status=ApplicationStatus.APPROVED,
                 jsonPayload=_with_override(
-                    payload, "description", "Approved request"
+                    payload, "issue_description", "Approved request"
                 ),
                 is_public=True,
             ),

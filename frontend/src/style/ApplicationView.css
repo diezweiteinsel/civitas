@@ -251,6 +251,7 @@
 .workflow-step.completed {
   background-color: #28a745;
   color: white;
+  margin-top: 10px;
 }
 
 .workflow-step.rejected {

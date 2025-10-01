@@ -118,7 +118,9 @@ export default function ApplicationContainer({
   return (
     <div className="page-container">
       <div className="containers-card">
-        <h2 data-testid="card-title" className="card-title">{title}</h2> // TODO:
+        <h2 data-testid="card-title" className="card-title">
+          {title}
+        </h2>
 
         {isLoading && (
           <div style={{ textAlign: "center", padding: "20px" }}>

@@ -245,7 +245,7 @@ export const createApplication = async (applicationData) => {
   }
 
   // Structure the data to match backend expectations
-   const requestBody = {
+  const requestBody = {
     form_id: applicationData.form_id,
     payload: applicationData.payload,
   };
@@ -352,15 +352,14 @@ export const updateApplication = async (applicationData) => {
     headers.Authorization = `Bearer ${accessToken}`;
   }
 
-  // Structure the data to match backend expectations
   const requestBody = {
-    form_id: applicationData.form_id || 1,
-    application_id: applicationData.id || 1,
-    payload: applicationData.payload || applicationData,
+    form_id: applicationData.form_id,
+    application_id: applicationData.application_id,
+    payload: applicationData.payload,
   };
 
   const response = await fetch(
-    `${API_BASE_URL}/applications/${applicationData.id}`,
+    `${API_BASE_URL}/applications/${applicationData.form_id}/${applicationData.application_id}`,
     {
       method: "PUT",
       headers: headers,

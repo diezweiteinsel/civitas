@@ -4,16 +4,17 @@ from backend.models import Form
 # from backend.models.buildingblock import BuildingBlockDataType
 from sqlalchemy import Column, Integer, String
 from backend.crud import dbActions
+from backend.models.domain.buildingblock import BBType as BuildingBlockDataType
 
 
 
 # Helper function to convert python types to SQLAlchemy types
-# def convertType(blockType: BuildingBlockDataType):
+def convertType(blockType: BuildingBlockDataType):
 
-#     if blockType == BuildingBlockDataType.STRING:
-#         return String
-#     elif blockType == BuildingBlockDataType.INT:
-#         return Integer
+    if blockType == BuildingBlockDataType.STRING:
+        return String
+    elif blockType == BuildingBlockDataType.INTEGER:
+        return Integer
 
 
 # Converts a form to a SQLAlchemy table class

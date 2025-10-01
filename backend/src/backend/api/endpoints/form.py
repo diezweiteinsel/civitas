@@ -1,12 +1,10 @@
 # standard library imports
 from datetime import datetime
-
 from backend.models.orm.formtable import OrmForm
 from pydantic import BaseModel
 
 # third party imports
 from sqlalchemy.orm import Session
-
 from fastapi import APIRouter, Depends
 
 # project imports
@@ -40,8 +38,6 @@ async def get_form(form_id: int,
   #   return form
   form = Form.from_orm_model(ormForm)
   return form
-
-# "/api/v1/forms/{form_id}?returnAsXml=true"
 
 
 class CreationStatus(BaseModel):

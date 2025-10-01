@@ -1,5 +1,4 @@
 # standard library imports
-from datetime import datetime
 from typing import List, Optional
 
 # third party imports
@@ -13,10 +12,8 @@ from backend.api.deps import   RoleChecker, get_current_user_payload, get_curren
 from backend.core import roleAuth
 from backend.crud import userCrud
 from backend.models.orm import roletable
-from backend.businesslogic.services.applicationService import createApplication, getApplication, editApplication
-from backend.businesslogic.services.formService import createForm
+from backend.businesslogic.services.applicationService import createApplication, getApplication
 from backend.businesslogic.services.adminService import adminApproveApplication, adminRejectApplication
-from backend.businesslogic.services.formService import createForm
 from backend.models.domain.application import Application, ApplicationStatus, ApplicationID, ApplicationFillout, ApplicationUpdate
 from backend.crud import userCrud
 from backend.crud.user import get_user_by_id
@@ -24,7 +21,6 @@ from backend.models.domain.user import User, UserType
 from backend.businesslogic.user import ensure_applicant, ensure_admin, ensure_reporter, assign_role
 from backend.models import Form   
 from datetime import date 
-from backend.businesslogic.services.mockups import _global_applications_db, _global_users_db, _global_forms_db
 from backend.models.domain.buildingblock import BuildingBlock
 from backend.crud import formCrud, applicationCrud
 from backend.businesslogic.services.applicationService import app_list_to_appResp_list
@@ -47,53 +43,7 @@ admin_permission = RoleChecker(["ADMIN"])
 # CAN CREATE APPLICATIONS
 applicant_permission = RoleChecker(["APPLICANT"])
 
-    # applicationID: int = -1
-    # userID: int = -1
-    # formID: int = -1
-    # status: ApplicationStatus = ApplicationStatus.PENDING
-    # createdAt: datetime = datetime.now()
-    # currentSnapshotID: int = -1  # Points to the latest snapshot of the application
-    # previousSnapshotID: int = -1  # Points to the previous snapshot of the application
-    # jsonPayload: dict = {}  # The actual data of the application
 
-
-
-# GET ALL APPLICATIONS
-# Using query `?public=true` to filter public applications
-# If `public` is false or not provided, only admin or reporter can access,
-# and all applications are returned.
-# If `public` is true, anyone can access, but only public applications are returned.
-
-# 1 - Define a dependency to check the public status and user role
-# async def non_public_applications(public: Optional[bool] = False):
-#     """
-#     Dependency to filter applications based on their public status.
-#     """
-#     # print("Checking public status:", public)
-#     if not public:
-#         await Depends(admin_or_reporter_permission) # Ensure user is admin or reporter (as per JWT token)
-
-# 2 - If public is True, allow access to everyone (no role check needed)
-# 3 - If public is False, ensure the user has admin or reporter role (handled in the dependency above)
-# @router.get("", 
-#             response_model=list[Application],
-#             dependencies=[Depends(non_public_applications)], # Custom dependency to handle public access
-#             tags=["Applicati  ons"],
-#             summary="List all applications")
-# async def list_applications(
-#     public: Optional[bool] = False):
-#     """
-#     Retrieve all applications in the system.
-#     """
-#     #TODO: add session management?
-#     if public:
-#         # Fetch applications from db that are public
-#         pass
-#     else:
-#         # this should not be reachable because of the dependency above
-#         pass
-
-#     return applicationCrud.get_all_applications(session)
 
 @router.get("", 
             response_model=list[ApplicationResponseItem],
@@ -320,24 +270,3 @@ async def delete_application(application_id: int):
     """
     pass
 
-
-
-def example_usage():
-    # Example usage
-    Admin = User(id=1, username="admin", date_created=date.today(), hashed_password="admin")
-    assign_role(Admin, UserType.ADMIN)
-    Applicant = User(id=2, username="applicant", date_created=date.today(), hashed_password="applicant")
-    assign_role(Applicant, UserType.APPLICANT)
-    Reporter = User(id=3, username="reporter", date_created=date.today(), hashed_password="reporter")
-    assign_role(Reporter, UserType.REPORTER)
-    _global_users_db.extend([Admin, Applicant, Reporter])
-    form = createForm(Admin, {"title": "Form 1", "fields": [{"name": "field1", "type": "text"}, {"name": "field2", "type": "number"}]})
-    createApplication(Applicant, form ,{"field1": "value1", "field2": "value2"})
-    createApplication(Applicant, form ,{"field1": "value3", "field2": "value4"})
-    adminRejectApplication(Admin, _global_applications_db[1])
-    createApplication(Applicant, form ,{"field1": "value5", "field2": "value6"})
-    adminApproveApplication(Admin, _global_applications_db[2])
-    print(_global_applications_db)
-
-if __name__ == "__main__":
-    example_usage()

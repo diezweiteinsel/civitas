@@ -1,13 +1,11 @@
 from datetime import datetime
 
-from backend.businesslogic.services.formService import createForm
 from backend.core import roleAuth
 from backend.models.domain.application import ApplicationResponseItem
 from backend.models.domain.user import UserType
 from fastapi import HTTPException
 from requests import session
 from backend.businesslogic.user import assign_role, ensure_admin, ensure_applicant, ensure_reporter
-from backend.businesslogic.services.mockups import _global_applications_db 
 from sqlalchemy.orm import Session
 
 
@@ -42,20 +40,6 @@ def createApplication(user_id: int, form_id: int, payload: dict, session: Sessio
 	return newApplication
 
 
-def editApplication(user: User, application: Application, newApplicationData: dict, session: Session) -> Application:
-	""" Allows an applicant to edit their application before it getting processed."""
-	if user.id != application.user_id:  # Ensure the user is the owner of the application
-		raise PermissionError("Users can only edit their own applications.")
-	elif application.status != ApplicationStatus.PENDING:  # Only pending applications can be edited
-			raise ValueError("Only pending applications can be edited.")
-	# Update the application data with the new data and update the db
-	for app in _global_applications_db:
-		if app.id == application.id:
-			app.jsonPayload = newApplicationData
-			application = app # update the reference to the modified application
-			break
-	# Logic to save the updated application is not defined yet
-	return application
 
 def getApplication(user: User, applicationId: int) -> Application:
 	application = dbActions.getRowById(session, Application, applicationId) # Retrieve the application from the database

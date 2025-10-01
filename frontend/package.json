@@ -7,7 +7,7 @@
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
-  }, 
+  },
   "dependencies": {
     "@tanstack/react-query": "^5.90.2",
     "react": "^19.1.0",
@@ -34,6 +34,7 @@
   "devDependencies": {
     "@testing-library/dom": "^10.4.1",
     "@testing-library/jest-dom": "^5.16.5",
-    "@testing-library/react": "^16.3.0"
+    "@testing-library/react": "^16.3.0",
+    "jest-junit": "^16.0.0"
   }
 }

@@ -22,17 +22,18 @@ export default function ViewForms() {
   };
 
   const exportFormAsXml = (id) => {
-    const form = forms.filter((field) => field.id == id);
+    const form = forms.find((f) => f.id == id);
     const formNameSafe = form.form_name.trim().replace(/[^a-zA-Z0-9]/g, "");
     let xml = `<x${formNameSafe}Export xmlns="urn:xoev:x${formNameSafe}:1.0" version="1.0">
 	<!-- Formular-Definition -->
 	<formDefinition name="${form.form_name.trim()}">
 		<attributes>`;
+    //console.log("form", JSON.stringify(form, null, 2));
     
-
-    form.blocks.forEach((field) => {
-      const typeUpper = field.type.toUpperCase();
-      xml += `\n			<attribute name="${field.name}" type="${typeUpper}" required="false"/>`;
+    const blocksArray = Object.values(form.blocks);
+    blocksArray.forEach((block) => {
+      const typeUpper = block.data_type.toUpperCase();
+      xml += `\n			<attribute name="${block.label}" type="${typeUpper}" required="false"/>`;
     });
 
     xml += `

@@ -162,13 +162,9 @@ def test_update_application():
 
         # --- 2. Action: Perform the update ---
         updated_payload = {"1": {"label": "label", "value": "Hohoho"}}
-        # The update function should return the new ORM object
-        new_orm_app = appCrud.update_application(form.id, original_app_id, updated_payload, session)
-        session.commit()
-        session.refresh(new_orm_app)
+        # The update function returns the new id of the updated application
+        new_app_id = appCrud.update_application(form.id, original_app_id, updated_payload, session)
         
-        new_app_id = new_orm_app.id
-
         # --- 3. Assertions: Verify the results ---
         # Convert the final state of the ORM objects back to Pydantic models
         original_app_final_state = appCrud.get_application_by_id(session, form.id, original_app_id)

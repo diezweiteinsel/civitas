@@ -459,7 +459,14 @@ def update_application(form_id: int, app_id: int, updateDict: dict, session: Ses
     """
 
     updated_app = get_application_by_id(session, form_id, app_id) # Get application to update
-
+    
+    # -- PREPARE NEW APPLICATION --
+    updated_app.id = None  # Set id to None to create a new entry
+    updated_app.snapshots.currentSnapshotID = -1
+    updated_app.snapshots.previousSnapshotID = app_id
+    updated_app.snapshots.nextSnapshotID = None
+    
+    # -- JSON --
     label_key_dict = {}
 
     for key, block in updated_app.jsonPayload.items():
@@ -468,24 +475,37 @@ def update_application(form_id: int, app_id: int, updateDict: dict, session: Ses
     for key, block in updateDict.items():
         if block["label"] in label_key_dict.keys():
             updated_app.jsonPayload[label_key_dict[block["label"]]] = block
-
-
-    # newJson = {}
-    # count = 1
-    # for label, value in updated_app.jsonPayload.items():
-    #     newJson[str(count)] = {"label": label, "value": value}
-    #     count += 1
-
-    # updated_app.jsonPayload = newJson
-
-    updated_app.snapshots.previousSnapshotID = app_id
-
-    updated_app_orm = insert_application(session, updated_app)    # Insert updated application as new row
-    dbActions.updateRow(    session,                              # Set old applications currentSnapshotID to new application's ID
-                            dbActions.get_application_table_by_id(form_id),
-                            {"id": app_id, "current_snapshot_id": updated_app_orm.id}
-                            )
-    return updated_app_orm.id
+            
+    # -- INSERT NEW APPLICATION --
+    new_orm_app = insert_application(session, updated_app)  # Insert updated application as new row
+    # session.commit()
+    # session.refresh(new_orm_app)
+    new_app_id = new_orm_app.id
+    
+    # -- UPDATE ORIGINAL APPLICATION --
+    applicationTable = dbActions.get_application_table_by_id(form_id)
+    original_orm_app = dbActions.getRowById(session, applicationTable, app_id)
+    
+    if original_orm_app:
+        snapshots_obj = Snapshots.from_json(original_orm_app.snapshots)
+        snapshots_obj.nextSnapshotID = new_app_id
+        snapshots_obj.currentSnapshotID = new_app_id # CHANGED: Mark original as outdated.
+        original_orm_app.snapshots = snapshots_obj.to_json()
+        session.commit()
+    
+    # -- UPDATE ALL OLD REVISIONS --
+    old_revisions = get_all_revisions_of_application(session, form_id, app_id)
+    for revision in old_revisions:
+        if revision.id == app_id or revision.id == new_app_id:
+            continue
+        revision_orm_app = dbActions.getRowById(session, applicationTable, revision.id)
+        if revision_orm_app:
+            snapshots_obj = Snapshots.from_json(revision_orm_app.snapshots)
+            snapshots_obj.currentSnapshotID = new_app_id # CHANGED: Mark old revisions as outdated.
+            revision_orm_app.snapshots = snapshots_obj.to_json()
+            session.commit()
+    
+    return new_app_id
 
 
 # --- HELPER FUNCTIONS ---

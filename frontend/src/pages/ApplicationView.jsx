@@ -154,17 +154,29 @@ export default function ApplicationView() {
       return (
         <div className="button-group">
           {!isApproved && (
-            <button type="button" className="action-btn approve-btn" disabled>
+            <button
+              type="button"
+              className="action-btn approve-btn"
+              onClick={() => handleStatusChange("APPROVED")}
+            >
               Genehmigen
             </button>
           )}
           {!isRejected && (
-            <button type="button" className="action-btn reject-btn" disabled>
+            <button
+              type="button"
+              className="action-btn reject-btn"
+              onClick={() => handleStatusChange("REJECTED")}
+            >
               Ablehnen
             </button>
           )}
           {!isPublished && (
-            <button type="button" className="action-btn publish-btn" disabled>
+            <button
+              type="button"
+              className="action-btn publish-btn"
+              onClick={() => handleStatusChange("PUBLISHED")}
+            >
               Veröffentlichen
             </button>
           )}

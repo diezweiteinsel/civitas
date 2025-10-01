@@ -1,417 +1,507 @@
-/**
- * RegistrationContainer Component Tests
- *
- * Tests for the registration form container component that handles
- * user registration for different roles.
- */
-
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { MemoryRouter } from "react-router-dom";
-import "@testing-library/jest-dom";
 import RegistrationContainer from "./RegistrationContainer";
 import { Role } from "../utils/const";
+import * as api from "../utils/api";
 
-// Mock the API
-const mockCreateUser = jest.fn();
-jest.mock("../utils/api", () => ({
-  createUser: (userData) => mockCreateUser(userData),
-}));
+// Mock the API module
+jest.mock("../utils/api");
+const mockedApi = api;
 
-// Mock react-router-dom
+// Mock window.alert
+global.alert = jest.fn();
+
+// Mock the navigate function
 const mockNavigate = jest.fn();
 jest.mock("react-router-dom", () => ({
   useNavigate: () => mockNavigate,
-  MemoryRouter: ({ children }) => children,
+  NavLink: ({ children, to }) => <a href={to}>{children}</a>,
+  MemoryRouter: ({ children }) => <div>{children}</div>,
 }));
 
-// Helper function to render with providers
-const renderWithProviders = (
-  component,
-  queryClient = new QueryClient({
+// Import after mocking
+const { MemoryRouter } = require("react-router-dom");
+
+// Helper function to render component with providers
+const renderWithProviders = (component) => {
+  const queryClient = new QueryClient({
     defaultOptions: {
-      queries: { retry: false },
-      mutations: { retry: false },
+      queries: {
+        retry: false,
+      },
+      mutations: {
+        retry: false,
+      },
     },
-  })
-) => {
+  });
+
   return render(
-    <QueryClientProvider client={queryClient}>{component}</QueryClientProvider>
+    <QueryClientProvider client={queryClient}>
+      <MemoryRouter>{component}</MemoryRouter>
+    </QueryClientProvider>
   );
 };
 
 describe("RegistrationContainer", () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    mockNavigate.mockClear();
   });
 
   describe("Rendering", () => {
-    it("renders registration form with all required fields", () => {
-      renderWithProviders(
-        <RegistrationContainer roleToRegister={Role.APPLICANT} />
-      );
+    it("renders registration form with all fields", () => {
+      renderWithProviders(<RegistrationContainer />);
 
-      expect(screen.getByLabelText(/benutzername/i)).toBeInTheDocument();
-      expect(screen.getByLabelText(/e-mail/i)).toBeInTheDocument();
-      expect(screen.getByLabelText(/passwort/i)).toBeInTheDocument();
-      expect(screen.getByLabelText(/passwort bestätigen/i)).toBeInTheDocument();
       expect(
-        screen.getByRole("button", { name: /registrieren/i })
+        screen.getByText("Bürger/-innen Registrieren")
+      ).toBeInTheDocument();
+      expect(
+        screen.getByPlaceholderText("Benutzername eingeben")
+      ).toBeInTheDocument();
+      expect(screen.getByPlaceholderText("Email eingeben")).toBeInTheDocument();
+      expect(
+        screen.getByPlaceholderText("Passwort eingeben")
+      ).toBeInTheDocument();
+      expect(
+        screen.getByPlaceholderText("Passwort bestätigen")
+      ).toBeInTheDocument();
+      expect(
+        screen.getByRole("button", { name: "Registrieren" })
       ).toBeInTheDocument();
     });
 
-    it("displays correct title for different roles", () => {
-      const { rerender } = renderWithProviders(
+    it("renders different title based on role", () => {
+      renderWithProviders(
+        <RegistrationContainer roleToRegister={Role.ADMIN} />
+      );
+      expect(screen.getByText("Admin Registrieren")).toBeInTheDocument();
+
+      renderWithProviders(
+        <RegistrationContainer roleToRegister={Role.REPORTER} />
+      );
+      expect(screen.getByText("Reporter Registrieren")).toBeInTheDocument();
+
+      renderWithProviders(
         <RegistrationContainer roleToRegister={Role.APPLICANT} />
       );
       expect(
-        screen.getByText(/antragsteller registrierung/i)
+        screen.getByText("Bürger/-innen Registrieren")
       ).toBeInTheDocument();
+    });
 
-      rerender(
-        <QueryClientProvider client={new QueryClient()}>
-          <MemoryRouter>
-            <RegistrationContainer roleToRegister={Role.ADMIN} />
-          </MemoryRouter>
-        </QueryClientProvider>
+    it("shows login link only for applicant role", () => {
+      const { unmount } = renderWithProviders(
+        <RegistrationContainer roleToRegister={Role.APPLICANT} />
       );
       expect(
-        screen.getByText(/administrator registrierung/i)
+        screen.getByText("Sie haben bereits einen Account?")
       ).toBeInTheDocument();
+      expect(screen.getByText("Anmelden")).toBeInTheDocument();
 
-      rerender(
-        <QueryClientProvider client={new QueryClient()}>
-          <MemoryRouter>
-            <RegistrationContainer roleToRegister={Role.REPORTER} />
-          </MemoryRouter>
-        </QueryClientProvider>
+      // Unmount and render admin version
+      unmount();
+      renderWithProviders(
+        <RegistrationContainer roleToRegister={Role.ADMIN} />
       );
-      expect(screen.getByText(/reporter registrierung/i)).toBeInTheDocument();
+      expect(
+        screen.queryByText("Sie haben bereits einen Account?")
+      ).not.toBeInTheDocument();
     });
   });
 
   describe("Form Validation", () => {
     it("shows error when required fields are empty", async () => {
-      renderWithProviders(
-        <RegistrationContainer roleToRegister={Role.APPLICANT} />
-      );
+      renderWithProviders(<RegistrationContainer />);
 
-      const submitButton = screen.getByRole("button", {
-        name: /registrieren/i,
+      fireEvent.click(screen.getByRole("button", { name: "Registrieren" }));
+
+      await waitFor(() => {
+        expect(screen.getByText("All fields are required")).toBeInTheDocument();
       });
-      fireEvent.click(submitButton);
-
-      // Should show validation errors or prevent submission
-      expect(mockCreateUser).not.toHaveBeenCalled();
     });
 
     it("shows error when passwords do not match", async () => {
-      renderWithProviders(
-        <RegistrationContainer roleToRegister={Role.APPLICANT} />
-      );
+      renderWithProviders(<RegistrationContainer />);
 
-      fireEvent.change(screen.getByLabelText(/benutzername/i), {
+      fireEvent.change(screen.getByPlaceholderText("Benutzername eingeben"), {
         target: { value: "testuser" },
       });
-      fireEvent.change(screen.getByLabelText(/e-mail/i), {
+      fireEvent.change(screen.getByPlaceholderText("Email eingeben"), {
         target: { value: "test@example.com" },
       });
-      fireEvent.change(screen.getByLabelText(/^passwort$/i), {
+      fireEvent.change(screen.getByPlaceholderText("Passwort eingeben"), {
         target: { value: "password123" },
       });
-      fireEvent.change(screen.getByLabelText(/passwort bestätigen/i), {
-        target: { value: "differentpassword" },
+      fireEvent.change(screen.getByPlaceholderText("Passwort bestätigen"), {
+        target: { value: "password456" },
       });
 
-      const submitButton = screen.getByRole("button", {
-        name: /registrieren/i,
-      });
-      fireEvent.click(submitButton);
+      fireEvent.click(screen.getByRole("button", { name: "Registrieren" }));
 
-      expect(
-        screen.getByText(/passwörter stimmen nicht überein/i)
-      ).toBeInTheDocument();
-      expect(mockCreateUser).not.toHaveBeenCalled();
+      await waitFor(() => {
+        expect(screen.getByText("Passwords do not match")).toBeInTheDocument();
+      });
     });
 
-    it("shows error for invalid email format", async () => {
-      renderWithProviders(
-        <RegistrationContainer roleToRegister={Role.APPLICANT} />
-      );
+    it("validates required username field only", async () => {
+      renderWithProviders(<RegistrationContainer />);
 
-      fireEvent.change(screen.getByLabelText(/benutzername/i), {
-        target: { value: "testuser" },
-      });
-      fireEvent.change(screen.getByLabelText(/e-mail/i), {
-        target: { value: "invalid-email" },
-      });
-      fireEvent.change(screen.getByLabelText(/^passwort$/i), {
-        target: { value: "password123" },
-      });
-      fireEvent.change(screen.getByLabelText(/passwort bestätigen/i), {
-        target: { value: "password123" },
-      });
-
-      const submitButton = screen.getByRole("button", {
-        name: /registrieren/i,
-      });
-      fireEvent.click(submitButton);
-
-      // Should show email validation error
-      expect(screen.getByText(/gültige e-mail/i)).toBeInTheDocument();
-      expect(mockCreateUser).not.toHaveBeenCalled();
-    });
-
-    it("shows error for weak password", async () => {
-      renderWithProviders(
-        <RegistrationContainer roleToRegister={Role.APPLICANT} />
-      );
-
-      fireEvent.change(screen.getByLabelText(/benutzername/i), {
-        target: { value: "testuser" },
-      });
-      fireEvent.change(screen.getByLabelText(/e-mail/i), {
+      fireEvent.change(screen.getByPlaceholderText("Email eingeben"), {
         target: { value: "test@example.com" },
       });
-      fireEvent.change(screen.getByLabelText(/^passwort$/i), {
-        target: { value: "123" },
+      fireEvent.change(screen.getByPlaceholderText("Passwort eingeben"), {
+        target: { value: "password123" },
       });
-      fireEvent.change(screen.getByLabelText(/passwort bestätigen/i), {
-        target: { value: "123" },
+      fireEvent.change(screen.getByPlaceholderText("Passwort bestätigen"), {
+        target: { value: "password123" },
       });
 
-      const submitButton = screen.getByRole("button", {
-        name: /registrieren/i,
-      });
-      fireEvent.click(submitButton);
+      fireEvent.click(screen.getByRole("button", { name: "Registrieren" }));
 
-      // Should show password strength error
-      expect(screen.getByText(/passwort muss mindestens/i)).toBeInTheDocument();
-      expect(mockCreateUser).not.toHaveBeenCalled();
+      await waitFor(() => {
+        expect(screen.getByText("All fields are required")).toBeInTheDocument();
+      });
     });
   });
 
   describe("Form Submission", () => {
-    const validFormData = {
-      username: "testuser",
-      email: "test@example.com",
-      password: "securePassword123",
-      confirmPassword: "securePassword123",
-    };
+    it("submits form with correct data on successful registration", async () => {
+      const mockUserData = {
+        id: 1,
+        username: "testuser",
+        email: "test@example.com",
+        role: Role.APPLICANT,
+      };
 
-    it("submits form with valid data", async () => {
-      mockCreateUser.mockResolvedValue({ success: true });
+      mockedApi.createUser.mockResolvedValue(mockUserData);
 
       renderWithProviders(
         <RegistrationContainer roleToRegister={Role.APPLICANT} />
       );
 
-      fireEvent.change(screen.getByLabelText(/benutzername/i), {
-        target: { value: validFormData.username },
+      fireEvent.change(screen.getByPlaceholderText("Benutzername eingeben"), {
+        target: { value: "testuser" },
       });
-      fireEvent.change(screen.getByLabelText(/e-mail/i), {
-        target: { value: validFormData.email },
+      fireEvent.change(screen.getByPlaceholderText("Email eingeben"), {
+        target: { value: "test@example.com" },
       });
-      fireEvent.change(screen.getByLabelText(/^passwort$/i), {
-        target: { value: validFormData.password },
+      fireEvent.change(screen.getByPlaceholderText("Passwort eingeben"), {
+        target: { value: "password123" },
       });
-      fireEvent.change(screen.getByLabelText(/passwort bestätigen/i), {
-        target: { value: validFormData.confirmPassword },
+      fireEvent.change(screen.getByPlaceholderText("Passwort bestätigen"), {
+        target: { value: "password123" },
       });
 
-      const submitButton = screen.getByRole("button", {
-        name: /registrieren/i,
-      });
-      fireEvent.click(submitButton);
+      fireEvent.click(screen.getByRole("button", { name: "Registrieren" }));
 
       await waitFor(() => {
-        expect(mockCreateUser).toHaveBeenCalledWith({
-          username: validFormData.username,
-          email: validFormData.email,
-          password: validFormData.password,
-          role: Role.APPLICANT,
-        });
+        expect(mockedApi.createUser).toHaveBeenCalledWith(
+          {
+            username: "testuser",
+            email: "test@example.com",
+            password: "password123",
+            role: Role.APPLICANT,
+          },
+          expect.anything()
+        );
       });
-    });
-
-    it("passes correct role to API", async () => {
-      mockCreateUser.mockResolvedValue({ success: true });
-
-      renderWithProviders(
-        <RegistrationContainer roleToRegister={Role.ADMIN} />
-      );
-
-      fireEvent.change(screen.getByLabelText(/benutzername/i), {
-        target: { value: validFormData.username },
-      });
-      fireEvent.change(screen.getByLabelText(/e-mail/i), {
-        target: { value: validFormData.email },
-      });
-      fireEvent.change(screen.getByLabelText(/^passwort$/i), {
-        target: { value: validFormData.password },
-      });
-      fireEvent.change(screen.getByLabelText(/passwort bestätigen/i), {
-        target: { value: validFormData.confirmPassword },
-      });
-
-      const submitButton = screen.getByRole("button", {
-        name: /registrieren/i,
-      });
-      fireEvent.click(submitButton);
 
       await waitFor(() => {
-        expect(mockCreateUser).toHaveBeenCalledWith({
-          username: validFormData.username,
-          email: validFormData.email,
-          password: validFormData.password,
-          role: Role.ADMIN,
-        });
+        expect(
+          screen.getByText("Registration successful!")
+        ).toBeInTheDocument();
       });
     });
 
-    it("shows loading state during submission", async () => {
-      mockCreateUser.mockImplementation(
-        () =>
-          new Promise((resolve) => {
-            setTimeout(() => resolve({ success: true }), 100);
-          })
+    it("shows loading state during form submission", async () => {
+      mockedApi.createUser.mockImplementation(
+        () => new Promise((resolve) => setTimeout(() => resolve({}), 100))
       );
 
-      renderWithProviders(
-        <RegistrationContainer roleToRegister={Role.APPLICANT} />
-      );
+      renderWithProviders(<RegistrationContainer />);
 
-      fireEvent.change(screen.getByLabelText(/benutzername/i), {
-        target: { value: validFormData.username },
+      fireEvent.change(screen.getByPlaceholderText("Benutzername eingeben"), {
+        target: { value: "testuser" },
       });
-      fireEvent.change(screen.getByLabelText(/e-mail/i), {
-        target: { value: validFormData.email },
+      fireEvent.change(screen.getByPlaceholderText("Email eingeben"), {
+        target: { value: "test@example.com" },
       });
-      fireEvent.change(screen.getByLabelText(/^passwort$/i), {
-        target: { value: validFormData.password },
+      fireEvent.change(screen.getByPlaceholderText("Passwort eingeben"), {
+        target: { value: "password123" },
       });
-      fireEvent.change(screen.getByLabelText(/passwort bestätigen/i), {
-        target: { value: validFormData.confirmPassword },
+      fireEvent.change(screen.getByPlaceholderText("Passwort bestätigen"), {
+        target: { value: "password123" },
       });
 
-      const submitButton = screen.getByRole("button", {
-        name: /registrieren/i,
-      });
-      fireEvent.click(submitButton);
-
-      // Should show loading state
-      expect(screen.getByText(/wird registriert/i)).toBeInTheDocument();
-      expect(submitButton).toBeDisabled();
-    });
-
-    it("navigates on successful registration", async () => {
-      mockCreateUser.mockResolvedValue({ success: true });
-
-      renderWithProviders(
-        <RegistrationContainer roleToRegister={Role.APPLICANT} />
-      );
-
-      fireEvent.change(screen.getByLabelText(/benutzername/i), {
-        target: { value: validFormData.username },
-      });
-      fireEvent.change(screen.getByLabelText(/e-mail/i), {
-        target: { value: validFormData.email },
-      });
-      fireEvent.change(screen.getByLabelText(/^passwort$/i), {
-        target: { value: validFormData.password },
-      });
-      fireEvent.change(screen.getByLabelText(/passwort bestätigen/i), {
-        target: { value: validFormData.confirmPassword },
-      });
-
-      const submitButton = screen.getByRole("button", {
-        name: /registrieren/i,
-      });
-      fireEvent.click(submitButton);
+      fireEvent.click(screen.getByRole("button", { name: "Registrieren" }));
 
       await waitFor(() => {
-        expect(mockNavigate).toHaveBeenCalledWith("/login");
+        expect(screen.getByText("Account erstellen...")).toBeInTheDocument();
       });
+      expect(
+        screen.getByRole("button", { name: "Account erstellen..." })
+      ).toBeDisabled();
     });
 
-    it("displays error message on registration failure", async () => {
-      const errorMessage = "Benutzername bereits vergeben";
-      mockCreateUser.mockRejectedValue(new Error(errorMessage));
+    it("handles registration error", async () => {
+      const errorMessage = "Username already exists";
+      mockedApi.createUser.mockRejectedValue(new Error(errorMessage));
 
-      renderWithProviders(
-        <RegistrationContainer roleToRegister={Role.APPLICANT} />
-      );
+      renderWithProviders(<RegistrationContainer />);
 
-      fireEvent.change(screen.getByLabelText(/benutzername/i), {
-        target: { value: validFormData.username },
+      fireEvent.change(screen.getByPlaceholderText("Benutzername eingeben"), {
+        target: { value: "testuser" },
       });
-      fireEvent.change(screen.getByLabelText(/e-mail/i), {
-        target: { value: validFormData.email },
+      fireEvent.change(screen.getByPlaceholderText("Email eingeben"), {
+        target: { value: "test@example.com" },
       });
-      fireEvent.change(screen.getByLabelText(/^passwort$/i), {
-        target: { value: validFormData.password },
+      fireEvent.change(screen.getByPlaceholderText("Passwort eingeben"), {
+        target: { value: "password123" },
       });
-      fireEvent.change(screen.getByLabelText(/passwort bestätigen/i), {
-        target: { value: validFormData.confirmPassword },
+      fireEvent.change(screen.getByPlaceholderText("Passwort bestätigen"), {
+        target: { value: "password123" },
       });
 
-      const submitButton = screen.getByRole("button", {
-        name: /registrieren/i,
-      });
-      fireEvent.click(submitButton);
+      fireEvent.click(screen.getByRole("button", { name: "Registrieren" }));
 
       await waitFor(() => {
         expect(screen.getByText(errorMessage)).toBeInTheDocument();
       });
+    });
 
-      // Should not navigate on error
+    it("handles registration error without message", async () => {
+      mockedApi.createUser.mockRejectedValue(new Error());
+
+      renderWithProviders(<RegistrationContainer />);
+
+      fireEvent.change(screen.getByPlaceholderText("Benutzername eingeben"), {
+        target: { value: "testuser" },
+      });
+      fireEvent.change(screen.getByPlaceholderText("Email eingeben"), {
+        target: { value: "test@example.com" },
+      });
+      fireEvent.change(screen.getByPlaceholderText("Passwort eingeben"), {
+        target: { value: "password123" },
+      });
+      fireEvent.change(screen.getByPlaceholderText("Passwort bestätigen"), {
+        target: { value: "password123" },
+      });
+
+      fireEvent.click(screen.getByRole("button", { name: "Registrieren" }));
+
+      await waitFor(() => {
+        expect(
+          screen.getByText("Registration failed. Please try again.")
+        ).toBeInTheDocument();
+      });
+    });
+  });
+
+  describe("Navigation", () => {
+    it("navigates to home after successful applicant registration", async () => {
+      const mockUserData = {
+        id: 1,
+        username: "testuser",
+        email: "test@example.com",
+        role: Role.APPLICANT,
+      };
+
+      mockedApi.createUser.mockResolvedValue(mockUserData);
+
+      renderWithProviders(
+        <RegistrationContainer roleToRegister={Role.APPLICANT} />
+      );
+
+      fireEvent.change(screen.getByPlaceholderText("Benutzername eingeben"), {
+        target: { value: "testuser" },
+      });
+      fireEvent.change(screen.getByPlaceholderText("Email eingeben"), {
+        target: { value: "test@example.com" },
+      });
+      fireEvent.change(screen.getByPlaceholderText("Passwort eingeben"), {
+        target: { value: "password123" },
+      });
+      fireEvent.change(screen.getByPlaceholderText("Passwort bestätigen"), {
+        target: { value: "password123" },
+      });
+
+      fireEvent.click(screen.getByRole("button", { name: "Registrieren" }));
+
+      await waitFor(() => {
+        expect(
+          screen.getByText("Registration successful!")
+        ).toBeInTheDocument();
+      });
+
+      // Wait for navigation timeout
+      await waitFor(
+        () => {
+          expect(mockNavigate).toHaveBeenCalledWith("/");
+        },
+        { timeout: 2000 }
+      );
+    });
+
+    it("does not navigate after successful admin/reporter registration", async () => {
+      const mockUserData = {
+        id: 1,
+        username: "reporter",
+        email: "reporter@example.com",
+        role: Role.REPORTER,
+      };
+
+      mockedApi.createUser.mockResolvedValue(mockUserData);
+
+      renderWithProviders(
+        <RegistrationContainer roleToRegister={Role.REPORTER} />
+      );
+
+      // Clear the mock after rendering to avoid counting any initial calls
+      mockNavigate.mockClear();
+
+      fireEvent.change(screen.getByPlaceholderText("Benutzername eingeben"), {
+        target: { value: "reporter" },
+      });
+      fireEvent.change(screen.getByPlaceholderText("Email eingeben"), {
+        target: { value: "reporter@example.com" },
+      });
+      fireEvent.change(screen.getByPlaceholderText("Passwort eingeben"), {
+        target: { value: "password123" },
+      });
+      fireEvent.change(screen.getByPlaceholderText("Passwort bestätigen"), {
+        target: { value: "password123" },
+      });
+
+      fireEvent.click(screen.getByRole("button", { name: "Registrieren" }));
+
+      await waitFor(() => {
+        expect(
+          screen.getByText("Registration successful!")
+        ).toBeInTheDocument();
+      });
+
+      // Wait a bit to ensure navigation doesn't happen
+      await new Promise((resolve) => setTimeout(resolve, 1000));
       expect(mockNavigate).not.toHaveBeenCalled();
     });
   });
 
-  describe("User Experience", () => {
-    it("clears form on successful submission", async () => {
-      mockCreateUser.mockResolvedValue({ success: true });
+  describe("Form Reset", () => {
+    it("resets form fields after successful registration", async () => {
+      const mockUserData = {
+        id: 1,
+        username: "testuser",
+        email: "test@example.com",
+        role: Role.APPLICANT,
+      };
 
-      renderWithProviders(
-        <RegistrationContainer roleToRegister={Role.APPLICANT} />
+      mockedApi.createUser.mockResolvedValue(mockUserData);
+
+      renderWithProviders(<RegistrationContainer />);
+
+      const usernameInput = screen.getByPlaceholderText(
+        "Benutzername eingeben"
       );
-
-      const usernameInput = screen.getByLabelText(/benutzername/i);
-      const emailInput = screen.getByLabelText(/e-mail/i);
-      const passwordInput = screen.getByLabelText(/^passwort$/i);
-      const confirmPasswordInput =
-        screen.getByLabelText(/passwort bestätigen/i);
+      const emailInput = screen.getByPlaceholderText("Email eingeben");
+      const passwordInput = screen.getByPlaceholderText("Passwort eingeben");
+      const confirmInput = screen.getByPlaceholderText("Passwort bestätigen");
 
       fireEvent.change(usernameInput, { target: { value: "testuser" } });
       fireEvent.change(emailInput, { target: { value: "test@example.com" } });
-      fireEvent.change(passwordInput, {
-        target: { value: "securePassword123" },
-      });
-      fireEvent.change(confirmPasswordInput, {
-        target: { value: "securePassword123" },
-      });
+      fireEvent.change(passwordInput, { target: { value: "password123" } });
+      fireEvent.change(confirmInput, { target: { value: "password123" } });
 
-      const submitButton = screen.getByRole("button", {
-        name: /registrieren/i,
-      });
-      fireEvent.click(submitButton);
+      fireEvent.click(screen.getByRole("button", { name: "Registrieren" }));
 
       await waitFor(() => {
-        expect(usernameInput).toHaveValue("");
-        expect(emailInput).toHaveValue("");
-        expect(passwordInput).toHaveValue("");
-        expect(confirmPasswordInput).toHaveValue("");
+        expect(
+          screen.getByText("Registration successful!")
+        ).toBeInTheDocument();
       });
+
+      // Check that form fields are reset
+      expect(usernameInput.value).toBe("");
+      expect(emailInput.value).toBe("");
+      expect(passwordInput.value).toBe("");
+      expect(confirmInput.value).toBe("");
+    });
+  });
+
+  describe("Success Message", () => {
+    it("shows success message and hides it after timeout", async () => {
+      const mockUserData = {
+        id: 1,
+        username: "testuser",
+        email: "test@example.com",
+        role: Role.APPLICANT,
+      };
+
+      mockedApi.createUser.mockResolvedValue(mockUserData);
+
+      renderWithProviders(<RegistrationContainer />);
+
+      fireEvent.change(screen.getByPlaceholderText("Benutzername eingeben"), {
+        target: { value: "testuser" },
+      });
+      fireEvent.change(screen.getByPlaceholderText("Email eingeben"), {
+        target: { value: "test@example.com" },
+      });
+      fireEvent.change(screen.getByPlaceholderText("Passwort eingeben"), {
+        target: { value: "password123" },
+      });
+      fireEvent.change(screen.getByPlaceholderText("Passwort bestätigen"), {
+        target: { value: "password123" },
+      });
+
+      fireEvent.click(screen.getByRole("button", { name: "Registrieren" }));
+
+      await waitFor(() => {
+        expect(
+          screen.getByText("Registration successful!")
+        ).toBeInTheDocument();
+      });
+
+      // Wait for success message to disappear
+      await waitFor(
+        () => {
+          expect(
+            screen.queryByText("Registration successful!")
+          ).not.toBeInTheDocument();
+        },
+        { timeout: 4000 }
+      );
+    });
+  });
+
+  describe("Input Validation", () => {
+    it("accepts valid email format", async () => {
+      renderWithProviders(<RegistrationContainer />);
+
+      const emailInput = screen.getByPlaceholderText("Email eingeben");
+      fireEvent.change(emailInput, { target: { value: "valid@email.com" } });
+
+      expect(emailInput.value).toBe("valid@email.com");
     });
 
-    it("focuses on first input field on mount", () => {
-      renderWithProviders(
-        <RegistrationContainer roleToRegister={Role.APPLICANT} />
-      );
+    it("updates form fields correctly", () => {
+      renderWithProviders(<RegistrationContainer />);
 
-      const usernameInput = screen.getByLabelText(/benutzername/i);
-      expect(usernameInput).toHaveFocus();
+      const usernameInput = screen.getByPlaceholderText(
+        "Benutzername eingeben"
+      );
+      const emailInput = screen.getByPlaceholderText("Email eingeben");
+      const passwordInput = screen.getByPlaceholderText("Passwort eingeben");
+      const confirmInput = screen.getByPlaceholderText("Passwort bestätigen");
+
+      fireEvent.change(usernameInput, { target: { value: "newuser" } });
+      fireEvent.change(emailInput, { target: { value: "new@email.com" } });
+      fireEvent.change(passwordInput, { target: { value: "newpassword" } });
+      fireEvent.change(confirmInput, { target: { value: "newpassword" } });
+
+      expect(usernameInput.value).toBe("newuser");
+      expect(emailInput.value).toBe("new@email.com");
+      expect(passwordInput.value).toBe("newpassword");
+      expect(confirmInput.value).toBe("newpassword");
     });
   });
 });

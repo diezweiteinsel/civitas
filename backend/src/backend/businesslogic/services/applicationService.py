@@ -141,8 +141,7 @@ def app_list_to_appResp_list(session, appList: list[Application]):
 				status=app.status,
 				created_at=app.created_at,
 				is_public=app.is_public,
-				currentSnapshotID=app.currentSnapshotID,
-				previousSnapshotID=app.previousSnapshotID,
+				snapshots=app.snapshots,
 				jsonPayload=app.jsonPayload
 				))
 	return resultList

@@ -185,7 +185,7 @@ export default function ApplicationView() {
               Ablehnen
             </button>
           )}
-          {!isPublished && (
+          {!isPublished && isApproved && (
             <button
               type="button"
               className="action-btn publish-btn"

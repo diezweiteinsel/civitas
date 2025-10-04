@@ -69,3 +69,6 @@ node_modules
 
 # PDF
 *.pdf
+
+# Abgabe
+Abgabedokumentation.md

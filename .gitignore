@@ -65,3 +65,7 @@ devenv.local.nix
 
 /frontend/node_modules
 node_modules
+
+
+# PDF
+*.pdf

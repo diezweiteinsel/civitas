@@ -59,14 +59,15 @@
 /* Button container for top actions */
 .form-actions {
   display: flex;
-  justify-content: space-between;
+  justify-content: center;
   align-items: center;
   margin-bottom: 30px;
-  gap: 15px;
+  gap: 20px;
 }
 
 .create-button,
-.import-button {
+.import-button,
+.export-button {
   padding: 12px 24px;
   border: none;
   border-radius: 8px;
@@ -74,6 +75,7 @@
   font-weight: 500;
   cursor: pointer;
   color: white;
+  min-width: 180px;
 }
 
 .create-button {
@@ -90,6 +92,14 @@
 
 .import-button:hover {
   background: linear-gradient(135deg, #0056b3, #004085);
+}
+
+.export-button {
+  background: linear-gradient(135deg, #fd7e14, #e8590c);
+}
+
+.export-button:hover {
+  background: linear-gradient(135deg, #e8590c, #d5540b);
 }
 
 /* Fields container */
@@ -234,8 +244,10 @@
   }
 
   .create-button,
-  .import-button {
+  .import-button,
+  .export-button {
     width: 100%;
+    max-width: none;
     justify-content: center;
   }
 

@@ -241,18 +241,6 @@ export default function CreateForms() {
           <h2>Neues Meldeform erstellen</h2>
         </div>
 
-        <div className="form-title-section">
-          <label htmlFor="form-title">Formular Titel:</label>
-          <input
-            id="form-title"
-            type="text"
-            placeholder="Geben Sie den Titel des Formulars ein..."
-            value={formTitle}
-            onChange={(e) => setFormTitle(e.target.value)}
-            className="form-title-input"
-          />
-        </div>
-
         <div className="form-actions">
           <button className="create-button" onClick={addFields}>
             Neues Feld Hinzufügen
@@ -263,6 +251,18 @@ export default function CreateForms() {
           <button className="export-button" onClick={handleExport}>
             XML-Datei Exportieren
           </button>
+        </div>
+
+        <div className="form-title-section">
+          <label htmlFor="form-title">Formular Titel:</label>
+          <input
+            id="form-title"
+            type="text"
+            placeholder="Geben Sie den Titel des Formulars ein..."
+            value={formTitle}
+            onChange={(e) => setFormTitle(e.target.value)}
+            className="form-title-input"
+          />
         </div>
 
         <div className="fields-container">

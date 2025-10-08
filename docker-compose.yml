@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   db:
     image: postgres:15
@@ -29,11 +27,15 @@ services:
     # run the entrypoint module which waits for the DB and seeds schema + admin user
     command: ["python", "-m", "backend.entrypoint"]
     healthcheck:
-      test: ["CMD-SHELL", "python -c \"import socket,sys;s=socket.socket();s.settimeout(1);\ntry:\n s.connect(('127.0.0.1', 8000))\n s.close()\nexcept Exception:\n sys.exit(1)\""]
+      test:
+        [
+          "CMD-SHELL",
+          "python -c \"import socket,sys;s=socket.socket();s.settimeout(1);\ntry:\n s.connect(('127.0.0.1', 8000))\n s.close()\nexcept Exception:\n sys.exit(1)\"",
+        ]
       interval: 10s
       timeout: 2s
       retries: 10
-  
+
   frontend:
     build:
       context: .

@@ -11,8 +11,10 @@ services:
   db:
     image: postgres:15
     restart: unless-stopped
-    env_file:
-      - backend/.env
+    environment:
+      POSTGRES_USER: civitas_user
+      POSTGRES_PASSWORD: securepassword
+      POSTGRES_DB: civitas_db
     volumes:
       - db_data:/var/lib/postgresql/data
     networks:

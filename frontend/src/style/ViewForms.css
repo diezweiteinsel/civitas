@@ -1,4 +1,3 @@
-
 .form-view-container {
   max-width: 800px;
   margin: 0 auto;
@@ -36,8 +35,6 @@
   border: 1px solid #e9ecef;
 }
 
-
-
 /* Save button styling */
 .create-new-form-button {
   width: 100%;
@@ -63,9 +60,9 @@
 
 .end-box {
   display: flex;
-  justify-content:flex-end;
+  justify-content: flex-end;
 }
-.export-button {
+.export-form-button {
   align-items: end;
   width: 10%;
   padding: 8px 16px;
@@ -80,11 +77,11 @@
   margin-left: auto;
 }
 
-.export-button:hover:not(:disabled) {
+.export-form-button:hover:not(:disabled) {
   background: linear-gradient(135deg, #138496, #117a8b);
 }
 
-.export-button:disabled {
+.export-form-button:disabled {
   background: #6c757d;
   cursor: not-allowed;
 }

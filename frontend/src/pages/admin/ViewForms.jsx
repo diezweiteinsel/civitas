@@ -15,10 +15,10 @@ export default function ViewForms() {
   const [loading, setLoading] = useState(true);
 
   const [error, setError] = useState("");
-  const navigate = useNavigate()
-  
+  const navigate = useNavigate();
+
   const goToCreateForms = () => {
-    navigate("/admin/create-forms")
+    navigate("/admin/create-forms");
   };
 
   const exportFormAsXml = (id) => {
@@ -29,7 +29,7 @@ export default function ViewForms() {
 	<formDefinition name="${form.form_name.trim()}">
 		<attributes>`;
     //console.log("form", JSON.stringify(form, null, 2));
-    
+
     const blocksArray = Object.values(form.blocks);
     blocksArray.forEach((block) => {
       const typeUpper = block.data_type.toUpperCase();
@@ -40,7 +40,7 @@ export default function ViewForms() {
 		</attributes>
 	</formDefinition>
 </x${formNameSafe}Export>`;
-    
+
     const blob = new Blob([xml], { type: "application/xml" });
     const url = window.URL.createObjectURL(blob);
     const link = document.createElement("a");
@@ -66,18 +66,19 @@ export default function ViewForms() {
       });
   }, []);
 
-  if (loading) return (
-    <div>
-      <Navbar />
-      <div className="form-view-container">
-        <div className="form-view-header">
-          <h2>Alle Meldeformulare</h2>
+  if (loading)
+    return (
+      <div>
+        <Navbar />
+        <div className="form-view-container">
+          <div className="form-view-header">
+            <h2>Alle Meldeformulare</h2>
+          </div>
+          ...
+          {error && <div className="error-message">{error}</div>}
         </div>
-            ...
-        {error && <div className="error-message">{error}</div>}
       </div>
-    </div>
-  );
+    );
 
   return (
     <div>
@@ -92,35 +93,24 @@ export default function ViewForms() {
         <div className="forms-container">
           {forms.map((form) => (
             <div key={form.id} className="forms-row">
-                <div>
-                    {form.id}
-                </div>
-                <div>
-                    {form.version}
-                </div>
-                <div>
-                    {form.form_name}
-                </div>
-                <div>
-                    {form.is_active}
-                </div>
-                <button
-                  className="export-button"
-                  onClick={() => exportFormAsXml(form.id)}
-                  title="Antrag exportieren"
-                >
-                  <FaDownload />
-                </button>
+              <div>{form.id}</div>
+              <div>{form.version}</div>
+              <div>{form.form_name}</div>
+              <div>{form.is_active}</div>
+              <button
+                className="export-form-button"
+                onClick={() => exportFormAsXml(form.id)}
+                title="Antrag exportieren"
+              >
+                <FaDownload />
+              </button>
             </div>
           ))}
         </div>
-        <button
-          className="create-new-form-button"
-          onClick={goToCreateForms}
-        >
+        <button className="create-new-form-button" onClick={goToCreateForms}>
           Neues Meldeformular Erstellen
         </button>
       </div>
     </div>
   );
-};
+}

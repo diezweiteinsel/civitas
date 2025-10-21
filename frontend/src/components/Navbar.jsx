@@ -26,7 +26,7 @@ export default function Navbar() {
         return "/admin";
       case Role.REPORTER:
         return "/reporter";
-      default:
+      case Role.APPLICANT:
         return "/applicant";
     }
   };

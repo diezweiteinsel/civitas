@@ -242,9 +242,6 @@ export default function CreateForms() {
         </div>
 
         <div className="form-actions">
-          <button className="create-button" onClick={addFields}>
-            Neues Feld Hinzufügen
-          </button>
           <button className="import-button" onClick={handleImport}>
             XML-Datei Importieren
           </button>
@@ -296,6 +293,9 @@ export default function CreateForms() {
               </button>
             </div>
           ))}
+          <button className="create-button" onClick={addFields}>
+            Neues Feld Hinzufügen
+          </button>
         </div>
 
         {error && <div className="error-message">{error}</div>}

@@ -3,7 +3,8 @@
   background: #265ebf;
   color: white;
   padding: 0 2rem;
-  position: relative;
+  position: sticky;
+  top: 10px; /* This creates a margin from the top when sticky */
   display: flex;
   justify-content: center; /* center brand horizontally */
   align-items: center;

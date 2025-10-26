@@ -1,7 +1,7 @@
 /* Main container for form creation */
 .form-creation-container {
   max-width: 800px;
-  margin: 0 auto;
+  margin: 80px auto 0 auto; /* Added top margin to account for fixed navbar */
   padding: 20px;
   background: #ffffff;
   border-radius: 12px;
@@ -79,6 +79,7 @@
 }
 
 .create-button {
+  display: flex;
   background: linear-gradient(135deg, #28a745, #20c997);
 }
 
@@ -108,6 +109,8 @@
   border-radius: 10px;
   padding: 20px;
   margin-bottom: 25px;
+  justify-content: center;
+  align-items: center;
   border: 2px dashed #dee2e6;
   min-height: 200px;
 }

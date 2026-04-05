@@ -10,8 +10,8 @@ ENV REACT_APP_API_URL=${REACT_APP_API_URL}
 # Copy package files from the frontend folder (build context is project root)
 COPY frontend/package*.json ./
 
-# Install dependencies (use ci for reproducible installs if lockfile exists)
-RUN npm ci --silent || npm install --silent
+# Install dependencies (use ci for reproducible installs)
+RUN npm ci --silent
 
 # Copy the rest of the frontend source and build the app
 COPY frontend/ .

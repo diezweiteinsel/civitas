@@ -32,7 +32,7 @@ build-frontend:
 # ---- TEST ---- # old version, hopefully works again
 test-backend:
   stage: test
-  image: python:3.11-slim
+  image: ghcr.io/astral-sh/uv:python3.11-0.9.1
   services:
     - name: postgres:15
       alias: db
@@ -47,9 +47,7 @@ test-backend:
     ALGORITHM: "HS256"
     DEV_SQLITE: "0"
   before_script:
-    - apt-get update && apt-get install -y gcc libpq-dev curl
-    - curl -Ls https://astral.sh/uv/install.sh | sh
-    - export PATH="$HOME/.local/bin:$PATH"
+    - apt-get update && apt-get install -y gcc libpq-dev
     - uv sync --frozen --directory backend
   script:
   - uv run --directory backend pytest --junitxml=report.xml --cov=backend --cov-report=xml:coverage.xml --cov-report=html:htmlcov --cov-report=term-missing

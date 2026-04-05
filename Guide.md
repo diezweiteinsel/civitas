@@ -37,23 +37,24 @@ PYTHONPATH=/app
 
 ### Setting up the Python Environment
 
-Navigate to the root folder of the project and create a virtual environment:
+This project uses [uv](https://docs.astral.sh/uv/) for dependency management. Install it once:
 
 ```bash
-python -m venv venv
-source venv/bin/activate
-# navigate to backend
-cd backend  # On Windows use `venv\Scripts\activate`
-pip install -r requirements-linux.txt # or requirements.txt
+# macOS / Linux
+curl -Ls https://astral.sh/uv/install.sh | sh
+
+# Windows (PowerShell)
+powershell -c "irm https://astral.sh/uv/install.ps1 | iex"
 ```
 
-Next, install the package of the application:
+Then install all dependencies (including dev tools) from the lockfile:
 
 ```bash
-pip install -e .
+cd backend
+uv sync
 ```
 
-This will install the package in "editable" mode, meaning that changes to the source code will be reflected without needing to reinstall the package.
+This creates a `.venv` and installs everything. Changes to the source code are reflected immediately — no reinstall needed.
 
 ### Running the Application
 

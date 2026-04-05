@@ -1,20 +1,19 @@
 FROM python:3.11-slim
 
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /usr/local/bin/uv
+
 WORKDIR /app
 
-# Install build deps and runtime deps
-COPY pyproject.toml .
-COPY requirements-linux.txt .
-RUN pip install --no-cache-dir -r requirements-linux.txt
+# Install dependencies via uv (uses uv.lock for reproducible installs)
+COPY pyproject.toml uv.lock ./
+RUN uv sync --frozen --no-dev --no-install-project
 
-# Copy source
+# Copy source and install the project package
 COPY src/ ./src/
-
-# Install the project package so `backend` is importable inside the image
-# The project's pyproject.toml is at the repository root and declares packages in `src`.
-RUN pip install --no-cache-dir .
+RUN uv sync --frozen --no-dev
 
 ENV PYTHONPATH=/app/src
+ENV PATH="/app/.venv/bin:$PATH"
 
 # Expose FastAPI default port
 EXPOSE 8000

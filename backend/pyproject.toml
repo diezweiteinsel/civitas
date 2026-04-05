@@ -3,8 +3,51 @@ requires = ["setuptools>=68", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "civitas"        # oder "civitas-backend"
+name = "civitas"
 version = "0.2.0"
+requires-python = ">=3.11"
+dependencies = [
+    # Web framework
+    "fastapi>=0.116.1",
+    "uvicorn[standard]>=0.35.0",
+    "python-multipart>=0.0.20",
+    "email-validator>=2.3.0",
+    # Database
+    "sqlalchemy>=2.0.43",
+    "psycopg[binary]>=3.2.10",
+    # Data validation & settings
+    "pydantic>=2.11.7",
+    "pydantic-settings>=2.10.1",
+    "pydantic-extra-types>=2.10.5",
+    # Auth / security
+    "python-jose[cryptography]>=3.5.0",
+    "passlib[bcrypt,argon2]>=1.7.4",
+    # Config
+    "python-dotenv>=1.1.1",
+    # HTTP clients
+    "httpx>=0.28.1",
+    "requests>=2.32.5",
+    # Serialization
+    "orjson>=3.11.3",
+    "ujson>=5.11.0",
+    "pyyaml>=6.0.2",
+    "xmltodict>=1.0.2",
+    # Monitoring
+    "sentry-sdk>=2.37.0",
+    # CLI (management commands)
+    "typer>=0.17.4",
+    # Windows only
+    "pywin32>=311; sys_platform == 'win32'",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=8.4.2",
+    "pytest-cov",
+    "testcontainers[postgres]>=4.13.0",
+    "docker>=7.1.0",
+    "ruff",
+]
 
 [tool.setuptools.packages.find]
 where = ["src"]

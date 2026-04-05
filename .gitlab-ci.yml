@@ -47,12 +47,12 @@ test-backend:
     ALGORITHM: "HS256"
     DEV_SQLITE: "0"
   before_script:
-    - apt-get update && apt-get install -y gcc libpq-dev
-    - pip install pytest-cov
-    - pip install -r backend/requirements-linux.txt
-    - pip install -e backend/.
+    - apt-get update && apt-get install -y gcc libpq-dev curl
+    - curl -Ls https://astral.sh/uv/install.sh | sh
+    - export PATH="$HOME/.local/bin:$PATH"
+    - uv sync --frozen --directory backend
   script:
-  - pytest backend/ --junitxml=report.xml --cov=backend --cov-report=xml:coverage.xml --cov-report=html:htmlcov --cov-report=term-missing
+  - uv run --directory backend pytest backend/ --junitxml=report.xml --cov=backend --cov-report=xml:coverage.xml --cov-report=html:htmlcov --cov-report=term-missing
   - 'test -f report.xml || echo "<testsuite name=\"pytest\" tests=\"0\" failures=\"1\"><testcase classname=\"collection\" name=\"error\"><failure message=\"pytest crashed before producing report.xml\"/></testcase></testsuite>" > report.xml'
   coverage: '/TOTAL.*? (100(?:\.0+)?\%|[1-9]?\d(?:\.\d+)?\%)$/'
   artifacts:

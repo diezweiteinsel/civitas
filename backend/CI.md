@@ -10,15 +10,13 @@ Jobs included:
 
 How to run tests locally (recommended for noobs):
 
-1. Create a virtual environment and install deps:
+1. Install deps (including dev group):
 
-   python -m venv .venv
-   .\.venv\Scripts\activate
-   pip install -r requirements.txt
+   uv sync
 
 2. Run the tests:
 
-   pytest -q
+   uv run pytest -q
 
 Enabling test job on GitLab:
 

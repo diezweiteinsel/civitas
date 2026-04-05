@@ -22,7 +22,7 @@ export default function ApplicationEdit() {
       if (data?.blocks && typeof data.blocks === "object") {
         const initialValues = {};
         Object.keys(data.blocks).forEach((key) => {
-          initialValues[`block_${key}`] = "";
+          initialValues[`block_${key}`] = data.blocks[key].data_type === "BOOLEAN" ? false : "";
         });
         setFormValues(initialValues);
       }
@@ -53,8 +53,8 @@ export default function ApplicationEdit() {
 
   // Handle input changes
   const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormValues((prev) => ({ ...prev, [name]: value }));
+    const { name, value, type, checked } = e.target;
+    setFormValues((prev) => ({ ...prev, [name]: type === "checkbox" ? checked : value }));
   };
 
   // Handle form submission
@@ -66,7 +66,7 @@ export default function ApplicationEdit() {
       const block = formData.blocks[key];
       jsonPayload[key] = {
         label: block.label,
-        value: formValues[`block_${key}`] || "",
+        value: formValues[`block_${key}`] ?? "",
         data_type: block.data_type,
       };
     });
@@ -92,7 +92,7 @@ export default function ApplicationEdit() {
   // Render form fields based on formData.blocks
   const renderFormField = (block, key) => {
     const fieldName = `block_${key}`;
-    const fieldValue = formValues[fieldName] || "";
+    const fieldValue = formValues[fieldName] !== undefined ? formValues[fieldName] : (block.data_type === "BOOLEAN" ? false : "");
     const { label, data_type, required } = block;
 
     const fieldProps = {
@@ -117,6 +117,17 @@ export default function ApplicationEdit() {
         case "TEXTAREA":
         case "LONG_TEXT":
           return <textarea {...fieldProps} />;
+        case "BOOLEAN":
+          return (
+            <input
+              type="checkbox"
+              id={fieldName}
+              name={fieldName}
+              checked={fieldValue === true || fieldValue === "true"}
+              onChange={handleChange}
+              required={required || false}
+            />
+          );
         default:
           return <input type="text" {...fieldProps} />;
       }

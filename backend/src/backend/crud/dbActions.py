@@ -46,6 +46,8 @@ def matchType(blockType: str):
             return Column(DateTime, nullable=True)
         case "FLOAT":
             return Column(Float, nullable=True)
+        case "BOOLEAN":
+            return Column(Boolean, nullable=True)
         case "LONG":
             raise Exception # Does long even exist in Python?
     

@@ -12,6 +12,7 @@ class BBType(StrEnum):
 	FLOAT = "FLOAT"
 	LONG = "LONG"
 	NUMBER = "NUMBER"
+	BOOL = "BOOLEAN"
 
 class BuildingBlock(BaseModel):
 	'''A building block represents a single field in a form, with a name and a data type.'''

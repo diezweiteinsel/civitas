@@ -1,12 +1,8 @@
-from enum import Enum
 from fastapi import FastAPI, Request, Response
-from fastapi import APIRouter
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel
 from pydantic_settings import BaseSettings, SettingsConfigDict # to read from .env file
 # from core.db import Base, engine
 from backend.api import api_router
-import backend.core.security as security
 import backend.api.endpoints.auth as auth
 
 # Base.metadata.create_all(bind=engine)

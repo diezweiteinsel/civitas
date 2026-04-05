@@ -1,4 +1,4 @@
-from typing import Any, Type
+from typing import Type
 
 from sqlalchemy import Column, Date, Integer, String, Boolean
 from sqlalchemy.orm import Session

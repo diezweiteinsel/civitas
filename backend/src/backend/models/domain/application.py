@@ -5,7 +5,6 @@ from enum import StrEnum
 
 from pydantic import BaseModel, Field #3rdparty
 
-from .form import Form #our stuff
 
 class ApplicationStatus(StrEnum):
     PENDING = "PENDING"

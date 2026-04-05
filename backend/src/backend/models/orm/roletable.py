@@ -1,7 +1,6 @@
-from typing import Type
 
 from backend.models.orm import usertable
-from sqlalchemy import Column, Date, Enum, Integer, String
+from sqlalchemy import Column, Date, Enum, Integer
 from sqlalchemy.orm import Session
 
 from backend.core.ormUtil import SchemaBase

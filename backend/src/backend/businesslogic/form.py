@@ -1,8 +1,7 @@
-from enum import Enum
 from backend.models import Base
 from backend.models import Form
 # from backend.models.buildingblock import BuildingBlockDataType
-from sqlalchemy import Column, Integer, String
+from sqlalchemy import Column, Integer
 from backend.crud import dbActions
 
 

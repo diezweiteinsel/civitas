@@ -1,4 +1,3 @@
-from sqlalchemy.orm import DeclarativeBase
 
 from sqlalchemy.ext.automap import automap_base
 

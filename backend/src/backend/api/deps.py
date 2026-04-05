@@ -6,8 +6,6 @@ from jose import JWTError, jwt
 from typing import List, Optional
 
 from backend.core.security import SECRET_KEY, ALGORITHM
-from backend.schemas.token import TokenData
-from backend import config
 
 # This should point to your login endpoint
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/v1/auth/token")

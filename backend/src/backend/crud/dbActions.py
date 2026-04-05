@@ -1,6 +1,4 @@
-from datetime import date, datetime
 import json
-from typing import Type
 
 from fastapi import HTTPException
 from sqlalchemy import Boolean, Column, Date, Float, Integer, String, delete, DateTime, text

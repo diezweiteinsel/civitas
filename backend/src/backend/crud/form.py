@@ -1,6 +1,4 @@
-from backend.models.orm.base import Base
 from fastapi import HTTPException
-from sqlalchemy import Table
 from backend.crud import dbActions
 from backend.models.orm.formtable import OrmForm
 from backend.models.domain.form import Form

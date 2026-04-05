@@ -1,5 +1,4 @@
 # standard library imports
-from datetime import datetime
 from typing import List, Optional
 
 # third party imports
@@ -9,32 +8,23 @@ from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
 # project imports
-from backend.api.deps import   RoleChecker, get_current_user_payload, get_current_user_payload_optional
-from backend.core import roleAuth
+from backend.api.deps import   RoleChecker
 from backend.crud import userCrud
-from backend.models.orm import roletable
-from backend.businesslogic.services.applicationService import createApplication, getApplication, editApplication
+from backend.businesslogic.services.applicationService import createApplication
 from backend.businesslogic.services.formService import createForm
 from backend.businesslogic.services.adminService import adminApproveApplication, adminRejectApplication
-from backend.businesslogic.services.formService import createForm
-from backend.models.domain.application import Application, ApplicationStatus, ApplicationID, ApplicationFillout, ApplicationUpdate
-from backend.crud import userCrud
-from backend.crud.user import get_user_by_id
+from backend.models.domain.application import ApplicationStatus, ApplicationID, ApplicationFillout, ApplicationUpdate
 from backend.models.domain.user import User, UserType
-from backend.businesslogic.user import ensure_applicant, ensure_admin, ensure_reporter, assign_role
-from backend.models import Form   
+from backend.businesslogic.user import assign_role
 from datetime import date 
-from backend.businesslogic.services.mockups import _global_applications_db, _global_users_db, _global_forms_db
-from backend.models.domain.buildingblock import BuildingBlock
+from backend.businesslogic.services.mockups import _global_applications_db, _global_users_db
 from backend.crud import formCrud, applicationCrud
 from backend.businesslogic.services.applicationService import app_list_to_appResp_list
-from sqlalchemy.orm import Session
 
 from backend.api import deps
 
 from backend.models.domain.application import ApplicationResponseItem
 
-from backend.models.domain.application import application_to_response_item
 
 router = APIRouter(prefix="/applications", tags=["applications"])
 

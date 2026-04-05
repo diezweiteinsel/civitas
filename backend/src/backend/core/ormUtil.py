@@ -1,13 +1,10 @@
 from datetime import date
-from typing import Any, Type
 
 from sqlalchemy import Column, Date, Integer, String, Boolean, Enum
-from sqlalchemy.orm import Session
 from sqlalchemy.orm import DeclarativeBase
 
 from backend.core import db
-from backend.models.domain.user import User, UserType
-from backend.models.domain.user import RoleAssignment as DomainRoleAssignment
+from backend.models.domain.user import UserType
 
 
 # Any Ideas for filename? -ps

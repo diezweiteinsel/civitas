@@ -277,7 +277,7 @@ def create_demo_applications() -> None:
             ),
         ]
 
-        table_class = dbActions.get_application_table_by_id(target_form_orm.id)
+        dbActions.get_application_table_by_id(target_form_orm.id)
 
         for index, application in enumerate(demo_applications, start=1):
             inserted = applicationCrud.insert_application(session, application)

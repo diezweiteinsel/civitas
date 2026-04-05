@@ -93,7 +93,7 @@ def insertRow(session: Session, tableClass: type, rowData: dict | type) -> type:
     Returns the updated/created row object or raises an error
     """
     # Can easily be adapted for fastapi use by making session a dependency
-    if type(rowData) == dict:
+    if isinstance(rowData, dict):
         obj = tableClass(**rowData) # create instance of the ORM class
     else:
         obj = rowData

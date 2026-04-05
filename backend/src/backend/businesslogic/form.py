@@ -1,18 +1,23 @@
-from backend.models import Base
+from backend.models import Base, BBType
 from backend.models import Form
-# from backend.models.buildingblock import BuildingBlockDataType
-from sqlalchemy import Column, Integer
+from sqlalchemy import BigInteger, Column, Date, Float, Integer, Numeric, String, Text
 from backend.crud import dbActions
 
 
+_BB_TYPE_MAP = {
+    BBType.STRING: String,
+    BBType.TEXT: Text,
+    BBType.EMAIL: String,
+    BBType.INTEGER: Integer,
+    BBType.DATE: Date,
+    BBType.FLOAT: Float,
+    BBType.LONG: BigInteger,
+    BBType.NUMBER: Numeric,
+}
 
-# Helper function to convert python types to SQLAlchemy types
-# def convertType(blockType: BuildingBlockDataType):
 
-#     if blockType == BuildingBlockDataType.STRING:
-#         return String
-#     elif blockType == BuildingBlockDataType.INT:
-#         return Integer
+def convertType(blockType: BBType):
+    return _BB_TYPE_MAP.get(blockType, String)
 
 
 # Converts a form to a SQLAlchemy table class

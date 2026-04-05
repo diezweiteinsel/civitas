@@ -60,11 +60,11 @@ def user_db_setup():
     # was gespeichert wurde: "UserType.ADMIN"
     # neu: "ADMIN" -> Enum(UserType)
 
-    OrmUser = dbActions.createTableClass(
+    dbActions.createTableClass(
         "user_table", orm_user_columns)
-    OrmRoleAssignment = dbActions.createTableClass(
+    dbActions.createTableClass(
         "role_assignment", role_assignment_columns)
-    OrmFormTable = dbActions.createTableClass(
+    dbActions.createTableClass(
         "form_table", form_table_columns)
 
     Base = db.get_base(reload=True)

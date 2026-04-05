@@ -30,7 +30,7 @@ def add_form(session, form:Form) -> Form:
     ormForm = form.to_orm_model()
     ormForm = add_orm_form(session, ormForm)
     updatedForm = Form.from_orm_model(ormForm)
-    updatedOrmForm: OrmForm = dbActions.updateRow(session, OrmForm, {"id": ormForm.id, "xoev":updatedForm.to_json()})
+    dbActions.updateRow(session, OrmForm, {"id": ormForm.id, "xoev":updatedForm.to_json()})
     return updatedForm
 
 def get_form_by_id(session, id: int) -> OrmForm:

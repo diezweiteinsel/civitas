@@ -30,7 +30,7 @@ def createApplication(user_id: int, form_id: int, payload: dict, session: Sessio
 		form_id=form_id,
 		jsonPayload=payload
 	) 
-	except:
+	except Exception:
 		raise HTTPException(status_code=420, detail="TODO") # TODO
 	# insert application into db and return updated application (with id etc.)
 	appFromTable = applicationCrud.insert_application(session, newApplication)

@@ -174,7 +174,7 @@ async def create_application( application_data: ApplicationFillout,
     Create a new application in the system.
     """
     user_id = payload.get("userid") 
-    if userCrud.get_user_by_id(user_id, session) == None:
+    if userCrud.get_user_by_id(user_id, session) is None:
         raise Exception("User not found")
     form_id = application_data.form_id
     jsonPayload = application_data.payload

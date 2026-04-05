@@ -168,6 +168,8 @@ def _sample_value_for_block(block) -> object:
         return date.today()
     if data_type == BBType.FLOAT:
         return 42.5
+    if data_type == BBType.BOOL:
+        return False
     return "N/A"
 
 

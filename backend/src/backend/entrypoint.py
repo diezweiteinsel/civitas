@@ -184,11 +184,6 @@ def create_demo_applications() -> None:
     from backend.models.domain.form import Form
 
     with db.get_session() as session:
-        existing_apps = applicationCrud.get_all_applications(session)
-        if existing_apps:
-            print("Demo applications already exist, skipping")
-            return
-
         forms = formCrud.get_all_forms(session)
         if not forms:
             print("No forms available; skipping demo application creation")
@@ -200,6 +195,27 @@ def create_demo_applications() -> None:
             forms[0],
         )
         target_form = Form.from_orm_model(target_form_orm)
+
+        table_class = dbActions.get_application_table_by_id(target_form_orm.id)
+
+        # Check all rows in the form table, including outdated snapshots.
+        existing_rows = dbActions.getRows(session, table_class)
+        if existing_rows:
+            outdated_rows = [
+                row for row in existing_rows
+                if applicationCrud.check_if_outdated(row.snapshots)
+            ]
+            if not outdated_rows:
+                print(f"Demo applications already exist for form '{demo_form_name}', skipping")
+                return
+            # Remove all rows (including outdated ones) so we can recreate a clean set.
+            print(
+                f"Removing {len(existing_rows)} outdated demo application(s) "
+                f"for form '{demo_form_name}' and recreating them"
+            )
+            for row in existing_rows:
+                dbActions.removeRow(session, table_class, row.id)
+            session.flush()
 
         def _get_user(username: str) -> Optional[int]:
             try:
@@ -221,76 +237,66 @@ def create_demo_applications() -> None:
         admin_username = os.environ.get("ADMIN_USERNAME", "admin")
         admin_id = _get_user(admin_username)
 
-        from copy import deepcopy
-
+        # Build a payload with numbered keys, consistent with how data is read back
+        # from the database via getRowJsonPayload().
         payload = {
-            block.label: {
+            str(i + 1): {
                 "label": block.label,
                 "value": _sample_value_for_block(block),
             }
-            for block in target_form.blocks.values()
+            for i, block in enumerate(target_form.blocks.values())
         }
 
-        def _with_override(source: dict[str, dict[str, object]], label: str, value: object):
+        def _with_label_override(
+            source: dict[str, dict[str, object]], label: str, value: object
+        ) -> dict[str, dict[str, object]]:
+            from copy import deepcopy
             clone = deepcopy(source)
-            if label not in clone:
-                clone[label] = {"label": label, "value": value}
-            else:
-                clone[label]["value"] = value
+            for item in clone.values():
+                if item["label"] == label:
+                    item["value"] = value
+                    return clone
+            # Label not present – append under the next numbered key.
+            next_key = str(max(int(k) for k in clone.keys()) + 1) if clone else "1"
+            clone[next_key] = {"label": label, "value": value}
             return clone
 
-        demo_applications = [
-            Application(
+        def _insert_pending(description_value: str) -> object:
+            app = Application(
                 user_id=applicant_id,
                 form_id=target_form_orm.id,
                 admin_id=admin_id,
-                status=ApplicationStatus.PENDING,
-                jsonPayload=payload,
-            ),
-            Application(
-                user_id=applicant_id,
-                form_id=target_form_orm.id,
-                admin_id=admin_id,
-                status=ApplicationStatus.APPROVED,
-                jsonPayload=_with_override(
-                    payload, "issue_description", "Approved request"
-                ),
-                is_public=True,
-            ),
-            Application(
-                user_id=applicant_id,
-                form_id=target_form_orm.id,
-                admin_id=admin_id,
-                status=ApplicationStatus.REJECTED,
-                jsonPayload=_with_override(
-                    payload, "issue_description", "Rejected request"
-                ),
-            ),
-            Application(
-                user_id=applicant_id,
-                form_id=target_form_orm.id,
-                admin_id=admin_id,
-                status=ApplicationStatus.APPROVED,
-                jsonPayload=_with_override(
-                    payload, "issue_description", "Approved request"
-                ),
-            ),
-        ]
-
-        table_class = dbActions.get_application_table_by_id(target_form_orm.id)
-
-        for index, application in enumerate(demo_applications, start=1):
-            inserted = applicationCrud.insert_application(session, application)
-            status = application.status.value
-            # if index == 2:
-            #     dbActions.updateRow(
-            #         session,
-            #         table_class,
-            #         {"id": inserted.id, "is_public": True},
-            #     )
-            print(
-                f"Demo application #{index} created with id={inserted.id} (status={status})"
+                jsonPayload=_with_label_override(payload, "issue_description", description_value),
             )
+            orm_row = applicationCrud.insert_application(session, app)
+            session.flush()
+            return orm_row
+
+        # App 1: PENDING
+        orm1 = _insert_pending("Pending civic service request")
+        print(f"Demo application #1 created with id={orm1.id} (status=PENDING)")
+
+        # App 2: APPROVED and publicly visible
+        orm2 = _insert_pending("Approved request")
+        applicationCrud.updateApplicationStatus(
+            session, target_form_orm.id, orm2.id, ApplicationStatus.APPROVED
+        )
+        applicationCrud.publish_application(session, target_form_orm.id, orm2.id)
+        print(f"Demo application #2 created with id={orm2.id} (status=APPROVED, is_public=True)")
+
+        # App 3: REJECTED
+        orm3 = _insert_pending("Rejected request")
+        applicationCrud.updateApplicationStatus(
+            session, target_form_orm.id, orm3.id, ApplicationStatus.REJECTED
+        )
+        print(f"Demo application #3 created with id={orm3.id} (status=REJECTED)")
+
+        # App 4: APPROVED (private)
+        orm4 = _insert_pending("Second approved request")
+        applicationCrud.updateApplicationStatus(
+            session, target_form_orm.id, orm4.id, ApplicationStatus.APPROVED
+        )
+        print(f"Demo application #4 created with id={orm4.id} (status=APPROVED)")
 
 
 def populate_db_with_demo_data() -> None:

@@ -201,16 +201,16 @@ def create_demo_applications() -> None:
         # Check all rows in the form table, including outdated snapshots.
         existing_rows = dbActions.getRows(session, table_class)
         if existing_rows:
-            stale = [
+            outdated_rows = [
                 row for row in existing_rows
                 if applicationCrud.check_if_outdated(row.snapshots)
             ]
-            if not stale:
+            if not outdated_rows:
                 print(f"Demo applications already exist for form '{demo_form_name}', skipping")
                 return
-            # Remove all rows (including stale ones) so we can recreate a clean set.
+            # Remove all rows (including outdated ones) so we can recreate a clean set.
             print(
-                f"Removing {len(existing_rows)} stale demo application(s) "
+                f"Removing {len(existing_rows)} outdated demo application(s) "
                 f"for form '{demo_form_name}' and recreating them"
             )
             for row in existing_rows:

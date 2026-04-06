@@ -21,7 +21,8 @@ Functions:
 from fastapi import APIRouter
 from backend.api.endpoints import form, user, application, auth, revision
 from backend.api.deps import get_current_user_payload, RoleChecker
-from backend.api.health import router as health_router
+from backend.api import deps
+from backend.api.endpoints.health import router as health_router
 
 api_router = APIRouter()
 
@@ -43,7 +44,6 @@ api_router.include_router(health_router)
 
 
 # expose deps for testing
-from backend.api import deps
 
 __all__ = ["api_router", "deps",
            "get_current_user_payload", "RoleChecker"]

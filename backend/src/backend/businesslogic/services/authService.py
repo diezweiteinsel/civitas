@@ -1,6 +1,5 @@
 from backend.models import (
 	User,
-	UserType,
 
 )
 

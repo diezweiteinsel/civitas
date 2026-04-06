@@ -1,5 +1,5 @@
 # standard library imports
-from datetime import date, datetime
+from datetime import date
 from typing import Optional
 
 # third party imports
@@ -11,7 +11,7 @@ from sqlalchemy.orm import Session
 from backend.api.deps import RoleChecker
 from backend.core.security import hash_password
 from backend.core import db
-from backend.models import User, UserType
+from backend.models import User
 from backend.crud import userCrud
 from backend.models.domain.user import RoleAssignment, UserCreatePayload, UserID
 

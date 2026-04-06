@@ -3,12 +3,11 @@ import os
 from contextlib import contextmanager
 from typing import Iterator
 import dotenv
-from contextlib import contextmanager
 # Third-party imports
 import psycopg
-from sqlalchemy import MetaData, create_engine, text
+from sqlalchemy import create_engine, text
 from sqlalchemy.engine import Engine, make_url
-from sqlalchemy.orm import sessionmaker, Session, registry
+from sqlalchemy.orm import sessionmaker, Session
 from sqlalchemy.ext.automap import automap_base
 
 

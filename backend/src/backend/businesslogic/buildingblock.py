@@ -1,7 +1,4 @@
-from backend.models import Base
-from sqlalchemy import Table
 
-from sqlalchemy import Column, Integer, String #, Bool
 from backend.models import BuildingBlock
 
 def createBuildingBlockFromDictionary(dictionary: dict) -> BuildingBlock:

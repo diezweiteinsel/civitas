@@ -1,19 +1,15 @@
-from datetime import datetime
 
-from backend.businesslogic.services.formService import createForm
 from backend.core import roleAuth
 from backend.models.domain.application import ApplicationResponseItem
-from backend.models.domain.user import UserType
 from fastapi import HTTPException
 from requests import session
-from backend.businesslogic.user import assign_role, ensure_admin, ensure_applicant, ensure_reporter
+from backend.businesslogic.user import ensure_admin, ensure_applicant, ensure_reporter
 from backend.businesslogic.services.mockups import _global_applications_db 
 from sqlalchemy.orm import Session
 
 
 from backend.models import (
 	User,
-	Form,
 	Application,
 	ApplicationStatus,
 
@@ -34,7 +30,7 @@ def createApplication(user_id: int, form_id: int, payload: dict, session: Sessio
 		form_id=form_id,
 		jsonPayload=payload
 	) 
-	except:
+	except Exception:
 		raise HTTPException(status_code=420, detail="TODO") # TODO
 	# insert application into db and return updated application (with id etc.)
 	appFromTable = applicationCrud.insert_application(session, newApplication)

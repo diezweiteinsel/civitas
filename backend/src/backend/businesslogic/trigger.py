@@ -1,8 +1,6 @@
-from backend.models import Base, Application
-from sqlalchemy import Table
+from backend.models import Application
 
-from backend.models.domain.trigger import TriggerType, LogicTriggerType, StringTriggerType, IntTriggerType, DateTriggerType, FloatTriggerType, TriggerResultType
-from sqlalchemy import Column, Integer, String #, Bool #TODO: this doesnt seem to exist. Check
+from backend.models.domain.trigger import TriggerType, LogicTriggerType, StringTriggerType, IntTriggerType, TriggerResultType
 
 def evaluateTrigger(dictionary: dict, application: Application):
 
@@ -91,7 +89,7 @@ def evaluateTriggerLogicString(dictionary: dict, application: Application) -> bo
 		case StringTriggerType.CONTAINS:
 			return values[1] in values[0]
 		case StringTriggerType.CONTAINS_NOT:
-			return not values[1] in values[0]
+			return values[1] not in values[0]
 		case StringTriggerType.STARTS_WITH:
 			return values[0].startswith(values[1])
 		case StringTriggerType.ENDS_WITH:

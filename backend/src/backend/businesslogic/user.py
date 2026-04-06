@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from datetime import date
+from datetime import date, datetime
 from backend.models import UserType, User
 from backend.core import db
 from backend.models.domain.user import RoleAssignment

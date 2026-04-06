@@ -1,5 +1,4 @@
 # standard library imports
-from datetime import datetime
 
 from backend.models.orm.formtable import OrmForm
 from pydantic import BaseModel
@@ -64,7 +63,7 @@ async def create_form(formCreate: FormCreate, session: Session = Depends(db.get_
 @router.delete("/{form_id}", tags=["Forms"], summary="Delete a form by ID")
 async def delete_form(form_id: int, session: Session = Depends(db.get_session_dep)):
   dbActions.updateRow(session, OrmForm, {"id": form_id, "is_active": False}) # Sets is_active in the given form to False
-  return dbActions.getRowById(session, OrmForm, form_id).is_active == False # Should hopefully, maybe, possibly, potentially check if given form.is_active == False 
+  return not dbActions.getRowById(session, OrmForm, form_id).is_active # Should hopefully, maybe, possibly, potentially check if given form.is_active == False 
 
 
 

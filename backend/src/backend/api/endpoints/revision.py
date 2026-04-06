@@ -26,10 +26,8 @@ async def get_all_revisions(
     form_id : Optional[int] = None,
     payload: Optional[dict] = Depends(deps.get_current_user_payload_optional)):
     is_privileged = False
-    user_id_in_token = None
     if payload:
         user_roles = payload.get("roles", [])
-        user_id_in_token = payload.get("userid")
         if set(user_roles) & {"ADMIN", "REPORTER"}:
             is_privileged = True
     if is_privileged:

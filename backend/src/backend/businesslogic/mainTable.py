@@ -1,4 +1,3 @@
-from datetime import date
 from backend.models import Base
 from backend.crud import dbActions
 from sqlalchemy import Column, Integer, String, Boolean, Date

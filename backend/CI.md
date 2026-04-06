@@ -1,26 +1,53 @@
-# Continuous Integration (GitLab)
+# Continuous Integration (GitHub Actions)
 
-This project includes a minimal GitLab CI pipeline (`.gitlab-ci.yml`) that is safe for beginners and useful for CI checks.
+This project uses GitHub Actions. The workflow files live in `.github/workflows/`.
 
-Jobs included:
+## Workflows
 
-- `lint` — runs `ruff check` against `src/`.
-- `build` — builds a wheel using `python -m build` and uploads it as a short-lived artifact.
-- `test:pytest` — runs `pytest` but is manual by default because tests may require Docker/Testcontainers.
+| File | Trigger | Purpose |
+|---|---|---|
+| `ci.yml` | every push / PR | lint, pytest, Jest, sanity Docker builds |
+| `deploy.yml` | CI passes on `main`, or manual | SSH deploy to VM |
+| `reset-deployment.yml` | manual (`workflow_dispatch`) | `docker compose down -v` + restart on VM |
 
-How to run tests locally (recommended for noobs):
+## Running tests locally
 
 1. Install deps (including dev group):
 
+   ```
    uv sync
+   ```
+   (run from `backend/`)
 
 2. Run the tests:
 
+   ```
    uv run pytest -q
+   ```
 
-Enabling test job on GitLab:
+   The backend test suite requires a running PostgreSQL instance. The easiest way is:
 
-- Provide a runner with Docker (or a shell runner where you installed Docker). The test suite uses testcontainers in places and may spin up a PostgreSQL container.
-- In GitLab CI, go to the Pipeline page and run the `test:pytest` job manually (it's configured `when: manual`).
+   ```
+   docker compose up db -d
+   DATABASE_URL=postgresql://civitas_user:securepassword@localhost:5432/civitas_db uv run pytest -q
+   ```
+
+## Required GitHub Secrets
+
+Set these in **Settings → Secrets and variables → Actions** (repository or environment `production`):
+
+| Secret | Description |
+|---|---|
+| `SSH_PRIVATE_KEY` | OpenSSH private key for the deploy VM (no passphrase) |
+| `SSH_PORT` | SSH port on the VM |
+| `SSH_USER` | SSH username on the VM |
+| `SSH_SERVER_IP` | IP address of the VM |
+| `VM_DEPLOY_PATH` | Absolute path on the VM where the app is deployed |
+| `POSTGRES_DB` | Production database name |
+| `POSTGRES_USER` | Production database user |
+| `POSTGRES_PASSWORD` | Production database password |
+| `SECRET_KEY` | JWT secret key |
+| `ALGORITHM` | JWT algorithm (e.g. `HS256`) |
+| `ALLOWED_ORIGINS` | CORS allowed origins for the backend |
 
 This keeps the pipeline from failing on shared runners without Docker while still allowing full test execution when you have a proper runner.

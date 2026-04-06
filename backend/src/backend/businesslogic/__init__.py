@@ -3,7 +3,6 @@ from . import (
     form,
     mainTable,
     section,
-    services,
     trigger,
     user
 )
@@ -27,7 +26,12 @@ from .section import (
     createDictionaryFromSection,
 )
 
-from .services import *
+from .services import (
+    adminService,
+    applicationService,
+    authService,
+    formService,
+)
 
 from .user import (
     SimpleUser,
@@ -60,7 +64,6 @@ __all__ = [
 	"applicationService",
 	"authService",
 	"formService",
-	"publicationService",
 
     "trigger",
 

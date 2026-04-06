@@ -1,13 +1,10 @@
 from datetime import date
-from typing import Any, Type
 
 from sqlalchemy import Column, Date, Integer, String, Boolean, Enum
-from sqlalchemy.orm import Session
 from sqlalchemy.orm import DeclarativeBase
 
 from backend.core import db
-from backend.models.domain.user import User, UserType
-from backend.models.domain.user import RoleAssignment as DomainRoleAssignment
+from backend.models.domain.user import UserType
 
 
 # Any Ideas for filename? -ps
@@ -63,11 +60,11 @@ def user_db_setup():
     # was gespeichert wurde: "UserType.ADMIN"
     # neu: "ADMIN" -> Enum(UserType)
 
-    OrmUser = dbActions.createTableClass(
+    dbActions.createTableClass(
         "user_table", orm_user_columns)
-    OrmRoleAssignment = dbActions.createTableClass(
+    dbActions.createTableClass(
         "role_assignment", role_assignment_columns)
-    OrmFormTable = dbActions.createTableClass(
+    dbActions.createTableClass(
         "form_table", form_table_columns)
 
     Base = db.get_base(reload=True)

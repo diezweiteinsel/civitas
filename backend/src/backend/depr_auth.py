@@ -3,21 +3,14 @@
 
 # imports
 
-from datetime import datetime, timedelta
-from typing import Annotated, Optional
-from fastapi import Depends, HTTPException, APIRouter
+from fastapi import APIRouter
 from pydantic import BaseModel
-from sqlalchemy.orm import Session
-from starlette import status
 from passlib.context import CryptContext
-from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
-from jose import JWTError, jwt
+from fastapi.security import OAuth2PasswordBearer
 from argon2 import PasswordHasher
-import os
 from dotenv import load_dotenv
 
 
-from backend.models import User, UserType
 
 ph = PasswordHasher()
 

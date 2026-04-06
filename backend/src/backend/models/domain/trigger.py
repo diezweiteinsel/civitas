@@ -1,4 +1,3 @@
-from pydantic import BaseModel, ConfigDict
 from enum import IntEnum, auto
 
 

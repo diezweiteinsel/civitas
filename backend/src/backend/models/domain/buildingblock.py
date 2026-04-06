@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-from enum import IntEnum, auto, StrEnum
+from enum import StrEnum
 # backend.models.domain.trigger import Trigger
 
 class BBType(StrEnum):

@@ -38,4 +38,9 @@ docker-compose*
 coverage
 
 # Misc
+
+# Irrelevant project directories (not needed for frontend build)
+backend/
+infrastructure/
+readme-resources/
 README.md
